@@ -3,28 +3,37 @@ const bcrypt = require("bcrypt")
 var validator = require('validator');
 
 const userModel = new mongoose.Schema({
-    username:{
-        type:String,
-        required:[true,"username is require"],
-        unique:[true,"username must be unique"],
-        maxLength:14,
-        minLength:4
+    username: {
+        type: String,
+        required: [true, "username is require"],
+        unique: [true, "username must be unique"],
+        maxLength: 14,
+        minLength: 4
     },
-    email:{
-       type: String,
+    email: {
+        type: String,
         required: [true, "email is required"],
         unique: true,
-        validate:{
-            validator: function(email){
+        validate: {
+            validator: function (email) {
                 return validator.isEmail(email)
             },
-            message: (obj)=>`${obj.value} is not correct`
+            message: (obj) => `${obj.value} is not correct`
         }
     },
-    password:{
-        type:String,
-        required:true,
-        minLength:8
+    password: {
+        type: String,
+        required: function () {
+            return !this.googleId; // Required ONLY if not using Google login
+        },
+        minLength: 8
+    },
+
+    googleId: {
+        type: String,
+        required: false,
+        unique: true,
+        sparse: true // Allows multiple users to have null googleId
     },
 
     passwordChangedAt: Date,
@@ -35,41 +44,50 @@ const userModel = new mongoose.Schema({
         default: false
     },
 
-    firstName:{
-        type:String,
-        required:true,
+    firstName: {
+        type: String,
+        required: true,
+
         minLength: 3,
         maxLength: 15,
     },
-    lastName:{
-        type:String,
-        required:true,
+    lastName: {
+        type: String,
+        required: true,
         minLength: 3,
         maxLength: 15,
     },
 
-    role:{
-        type:String,
-        enum:["admin", "user"],
-        default:"user"
+    role: {
+        type: String,
+        enum: ["admin", "user"],
+        default: "user"
 
     },
-    premium:{
-        type:Boolean,
-        default:false
+    premium: {
+        type: Boolean,
+        default: false
     },
-    avatar:{
+    avatar: {
         type: String,
         default: "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-image-182145777.jpg",
         required: false
     },
-    time:Date
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationCode: String,
+    verificationCodeExpires: Date,
+    time: Date
 })
 
 
-userModel.pre("save",async function(){
+userModel.pre("save", async function () {
+    if (!this.isModified("password")) return;
+
     let salt = await bcrypt.genSalt(10)
-    let hashedPassword = await bcrypt.hash(this.password , salt)
+    let hashedPassword = await bcrypt.hash(this.password, salt)
     this.password = hashedPassword
 })
 

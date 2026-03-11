@@ -1,11 +1,20 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
+const connectDB = require("./config/db");
+connectDB();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const dotenv = require('dotenv');
+
 
 let usersRoutes = require('./routes/user')
+const plantRoutes = require("./routes/plant");
+const fertilizerRoutes = require("./routes/fertilize");
+const diseaseRoutes = require("./routes/disease");
 
-dotenv.config();
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +22,9 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors()); 
 app.use('/users', usersRoutes)
+app.use("/plants", plantRoutes);
+app.use("/fertilizers", fertilizerRoutes);
+app.use("/diseases", diseaseRoutes);
 
 
 app.use((req, res)=>{

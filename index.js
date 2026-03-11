@@ -9,6 +9,9 @@ dotenv.config();
 
 let usersRoutes = require('./routes/user')
 const paymentRoutes = require('./routes/payment');
+const plantRoutes = require("./routes/plant");
+const fertilizerRoutes = require("./routes/fertilize");
+const diseaseRoutes = require("./routes/disease");
 
 const app = express();
 const passport = require('passport');
@@ -20,6 +23,9 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use(passport.initialize()); // Initialize Passport
 app.use('/users', usersRoutes)
+app.use("/plants", plantRoutes);
+app.use("/fertilizers", fertilizerRoutes);
+app.use("/diseases", diseaseRoutes);
 
 app.use('/users', usersRoutes);
 app.use('/api', paymentRoutes);

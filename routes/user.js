@@ -12,6 +12,7 @@ Router.post('/signup', registerUser)
 Router.post('/verify-email', verifyEmail)
 Router.post('/login', login)
 
+
 // Google OAuth routes .. Abo Sofyan
 Router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
 
@@ -26,7 +27,7 @@ Router.delete('/:id', authentication, authorization("admin", "user"), deleteUser
 
 Router.get('/', authentication, authorization("admin"), getUsersNames)
 Router.get('/:id', authentication, authorization("admin"), getUserById)
-Router.patch('update-user/:id', authentication, authorization("admin", "user"), updateUser)
+Router.patch('/update-user/:id', authentication, authorization("admin", "user"), updateUser)
 
 Router.patch("/forget-password", forgetPassword)
 Router.patch('/verify-password', verifyEmailAndResetPassword)

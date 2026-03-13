@@ -79,8 +79,14 @@ const userModel = new mongoose.Schema({
     },
     verificationCode: String,
     verificationCodeExpires: Date,
-    time: Date
-})
+    time: Date ,
+
+    // user Planets
+    myPlants: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Plant'
+    }] },
+    { timestamps: true });
 
 
 userModel.pre("save", async function () {
@@ -93,3 +99,4 @@ userModel.pre("save", async function () {
 
 let usersModel = mongoose.model("User", userModel, "users")
 module.exports = usersModel
+

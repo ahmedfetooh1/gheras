@@ -13,9 +13,12 @@ async function authentication (req, res, next){
 
         let decodedToken = await util.promisify(jwt.verify)(token, process.env.SECRET_KEY)
         console.log(decodedToken);
-
-        req.userId =decodedToken.id
-        req.role = decodedToken.role
+        req.user = {
+        id: decodedToken.id,
+        role: decodedToken.role
+    };
+        // req.userId =decodedToken.id
+        // req.role = decodedToken.role
 
         console.log(decodedToken)
 
@@ -33,7 +36,7 @@ let authorization = (...roles)=>{
 
     return (req, res, next)=>{
         if(!roles.includes(req.role)){
-            res.status(403).json({message: "You are not authorized to do this action"})
+            return res.status(403).json({message: "You are not authorized to do this action"})
         }
 
         next()

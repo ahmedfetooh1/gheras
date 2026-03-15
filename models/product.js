@@ -1,3 +1,5 @@
+const mongoose = require('mongoose')
+
 const productSchema = new mongoose.Schema(
 {
  name: { type: String, required: true },
@@ -32,7 +34,7 @@ const productSchema = new mongoose.Schema(
   }
  ],
 
- // لو عايز احذفه من المتجر ويفضل في الداتا بيز اتحكم فيها من هنا
+
  isActive: {
    type: Boolean,
    default: true

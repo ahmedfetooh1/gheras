@@ -1,7 +1,8 @@
 
-                const axios = require('axios');
+const axios = require('axios');
 const crypto = require('crypto');
 const Payment = require('../models/payment');
+const Product = require('../models/product');
 
 const PAYMOB_API_KEY = process.env.PAYMOB_API_KEY;
 const PAYMOB_CARD_INTEGRATION_ID = process.env.PAYMOB_CARD_INTEGRATION_ID;
@@ -63,7 +64,20 @@ async function createPaymentKey(authToken, orderId, amount, integrationId) {
 
 async function createPayment(req, res) {
     try {
-        const { amount } = req.body; 
+        const { productId, quantity = 1 } = req.body; 
+
+        if (!productId) {
+            return res.status(400).json({ success: false, error: "Product ID is required" });
+        }
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, error: "Product not found" });
+        }
+
+        const unitPrice = product.finalPrice || product.price;
+        const amount = unitPrice * quantity;
+
         const rawMethod = req.query.method || req.body.method || 'card';
         const method = String(rawMethod).toLowerCase().trim();
 

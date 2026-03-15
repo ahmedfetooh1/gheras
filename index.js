@@ -13,10 +13,12 @@ const plantRoutes = require("./routes/plant");
 const fertilizerRoutes = require("./routes/fertilize");
 const diseaseRoutes = require("./routes/disease");
 const dashboardRoutes = require("./routes/dashboard");
+const productRoutes = require('./routes/product')
+const categoryRoutes = require('./routes/category')
 
 
 // call error handling
-const globalError = require('./Middlewares/globalError');
+const globalError = require('./middlewares/globalError');
 const AppError = require('./utils/appError');
 
 const app = express();
@@ -42,6 +44,8 @@ app.use("/api/fertilizers", fertilizerRoutes);
 app.use("/api/diseases", diseaseRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/product', productRoutes);
+app.use('/api/category', categoryRoutes);
 
 
 // error not found  404 

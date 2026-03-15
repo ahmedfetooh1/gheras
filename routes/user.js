@@ -21,16 +21,20 @@ Router.get('/auth/google/callback',
     googleAuthCallback
 )
 
-Router.patch('/update-password', authentication, updatePassword)
-Router.delete('/:id', authentication, authorization("admin", "user"), deleteUser)
-
-
-Router.get('/', authentication, authorization("admin"), getUsersNames)
-Router.get('/:id', authentication, authorization("admin"), getUserById)
-Router.patch('/update-user/:id', authentication, authorization("admin", "user"), updateUser)
-
 Router.patch("/forget-password", forgetPassword)
 Router.patch('/verify-password', verifyEmailAndResetPassword)
+
+
+//أي مسار هيتكتب تحت السطر ده، الـ Express هيفهم أوتوماتيكياً إنه "محمي" ولازم يعدي على الـ Middleware بتاع الـ Authentication الأول.
+//لسا مظبطناش الرولز بالظبط عايزين نراجع عليها
+Router.use(authentication)
+
+Router.patch('/update-password', updatePassword)
+Router.delete('/:id', authorization("admin", "user"), deleteUser)
+
+Router.get('/', authorization("admin"), getUsersNames)
+Router.get('/:id', authorization("admin"), getUserById)
+Router.patch('/update-user/:id', authorization("admin", "user"), updateUser)
 
 
 

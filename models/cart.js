@@ -35,7 +35,7 @@ const cartSchema = new mongoose.Schema(
 
   items: [cartItemSchema],
 
-  //Subtotal + Shipping + Tax - Discounts = Total
+  //Subtotal + Shipping - Discounts = Total
   subtotal: {
     type: Number,
     default: 0

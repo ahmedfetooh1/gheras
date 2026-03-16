@@ -3,7 +3,6 @@ const Product = require("../models/product");
 
 const addToCart = async (req, res) => {
   try {
-
     const userId = req.user?.id || req.userId;
     const { productId, quantity = 1 } = req.body;
 
@@ -26,7 +25,7 @@ const addToCart = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
     if (quantity > product.stock) {
-      return res.status(400).json({ message: `الكمية المتاحة ${product.stock} فقط` });
+      return res.status(400).json({ message: ` Stock avalibale ${product.stock} ` });
     }
 
     let userCart = await Cart.findOne({ user: userId });

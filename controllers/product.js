@@ -4,8 +4,7 @@ const ALLOWED_PRODUCT_FIELDS = [
   "title", "description", "price", "discount", "stock",
   "category", "images", "isActive"
 ];
-
-// إنشاء منتج جديد (سماح بحقول معينة فقط - أمان)
+//create product
 const createProduct = async (req, res) => {
   try {
     const body = {};
@@ -19,7 +18,8 @@ const createProduct = async (req, res) => {
   }
 };
 
-// جلب كل المنتجات
+
+//get all products
 const getProducts = async (_req, res) => {
   try {
     const products = await Product.find();
@@ -29,7 +29,7 @@ const getProducts = async (_req, res) => {
   }
 };
 
-// جلب منتج واحد
+// =get product by id
 const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -42,7 +42,7 @@ const getProductById = async (req, res) => {
   }
 };
 
-// تحديث منتج (سماح بحقول معينة فقط - أمان)
+//update product
 const updateProduct = async (req, res) => {
   try {
     const body = {};
@@ -63,7 +63,7 @@ const updateProduct = async (req, res) => {
   }
 };
 
-// حذف منتج
+//delete product
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);

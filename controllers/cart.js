@@ -3,7 +3,6 @@ const Product = require("../models/product");
 
 const addToCart = async (req, res) => {
   try {
-
     const userId = req.user?.id || req.userId;
     const { productId, quantity = 1 } = req.body;
 
@@ -26,7 +25,7 @@ const addToCart = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
     if (quantity > product.stock) {
-      return res.status(400).json({ message: `الكمية المتاحة ${product.stock} فقط` });
+      return res.status(400).json({ message: `  ${product.stock} stock available` });
     }
 
     let userCart = await Cart.findOne({ user: userId });
@@ -73,18 +72,12 @@ const addToCart = async (req, res) => {
       }
 
       // calc total count, subtotal, discount and total cost
-      userCart.totalQty = userCart.items.reduce(
-        (sum, item) => sum + item.qty,
-        0
-      );
-      userCart.subtotal = userCart.items.reduce(
-        (sum, item) => sum + item.price * item.qty,
-        0
-      );
-      userCart.discountTotal = userCart.items.reduce(
-        (sum, item) => sum + (item.discount || 0) * item.qty,
-        0
-      );
+      userCart.totalQty = userCart.items.reduce((sum, item) => sum + item.qty,0);
+
+      userCart.subtotal = userCart.items.reduce((sum, item) => sum + item.price * item.qty,0);
+
+      userCart.discountTotal = userCart.items.reduce((sum, item) => sum + (item.discount || 0) * item.qty,0);
+
       userCart.totalCost = userCart.subtotal - userCart.discountTotal;
 
       await userCart.save();
@@ -132,18 +125,9 @@ const removeItem = async (req, res) => {
     }
 
     // إعادة حساب المجاميع بعد الحذف
-    userCart.totalQty = userCart.items.reduce(
-      (sum, item) => sum + item.qty,
-      0
-    );
-    userCart.subtotal = userCart.items.reduce(
-      (sum, item) => sum + item.price * item.qty,
-      0
-    );
-    userCart.discountTotal = userCart.items.reduce(
-      (sum, item) => sum + (item.discount || 0) * item.qty,
-      0
-    );
+    userCart.totalQty = userCart.items.reduce((sum, item) => sum + item.qty,0);
+    userCart.subtotal = userCart.items.reduce((sum, item) => sum + item.price * item.qty,0);
+    userCart.discountTotal = userCart.items.reduce((sum, item) => sum + (item.discount || 0) * item.qty,0);
     userCart.totalCost = userCart.subtotal - userCart.discountTotal;
 
     await userCart.save();

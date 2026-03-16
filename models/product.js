@@ -56,8 +56,7 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-// حساب السعر بعد الخصم تلقائي
+// Calculate finalPrice before saving
 productSchema.pre("save", function () {
   this.finalPrice = this.price - this.discount;
 });

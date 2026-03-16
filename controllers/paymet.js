@@ -78,13 +78,13 @@ async function createPayment(req, res) {
             return res.status(404).json({ success: false, error: 'Product not found' });
         }
 
-        // نجيب بيانات اليوزر من الداتابيز عشان نستخدمها في الفاتورة
+        // get data user from database
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, error: 'User not found' });
         }
 
-        // billing_data مبنية على بيانات اليوزر المسجلة
+        // billing_data  
         const billingData = {
             first_name: user.firstName || "Customer",
             last_name: user.lastName || "User",

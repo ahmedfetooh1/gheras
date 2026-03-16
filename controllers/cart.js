@@ -124,7 +124,7 @@ const removeItem = async (req, res) => {
         .json({ message: "Product not found in cart" });
     }
 
-    // إعادة حساب المجاميع بعد الحذف
+    //calc total count, subtotal, discount and total cost
     userCart.totalQty = userCart.items.reduce((sum, item) => sum + item.qty,0);
     userCart.subtotal = userCart.items.reduce((sum, item) => sum + item.price * item.qty,0);
     userCart.discountTotal = userCart.items.reduce((sum, item) => sum + (item.discount || 0) * item.qty,0);

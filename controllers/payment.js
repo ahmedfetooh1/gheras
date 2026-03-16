@@ -98,7 +98,8 @@ async function createPayment(req, res) {
             apartment: "Na",
         };
 
-        const unitPrice = product.price;
+        // استخدم السعر بعد الخصم لو موجود
+        const unitPrice = product.finalPrice ?? product.price;
         const rawAmount = unitPrice * quantity;
         const amountCents = Math.round(rawAmount * 100);
 
@@ -187,14 +188,33 @@ async function paymobWebhook(req, res) {
         const success = obj.success === true || obj.success === 'true';
 
         if (paymobOrderId) {
-            await Payment.findOneAndUpdate(
+            // حدّث الدفعه وارجع الدوكيومنت بعد التعديل
+            const paymentDoc = await Payment.findOneAndUpdate(
                 { paymobOrderId },
                 {
                     status: success ? 'paid' : 'failed',
                     paymobTransactionId,
                     rawWebhookData: req.body,
-                }
+                },
+                { new: true }
             );
+
+            // لو الدفعه اتأكدت (paid) امسح محتويات الكارت بتاع نفس اليوزر
+            if (paymentDoc && success && paymentDoc.user) {
+                const Cart = require('../models/cart');
+                await Cart.findOneAndUpdate(
+                    { user: paymentDoc.user },
+                    {
+                        $set: {
+                            items: [],
+                            totalQty: 0,
+                            subtotal: 0,
+                            discountTotal: 0,
+                            totalCost: 0,
+                        },
+                    }
+                );
+            }
         }
 
         return res.status(200).json({ success: true });

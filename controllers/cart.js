@@ -45,10 +45,12 @@ const addToCart = async (req, res) => {
           },
         ],
         totalQty: quantity,
-        subtotal: product.price * quantity,
+        // استخدم السعر بعد الخصم لو موجود
+        subtotal: (product.finalPrice ?? product.price) * quantity,
         discountTotal: (product.discount || 0) * quantity,
         totalCost:
-          product.price * quantity - (product.discount || 0) * quantity,
+          (product.finalPrice ?? product.price) * quantity -
+          (product.discount || 0) * quantity,
       });
     } else {
       const existingItem = userCart.items.find(
@@ -59,7 +61,7 @@ const addToCart = async (req, res) => {
         const newQty = existingItem.qty + quantity;
         if (newQty > product.stock) {
           return res.status(400).json({
-            message: `Only ${product.stock} items are available in stock, and you already have ${existingItem.qty} in your cart`,
+            message: ` ${product.stock} items available in stock, ${existingItem.qty} in your cart`,
           });
         }
         existingItem.qty = newQty;

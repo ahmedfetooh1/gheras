@@ -6,24 +6,33 @@ async function authentication (req, res, next){
     let {token} = req.headers
 
     if(!token){
-        res.status(401).json({message:"Please login first"})
+        return res.status(401).json({message:"Please login first"})
     }
 
     try{
 
         let decodedToken = await util.promisify(jwt.verify)(token, process.env.SECRET_KEY)
         console.log(decodedToken);
+<<<<<<< Updated upstream
 
         req.userId =decodedToken.id
         req.role = decodedToken.role
+=======
+        req.user = {
+        id: decodedToken.id,
+        role: decodedToken.role
+    }; 
+        // req.userId =decodedToken.id
+        // req.role = decodedToken.role
+>>>>>>> Stashed changes
 
         console.log(decodedToken)
 
-        next()
+        return next()
         
 
     }catch(error){
-        res.status(401).json({message:"you are not authenticated try again"})
+        return res.status(401).json({message:"you are not authenticated try again"})
     }
 
 

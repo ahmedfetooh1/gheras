@@ -9,7 +9,7 @@ const paymentSchema = new mongoose.Schema(
     },
     method: {
       type: String,
-      enum: ['card', 'wallet'],
+      enum: ['card'],
       required: true,
     },
     amountCents: {

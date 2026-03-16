@@ -4,7 +4,7 @@ require('../config/passport')
 
 const Router = express.Router()
 
-let { authentication, authorization } = require('../Middlewares/authentication')
+let { authentication, authorization } = require('../middlewares/authentication')
 let { registerUser, verifyEmail, getUsersNames, updateUser, deleteUser, login, updatePassword, forgetPassword, getUserById, verifyEmailAndResetPassword, googleAuthCallback } = require('../controllers/user')
 
 

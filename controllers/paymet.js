@@ -1,14 +1,14 @@
 
-                const axios = require('axios');
+const axios = require('axios');
 const crypto = require('crypto');
 const Payment = require('../models/payment');
+const Product = require('../models/product');
+const User = require('../models/user');
 
 const PAYMOB_API_KEY = process.env.PAYMOB_API_KEY;
 const PAYMOB_CARD_INTEGRATION_ID = process.env.PAYMOB_CARD_INTEGRATION_ID;
-const PAYMOB_WALLET_INTEGRATION_ID = process.env.PAYMOB_WALLET_INTEGRATION_ID;
 const PAYMOB_API_URL = process.env.PAYMOB_API_URL;
 const PAYMOB_CARD_IFRAME_ID = process.env.PAYMOB_CARD_IFRAME_ID;
-const PAYMOB_WALLET_IFRAME_ID = process.env.PAYMOB_WALLET_IFRAME_ID;
 const HMAC_KEY = process.env.HMAC_KEY;
 
 
@@ -20,13 +20,13 @@ async function getAuthToken() {
 }
 
 
-async function createOrder(authToken, amount) {
+async function createOrder(authToken, amountCents) {
     const response = await axios.post(
         `${PAYMOB_API_URL}/ecommerce/orders`,
         {
             auth_token: authToken,
             delivery_needed: "false",
-            amount_cents: amount * 100, 
+            amount_cents: amountCents,
             currency: "EGP",
             items: [],
         }
@@ -34,26 +34,21 @@ async function createOrder(authToken, amount) {
     return response.data.id; 
 }
 
-async function createPaymentKey(authToken, orderId, amount, integrationId) {
+async function createPaymentKey(
+    authToken,
+    orderId,
+    amountCents,
+    integrationId,
+    billingData
+) {
     const response = await axios.post(
         `${PAYMOB_API_URL}/acceptance/payment_keys`,
         {
             auth_token: authToken,
-            amount_cents: amount * 100,
+            amount_cents: amountCents,
             expiration: 3600,
             order_id: orderId,
-            billing_data: {
-                first_name: "Customer",
-                last_name: "User",
-                phone_number: "01000000000",
-                email: "customer@example.com",
-                country: "Na",
-                city: "Na",
-                street: "Na",
-                building: "Na",
-                floor: "Na",
-                apartment: "Na",
-            },
+            billing_data: billingData,
             currency: "EGP",
             integration_id: integrationId,
         }
@@ -63,34 +58,77 @@ async function createPaymentKey(authToken, orderId, amount, integrationId) {
 
 async function createPayment(req, res) {
     try {
-        const { amount } = req.body; 
-        const rawMethod = req.query.method || req.body.method || 'card';
-        const method = String(rawMethod).toLowerCase().trim();
+        const userId = req.user?.id || req.userId || null;
+        const { productId, quantity = 1 } = req.body;
 
-        let integrationId = PAYMOB_CARD_INTEGRATION_ID;
-        let iframeId = PAYMOB_CARD_IFRAME_ID;
-
-        if (method === 'wallet') {
-            integrationId = PAYMOB_WALLET_INTEGRATION_ID;
-            iframeId = PAYMOB_WALLET_IFRAME_ID;
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'User not authenticated' });
         }
 
+        if (!productId) {
+            return res.status(400).json({ success: false, error: 'productId is required' });
+        }
+
+        if (quantity <= 0) {
+            return res.status(400).json({ success: false, error: 'quantity must be greater than 0' });
+        }
+
+        const product = await Product.findById(productId);
+        if (!product || !product.isActive) {
+            return res.status(404).json({ success: false, error: 'Product not found' });
+        }
+
+        // نجيب بيانات اليوزر من الداتابيز عشان نستخدمها في الفاتورة
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        // billing_data مبنية على بيانات اليوزر المسجلة
+        const billingData = {
+            first_name: user.firstName || "Customer",
+            last_name: user.lastName || "User",
+            phone_number: "01000000000",
+            email: user.email || "customer@example.com",
+            country: "Na",
+            city: "Na",
+            street: "Na",
+            building: "Na",
+            floor: "Na",
+            apartment: "Na",
+        };
+
+        const unitPrice = product.price;
+        const rawAmount = unitPrice * quantity;
+        const amountCents = Math.round(rawAmount * 100);
+
         const authToken = await getAuthToken();
-        const orderId = await createOrder(authToken, amount);
-        const paymentKey = await createPaymentKey(authToken, orderId, amount, integrationId);
+        const orderId = await createOrder(authToken, amountCents);
+        const paymentKey = await createPaymentKey(
+            authToken,
+            orderId,
+            amountCents,
+            PAYMOB_CARD_INTEGRATION_ID,
+            billingData
+        );
 
         const paymentDoc = await Payment.create({
-            user: req.userId || null,
-            method,
-            amountCents: amount * 100,
+            user: userId,
+            method: 'card',
+            amountCents,
             currency: 'EGP',
             paymobOrderId: orderId,
             status: 'pending',
         });
 
-        const iframeUrl = `https://accept.paymob.com/api/acceptance/iframes/${iframeId}?payment_token=${paymentKey}`;
+        const iframeUrl = `https://accept.paymob.com/api/acceptance/iframes/${PAYMOB_CARD_IFRAME_ID}?payment_token=${paymentKey}`;
 
-        res.status(200).json({ success: true, iframeUrl, paymentId: paymentDoc._id });
+        res.status(200).json({
+            success: true,
+            iframeUrl,
+            paymentId: paymentDoc._id,
+            amountCents,
+        });
     } catch (error) {
         console.error("Error creating payment:", error.message);
         res.status(500).json({ success: false, error: error.message });

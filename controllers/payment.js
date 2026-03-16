@@ -170,19 +170,25 @@ function verifyPaymobHmac(hmac, body) {
 
 async function paymobWebhook(req, res) {
     try {
-        const hmac = req.query.hmac || req.body.hmac;
+        // Paymob webhook is usually POST. Allow GET for quick manual check.
+        if (req.method === 'GET') {
+            return res.status(200).json({ success: true, message: 'paymob webhook endpoint is reachable' });
+        }
+
+        const body = req.body || {};
+        const hmac = (req.query && req.query.hmac) || body.hmac;
         if (!hmac) {
             return res.status(400).json({ success: false, error: 'Missing hmac' });
         }
 
-        const isValid = verifyPaymobHmac(hmac, req.body);
+        const isValid = verifyPaymobHmac(hmac, body);
         if (!isValid) {
             return res.status(403).json({ success: false, error: 'Invalid HMAC' });
         }
 
-        console.log('Done Paymob webhook verified:', JSON.stringify(req.body));
+        console.log('Done Paymob webhook verified:', JSON.stringify(body));
 
-        const obj = req.body.obj || {};
+        const obj = body.obj || {};
         const paymobOrderId = obj.order && obj.order.id ? obj.order.id : undefined;
         const paymobTransactionId = obj.id;
         const success = obj.success === true || obj.success === 'true';
@@ -194,7 +200,7 @@ async function paymobWebhook(req, res) {
                 {
                     status: success ? 'paid' : 'failed',
                     paymobTransactionId,
-                    rawWebhookData: req.body,
+                    rawWebhookData: body,
                 },
                 { new: true }
             );

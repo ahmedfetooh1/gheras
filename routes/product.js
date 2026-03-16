@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+
 const {
   createProduct,
   getProducts,
@@ -7,23 +8,21 @@ const {
   updateProduct,
   deleteProduct,
 } = require("../controllers/product");
-const { authentication } = require("../middlewares/authentication");
+const { authentication } = require("../Middlewares/authentication");
 
-// عرض كل المنتجات
+// get all products
 router.get("/", getProducts);
 
-// عرض منتج واحد
+// get single product
 router.get("/:id", getProductById);
 
-// إضافة منتج جديد
+// create product
 router.post("/", authentication, createProduct);
 
-// تعديل منتج
+// update product
 router.put("/:id", authentication, updateProduct);
 
-// حذف منتج
+// delete product
 router.delete("/:id", authentication, deleteProduct);
 
 module.exports = router;
-
-

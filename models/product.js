@@ -56,10 +56,10 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
 // Calculate finalPrice before saving
 productSchema.pre("save", function () {
   this.finalPrice = this.price - this.discount;
 });
 
 module.exports = mongoose.model("Product", productSchema);
-

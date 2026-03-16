@@ -10,9 +10,20 @@ const categorySchema = new mongoose.Schema(
       maxlength: 50,
     },
 
+    // Optional slug for SEO-friendly URLs
+    slug: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
     description: {
       type: String,
       maxlength: 500,
+    },
+
+    image: {
+      type: String,
     },
 
     isActive: {
@@ -26,4 +37,3 @@ const categorySchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Category", categorySchema);
-

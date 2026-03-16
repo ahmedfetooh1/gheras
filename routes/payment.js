@@ -1,6 +1,6 @@
 const express = require('express');
-const { createPayment, paymobWebhook } = require('../controllers/paymet');
-const { authentication } = require('../Middlewares/authentication');
+const { createPayment, paymobWebhook } = require('../controllers/payment');
+const { authentication } = require('../middlewares/authentication');
 
 const router = express.Router();
 

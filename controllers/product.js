@@ -1,10 +1,17 @@
 const Product = require("../models/product");
 
 const ALLOWED_PRODUCT_FIELDS = [
-  "title", "description", "price", "discount", "stock",
-  "category", "images", "isActive"
+  "title",
+  "description",
+  "price",
+  "discount",
+  "stock",
+  "category",
+  "images",
+  "isActive",
 ];
-//create product
+
+// create product
 const createProduct = async (req, res) => {
   try {
     const body = {};
@@ -18,8 +25,7 @@ const createProduct = async (req, res) => {
   }
 };
 
-
-//get all products
+// get all products
 const getProducts = async (_req, res) => {
   try {
     const products = await Product.find();
@@ -29,7 +35,7 @@ const getProducts = async (_req, res) => {
   }
 };
 
-// =get product by id
+// get product by id
 const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -42,18 +48,17 @@ const getProductById = async (req, res) => {
   }
 };
 
-//update product
+// update product
 const updateProduct = async (req, res) => {
   try {
     const body = {};
     ALLOWED_PRODUCT_FIELDS.forEach((key) => {
       if (req.body[key] !== undefined) body[key] = req.body[key];
     });
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      body,
-      { new: true, runValidators: true }
-    );
+    const product = await Product.findByIdAndUpdate(req.params.id, body, {
+      new: true,
+      runValidators: true,
+    });
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -63,7 +68,7 @@ const updateProduct = async (req, res) => {
   }
 };
 
-//delete product
+// delete product
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
@@ -83,5 +88,3 @@ module.exports = {
   updateProduct,
   deleteProduct,
 };
-
-

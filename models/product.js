@@ -15,7 +15,9 @@ const productSchema = new mongoose.Schema(
 
  discountPercent: {
    type: Number,
-   default: 0
+   default: 0,
+   min: 0,
+   max: 100
  },
 
  finalPrice: Number,
@@ -43,5 +45,19 @@ const productSchema = new mongoose.Schema(
 },
 { timestamps: true }
 )
+
+// auto-calculate finalPrice before saving
+// productSchema.pre('save', function (next) {
+//   this.finalPrice = this.price - (this.price * this.discountPercent / 100)
+//   next()
+// })
+
+productSchema.pre('save', function () {
+  if(this.discountPercent){
+    this.finalPrice = this.price - (this.price * this.discountPercent / 100);
+  }else{
+    this.finalPrice = this.price;
+  }
+});
 
 module.exports = mongoose.model("Product", productSchema);

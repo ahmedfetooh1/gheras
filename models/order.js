@@ -57,15 +57,24 @@ const orderSchema = new mongoose.Schema({
 
   paymentMethod: {
     type: String,
-    enum: ["cash", "card"],
+    enum: ["cash", "card", "wallet"],
     default: "cash"
   },
 
+  payment: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Payment"
+  },
+
+  phone:{
+    type: String,
+    required:true
+  },
+  
   address: {
-    city: String,
-    street: String,
-    phone: String
-  }
+  city: { type: String, required: true },
+  street: { type: String, required: true }
+}
 
 }, { timestamps: true })
 

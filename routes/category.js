@@ -1,12 +1,16 @@
 const express = require('express');
 const router = express.Router();
+
+const { authentication, authorization } = require("../middlewares/authentication");
 const category = require('../controllers/category')
 
-
-router.post("/", category.createCategory)
+// public routes
 router.get("/", category.getCategories)
-router.patch("/:id", category.getCategoryById)
-router.get("/", category.getCategoryById)
+router.get("/:id", category.getCategoryById)
 
+// admin routes
+router.post("/", authentication, authorization("admin"), category.createCategory)
+router.patch("/:id", authentication, authorization("admin"), category.updateCategory)
+router.delete("/:id", authentication, authorization("admin"), category.deleteCategory)
 
 module.exports = router

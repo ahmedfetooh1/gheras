@@ -1,87 +1,60 @@
-const categorySchema = require('../models/category')
+const Category = require('../models/category')
+const catchAsync = require('../utils/catchAsync')
+const AppError = require('../utils/appError')
 
 // إنشاء كاتيجوري
-let createCategory = async (req, res) => {
-  try {
+const createCategory = catchAsync(async (req, res, next) => {
+  const category = await Category.create(req.body)
 
-    const category = await categorySchema.create(req.body)
-
-    res.status(201).json({
-      message: "Category created successfully",
-      category
-    })
-
-  } catch (error) {
-    res.status(400).json({ message: error.message })
-  }
-}
+  res.status(201).json({
+    status: "success",
+    message: "Category created successfully",
+    data: category
+  })
+})
 
 // جلب كل الكاتيجوري
-let getCategories = async (req, res) => {
-  try {
+const getCategories = catchAsync(async (req, res, next) => {
+  const categories = await Category.find()
 
-    const categories = await categorySchema.find()
-
-    res.json(categories)
-
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
+  res.status(200).json({ status: "success", results: categories.length, data: categories })
+})
 
 // جلب كاتيجوري واحدة
-let getCategoryById = async (req, res) => {
-  try {
+const getCategoryById = catchAsync(async (req, res, next) => {
+  const category = await Category.findById(req.params.id)
 
-    const category = await categorySchema.findById(req.params.id)
-
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" })
-    }
-
-    res.json(category)
-
-  } catch (error) {
-    res.status(500).json({ message: error.message })
+  if (!category) {
+    return next(new AppError("Category not found", 404))
   }
-}
+
+  res.status(200).json({ status: "success", data: category })
+})
 
 // تعديل كاتيجوري
-let updateCategory = async (req, res) => {
-  try {
+const updateCategory = catchAsync(async (req, res, next) => {
+  const category = await Category.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true, runValidators: true }
+  )
 
-    const category = await categorySchema.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    )
-
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" })
-    }
-
-    res.json(category)
-
-  } catch (error) {
-    res.status(500).json({ message: error.message })
+  if (!category) {
+    return next(new AppError("Category not found", 404))
   }
-}
+
+  res.status(200).json({ status: "success", data: category })
+})
 
 // حذف كاتيجوري
-let deleteCategory = async (req, res) => {
-  try {
+const deleteCategory = catchAsync(async (req, res, next) => {
+  const category = await Category.findByIdAndDelete(req.params.id)
 
-    const category = await categorySchema.findByIdAndDelete(req.params.id)
-
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" })
-    }
-
-    res.json({ message: "Category deleted successfully" })
-
-  } catch (error) {
-    res.status(500).json({ message: error.message })
+  if (!category) {
+    return next(new AppError("Category not found", 404))
   }
-}
 
-module.exports = {createCategory,getCategories,getCategoryById,updateCategory,deleteCategory}
+  res.status(200).json({ status: "success", message: "Category deleted successfully" })
+})
+
+module.exports = { createCategory, getCategories, getCategoryById, updateCategory, deleteCategory }

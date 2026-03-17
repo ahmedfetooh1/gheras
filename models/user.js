@@ -90,7 +90,7 @@ const userModel = new mongoose.Schema({
 
 
 userModel.pre("save", async function () {
-    if (!this.isModified("password")) return;
+    if (!this.isModified("password") || !this.password) return;
 
     let salt = await bcrypt.genSalt(10)
     let hashedPassword = await bcrypt.hash(this.password, salt)

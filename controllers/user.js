@@ -191,7 +191,7 @@ let updatePassword = async (req, res) => {
             return res.status(400).json({ status: "Error", message: "please enter current or password" })
         }
 
-        let user = await userModel.findById(req.userId)
+        let user = await userModel.findById(req.user.id)
 
         if (!user) {
             return res.status(404).json({ status: "Error", message: "inValid please login first" })

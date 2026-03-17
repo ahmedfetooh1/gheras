@@ -3,6 +3,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const Payment = require('../models/payment');
 const Product = require('../models/product');
+const Order = require('../models/order');
 
 const PAYMOB_API_KEY = process.env.PAYMOB_API_KEY;
 const PAYMOB_CARD_INTEGRATION_ID = process.env.PAYMOB_CARD_INTEGRATION_ID;
@@ -63,65 +64,51 @@ async function createPaymentKey(authToken, orderId, amount, integrationId) {
 }
 
 async function createPayment(req, res) {
-    try {
-        const { productId, quantity = 1 } = req.body; 
+  try {
+    const { orderId, method: rawMethod = 'card' } = req.body;
 
-        if (!productId) {
-            return res.status(400).json({ success: false, error: "Product ID is required" });
-        }
-
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ success: false, error: "Product not found" });
-        }
-
-        const unitPrice = product.finalPrice || product.price;
-        const amount = unitPrice * quantity;
-
-        const rawMethod = req.query.method || req.body.method || 'card';
-        const method = String(rawMethod).toLowerCase().trim();
-
-        let integrationId = PAYMOB_CARD_INTEGRATION_ID;
-        let iframeId = PAYMOB_CARD_IFRAME_ID;
-
-        if (method === 'wallet') {
-            integrationId = PAYMOB_WALLET_INTEGRATION_ID;
-            iframeId = PAYMOB_WALLET_IFRAME_ID;
-        }
-
-        const authToken = await getAuthToken();
-        const orderId = await createOrder(authToken, amount);
-        const paymentKey = await createPaymentKey(authToken, orderId, amount, integrationId);
-
-        const paymentDoc = await Payment.create({
-            user: req.userId || null,
-            method,
-            amountCents: amount * 100,
-            currency: 'EGP',
-            paymobOrderId: orderId,
-            status: 'pending',
-        });
-
-        const iframeUrl = `https://accept.paymob.com/api/acceptance/iframes/${iframeId}?payment_token=${paymentKey}`;
-
-        res.status(200).json({ success: true, iframeUrl, paymentId: paymentDoc._id });
-    } catch (error) {
-        console.error("Error creating payment:", error.message);
-        res.status(500).json({ success: false, error: error.message });
+    if (!orderId) {
+      return res.status(400).json({ success: false, error: "Order ID is required" });
     }
-}
 
-function flattenObject(obj, prefix = '', result = {}) {
-    Object.keys(obj || {}).forEach((key) => {
-        const value = obj[key];
-        const newKey = prefix ? `${prefix}.${key}` : key;
-        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-            flattenObject(value, newKey, result);
-        } else {
-            result[newKey] = value;
-        }
+    // جيب الـ Order مع الـ Payment المرتبط
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, error: "Order not found" });
+    }
+
+    // تأكد إن الـ order بتاعت الـ user ده
+    if (order.user.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, error: "Unauthorized" });
+    }
+
+    const method = String(rawMethod).toLowerCase().trim();
+    const amount = order.total; // بالجنيه
+
+    let integrationId = method === 'wallet' 
+      ? PAYMOB_WALLET_INTEGRATION_ID 
+      : PAYMOB_CARD_INTEGRATION_ID;
+    let iframeId = method === 'wallet' 
+      ? PAYMOB_WALLET_IFRAME_ID 
+      : PAYMOB_CARD_IFRAME_ID;
+
+    const authToken = await getAuthToken();
+    const paymobOrderId = await createOrder(authToken, amount);
+    const paymentKey = await createPaymentKey(authToken, paymobOrderId, amount, integrationId);
+
+    // حدّث الـ Payment الموجود بدل ما تنشئ واحد جديد
+    await Payment.findByIdAndUpdate(order.payment, {
+      paymobOrderId,
+      method,
     });
-    return result;
+
+    const iframeUrl = `https://accept.paymob.com/api/acceptance/iframes/${iframeId}?payment_token=${paymentKey}`;
+
+    res.status(200).json({ success: true, iframeUrl });
+  } catch (error) {
+    console.error("Error creating payment:", error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
 }
 
 function verifyPaymobHmac(hmac, body) {
@@ -129,55 +116,108 @@ function verifyPaymobHmac(hmac, body) {
         return false;
     }
 
-    const flat = flattenObject(body);
-    delete flat.hmac;
+    const obj = body.obj;
+    if (!obj) return false;
 
-    const keys = Object.keys(flat).sort();
-    const concatenated = keys.map((k) => String(flat[k] ?? '')).join('');
+    // Ordered fields strictly per Paymob documentation
+    const expectedKeys = [
+        "amount_cents",
+        "created_at",
+        "currency",
+        "error_occured",
+        "has_parent_transaction",
+        "id",
+        "integration_id",
+        "is_3d_secure",
+        "is_auth",
+        "is_capture",
+        "is_refunded",
+        "is_standalone_payment",
+        "is_voided",
+        "order.id",
+        "owner",
+        "pending",
+        "source_data.pan",
+        "source_data.sub_type",
+        "source_data.type",
+        "success"
+    ];
+
+    let concatenatedString = "";
+
+    expectedKeys.forEach((key) => {
+        const keysArray = key.split(".");
+        let value = obj;
+        
+        keysArray.forEach((k) => {
+            if (value && typeof value === 'object') {
+                value = value[k];
+            } else {
+                value = undefined;
+            }
+        });
+
+        // Add true/false boolean or value
+        if (value !== undefined && value !== null) {
+            if(typeof value === 'boolean') {
+                concatenatedString += value ? "true" : "false";
+            } else {
+                concatenatedString += value.toString();
+            }
+        }
+    });
 
     const computed = crypto
-        .createHmac('sha512', HMAC_KEY)
-        .update(concatenated)
-        .digest('hex');
+        .createHmac("sha512", HMAC_KEY)
+        .update(concatenatedString)
+        .digest("hex");
 
     return computed === hmac;
 }
 
 async function paymobWebhook(req, res) {
-    try {
-        const hmac = req.query.hmac || req.body.hmac;
-        if (!hmac) {
-            return res.status(400).json({ success: false, error: 'Missing hmac' });
-        }
-
-        const isValid = verifyPaymobHmac(hmac, req.body);
-        if (!isValid) {
-            return res.status(403).json({ success: false, error: 'Invalid HMAC' });
-        }
-
-        console.log('Done Paymob webhook verified:', JSON.stringify(req.body));
-
-        const obj = req.body.obj || {};
-        const paymobOrderId = obj.order && obj.order.id ? obj.order.id : undefined;
-        const paymobTransactionId = obj.id;
-        const success = obj.success === true || obj.success === 'true';
-
-        if (paymobOrderId) {
-            await Payment.findOneAndUpdate(
-                { paymobOrderId },
-                {
-                    status: success ? 'paid' : 'failed',
-                    paymobTransactionId,
-                    rawWebhookData: req.body,
-                }
-            );
-        }
-
-        return res.status(200).json({ success: true });
-    } catch (error) {
-        console.error('Error in Paymob webhook:', error.message);
-        return res.status(500).json({ success: false, error: error.message });
+  try {
+    const hmac = req.query.hmac;
+    if (!hmac) {
+      return res.status(400).json({ success: false, error: 'Missing hmac' });
     }
+
+    const isValid = verifyPaymobHmac(hmac, req.body);
+    if (!isValid) {
+      return res.status(403).json({ success: false, error: 'Invalid HMAC' });
+    }
+
+    const obj = req.body.obj || {};
+    const paymobOrderId = obj.order?.id;
+    const paymobTransactionId = obj.id;
+    const success = obj.success === true || obj.success === 'true';
+
+    if (paymobOrderId) {
+      // 1. حدّث الـ Payment
+      const payment = await Payment.findOneAndUpdate(
+        { paymobOrderId },
+        {
+          status: success ? 'paid' : 'failed',
+          paymobTransactionId,
+          rawWebhookData: req.body,
+        },
+        { new: true }
+      );
+
+      // 2. ✅ حدّث الـ Order المرتبط
+      if (payment) {
+        await Order.findOneAndUpdate(
+          { payment: payment._id },
+          { status: success ? 'processing' : 'cancelled' }
+        );
+      }
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error in Paymob webhook:', error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  }
 }
 
 module.exports = { createPayment, paymobWebhook };

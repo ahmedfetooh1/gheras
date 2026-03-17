@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const blogController = require("../controllers/blogController");
-const upload = require("../Middlewares/upload");
+const upload = require("../middlewares/upload");
 
-const { authentication, authorization } = require("../Middlewares/authentication");
+const { authentication, authorization } = require("../middlewares/authentication");
 
 // Create Blog (Admin only)
 router.post(

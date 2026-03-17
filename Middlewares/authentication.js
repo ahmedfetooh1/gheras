@@ -6,7 +6,7 @@ async function authentication (req, res, next){
     let {token} = req.headers
 
     if(!token){
-        res.status(401).json({message:"Please login first"})
+       return res.status(401).json({message:"Please login first"})
     }
 
     try{

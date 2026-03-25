@@ -1,14 +1,13 @@
 const Plant = require('../models/plant');
 const Disease = require('../models/disease');
 const Fertilizer = require('../models/fertilizer');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
-//يجب اضافة الامراض والأسمده اولا ثم اضافة النبته يا اما نضيف ملف جي سون فيه كل ده جاهز في الداتا بيز
-
-exports.getAllPlants = async (req, res) => {
-    try {
+// 1. Get All Plants (With Pagination)
+exports.getAllPlants = catchAsync(async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 15;
-    //لو إنت في صفحة 2 والـ limit هو 10، المعادلة هتكون: (2 - 1) * 15 = 15. يعني "فوت أول 15 وهات من رقم 11".
     const skip = (page - 1) * limit;
 
     const plants = await Plant.find()
@@ -18,20 +17,17 @@ exports.getAllPlants = async (req, res) => {
         .skip(skip)
         .limit(limit);
 
-    //ده بيجيب العدد الإجمالي عشان نحسب منه عدد الصفحات
     const total = await Plant.countDocuments();
 
-    res.json({
+    res.status(200).json({
+        status: "success",
         page,
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-        data: plants
+        data: { plants }
     });
-    } catch (error) {
-    res.status(500).json({ message: error.message });
-    }
-};
+});
 
 // 2. Get Plant By ID
 exports.getPlantById = catchAsync(async (req, res, next) => {
@@ -51,22 +47,12 @@ exports.getPlantById = catchAsync(async (req, res, next) => {
 
 // 3. Create Plant (With Mutual Relationship Sync)
 exports.createPlant = catchAsync(async (req, res, next) => {
-    const savedPlant = await Plant.create(req.body);
-
-    if (req.body.diseases?.length) {
-        await Disease.updateMany(
-            { _id: { $in: req.body.diseases } },
-            { $addToSet: { affectedPlants: savedPlant._id } }
-        );
-    }
-
-exports.createPlant = async (req, res) => {
-    try {
+    // Handle image uploads if they exist
     if (req.files && req.files.length > 0) {
         req.body.images = req.files.map(file => "uploads/" + file.filename);
     }
-    const plant = new Plant(req.body);
-    const savedPlant = await plant.save();
+
+    const savedPlant = await Plant.create(req.body);
 
     // Bidirectional update: Add this Plant to associated Diseases
     if (savedPlant.diseases && savedPlant.diseases.length > 0) {
@@ -84,38 +70,70 @@ exports.createPlant = async (req, res) => {
         );
     }
 
-    res.status(201).json(savedPlant);
-    } catch (error) {
-    res.status(400).json({ message: error.message });
-    }
-};
+    res.status(201).json({
+        status: "success",
+        data: { plant: savedPlant }
+    });
+});
 
-exports.updatePlant = async (req, res) => {
-    try {
+// 4. Update Plant (With Relationship Sync)
+exports.updatePlant = catchAsync(async (req, res, next) => {
+    // Handle image uploads if they exist
     if (req.files && req.files.length > 0) {
         req.body.images = req.files.map(file => "uploads/" + file.filename);
     }
-    const plant = await Plant.findByIdAndUpdate(
+
+    const oldPlant = await Plant.findById(req.params.id);
+    if (!oldPlant) {
+        return next(new AppError("No plant found with that ID", 404));
+    }
+
+    const updatedPlant = await Plant.findByIdAndUpdate(
         req.params.id,
         req.body,
-        { new: true }
+        { new: true, runValidators: true }
     );
 
-    if (!plant) {
-        return res.status(404).json({ message: "Plant not found" });
+    // Sync Bidirectional Relationships for Diseases if updated
+    if (req.body.diseases) {
+        // Remove plant from previous diseases' affectedPlants
+        await Disease.updateMany(
+            { affectedPlants: updatedPlant._id },
+            { $pull: { affectedPlants: updatedPlant._id } }
+        );
+        // Add plant to new diseases' affectedPlants
+        await Disease.updateMany(
+            { _id: { $in: updatedPlant.diseases } },
+            { $addToSet: { affectedPlants: updatedPlant._id } }
+        );
     }
 
-    res.json(plant);
-    } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Sync Bidirectional Relationships for Fertilizers if updated
+    if (req.body.fertilizers) {
+        // Remove plant from previous fertilizers' suitablePlants
+        await Fertilizer.updateMany(
+            { suitablePlants: updatedPlant._id },
+            { $pull: { suitablePlants: updatedPlant._id } }
+        );
+        // Add plant to new fertilizers' suitablePlants
+        await Fertilizer.updateMany(
+            { _id: { $in: updatedPlant.fertilizers } },
+            { $addToSet: { suitablePlants: updatedPlant._id } }
+        );
     }
 
-exports.deletePlant = async (req, res) => {
-    try {
+    res.status(200).json({
+        status: "success",
+        data: { plant: updatedPlant }
+    });
+});
+
+// 5. Delete Plant (With Relationship Cleanup)
+exports.deletePlant = catchAsync(async (req, res, next) => {
     const deletedPlant = await Plant.findByIdAndDelete(req.params.id);
 
     if (!deletedPlant) {
-        return res.status(404).json({ message: "Plant not found" });
+        return next(new AppError("No plant found with that ID", 404));
     }
 
     // Bidirectional cleanup: Remove this Plant from associated Diseases
@@ -128,32 +146,6 @@ exports.deletePlant = async (req, res) => {
     await Fertilizer.updateMany(
         { suitablePlants: deletedPlant._id },
         { $pull: { suitablePlants: deletedPlant._id } }
-    );
-
-    res.status(200).json({
-        status: "success",
-        data: { plant }
-    });
-});
-
-// 5. Delete Plant (With Relationship Cleanup)
-exports.deletePlant = catchAsync(async (req, res, next) => {
-    const plant = await Plant.findByIdAndDelete(req.params.id);
-
-    if (!plant) {
-        return next(new AppError("No plant found with that ID", 404));
-    }
-
-    
-    await Disease.updateMany(
-        { affectedPlants: plant._id },
-        { $pull: { affectedPlants: plant._id } }
-    );
-
-    
-    await Fertilizer.updateMany(
-        { suitablePlants: plant._id },
-        { $pull: { suitablePlants: plant._id } }
     );
 
     res.status(204).json({

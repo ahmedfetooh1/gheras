@@ -19,6 +19,9 @@ const categoryRoutes = require('./routes/category')
 const blogRoutes = require("./routes/blogRoutes");
 const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/order');
+const postRoutes = require('./routes/post');
+const commentRoutes = require('./routes/comment');
+const adminDashboardRoutes = require('./routes/adminDashboard');
 
 
 // call error handling
@@ -53,6 +56,9 @@ app.use('/api/category', categoryRoutes);
 app.use("/api", blogRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/admin-dashboard', adminDashboardRoutes);
 
 
 

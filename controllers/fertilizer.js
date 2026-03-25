@@ -1,8 +1,10 @@
 const Fertilizer = require("../models/fertilizer");
 const Plant = require("../models/plant");
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/appError");
 
-exports.getAllFertilizers = async (req, res) => {
-    try {
+// 1. Get All Fertilizers
+exports.getAllFertilizers = catchAsync(async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -15,58 +17,65 @@ exports.getAllFertilizers = async (req, res) => {
 
     const total = await Fertilizer.countDocuments();
 
-    res.json({
+    res.status(200).json({
+        status: "success",
         page,
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-        data: fertilizers
+        data: { fertilizers }
     });
-    } catch (error) {
-    res.status(500).json({ message: error.message });
-    }
-};
+});
 
 // 2. Get Fertilizer By ID
 exports.getFertilizerById = catchAsync(async (req, res, next) => {
     const fertilizer = await Fertilizer.findById(req.params.id)
-        .populate("suitablePlants", "name image");
+        .populate("suitablePlants", "commonName images");
 
     if (!fertilizer) {
-        return res.status(404).json({ message: "Fertilizer not found" });
+        return next(new AppError("No fertilizer found with that ID", 404));
     }
 
-    res.json(fertilizer);
-    } catch (error) {
-    res.status(500).json({ message: error.message });
-    }
+    res.status(200).json({
+        status: "success",
+        data: { fertilizer }
+    });
+});
 
-exports.createFertilizer = async (req, res) => {
-    try {
+// 3. Create Fertilizer (With Mutual Relationship Sync)
+exports.createFertilizer = catchAsync(async (req, res, next) => {
     if (req.file) {
         req.body.image = "uploads/" + req.file.filename;
     }
-    const fertilizer = new Fertilizer(req.body);
-    const saved = await fertilizer.save();
+    
+    const savedFertilizer = await Fertilizer.create(req.body);
 
-    if (saved.suitablePlants && saved.suitablePlants.length > 0) {
+    // Bidirectional update: Add this Fertilizer to associated Plants
+    if (savedFertilizer.suitablePlants && savedFertilizer.suitablePlants.length > 0) {
         await Plant.updateMany(
-            { _id: { $in: saved.suitablePlants } },
-            { $addToSet: { fertilizers: saved._id } }
+            { _id: { $in: savedFertilizer.suitablePlants } },
+            { $addToSet: { fertilizers: savedFertilizer._id } }
         );
     }
 
-    res.status(201).json(saved);
-    } catch (error) {
-    res.status(400).json({ message: error.message });
-    }
+    res.status(201).json({
+        status: "success",
+        data: { fertilizer: savedFertilizer }
+    });
+});
 
-exports.updateFertilizer = async (req, res) => {
-    try {
+// 4. Update Fertilizer (With Relationship Sync)
+exports.updateFertilizer = catchAsync(async (req, res, next) => {
     if (req.file) {
         req.body.image = "uploads/" + req.file.filename;
     }
-    const fertilizer = await Fertilizer.findByIdAndUpdate(
+
+    const oldFertilizer = await Fertilizer.findById(req.params.id);
+    if (!oldFertilizer) {
+        return next(new AppError("No fertilizer found with that ID", 404));
+    }
+
+    const updatedFertilizer = await Fertilizer.findByIdAndUpdate(
         req.params.id,
         req.body,
         { 
@@ -75,39 +84,40 @@ exports.updateFertilizer = async (req, res) => {
         }
     );
 
-    if (!fertilizer) {
-        return res.status(404).json({ message: "Fertilizer not found" });
+    // Sync Bidirectional Relationships if suitablePlants updated
+    if (req.body.suitablePlants) {
+        await Plant.updateMany(
+            { fertilizers: updatedFertilizer._id },
+            { $pull: { fertilizers: updatedFertilizer._id } }
+        );
+        await Plant.updateMany(
+            { _id: { $in: updatedFertilizer.suitablePlants } },
+            { $addToSet: { fertilizers: updatedFertilizer._id } }
+        );
     }
 
-    res.json(fertilizer);
-    } catch (error) {
-    res.status(500).json({ message: error.message });
-    }
+    res.status(200).json({
+        status: "success",
+        data: { fertilizer: updatedFertilizer }
+    });
+});
 
-exports.deleteFertilizer = async (req, res) => {
-    try {
+// 5. Delete Fertilizer (With Relationship Cleanup)
+exports.deleteFertilizer = catchAsync(async (req, res, next) => {
     const deletedFertilizer = await Fertilizer.findByIdAndDelete(req.params.id);
 
     if (!deletedFertilizer) {
-        return res.status(404).json({ message: "Fertilizer not found" });
+        return next(new AppError("No fertilizer found with that ID", 404));
     }
 
+    // Bidirectional cleanup: Remove this Fertilizer from associated Plants
     await Plant.updateMany(
         { fertilizers: deletedFertilizer._id },
         { $pull: { fertilizers: deletedFertilizer._id } }
     );
 
-    if (!fertilizer) {
-        return next(new AppError("No fertilizer found with that ID", 404));
-    }
-
-    await Plant.updateMany(
-        { fertilizers: fertilizer._id },
-        { $pull: { fertilizers: fertilizer._id } }
-    );
-
     res.status(204).json({
         status: "success",
-        message: "Fertilizer deleted and references removed"
+        data: null
     });
 });

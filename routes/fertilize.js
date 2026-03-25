@@ -5,14 +5,13 @@ const upload = require("../middlewares/upload");
 
 const controller = require("../controllers/fertilizer");
 
-router.get("/", controller.getAllFertilizers);
+const { authentication, authorization } = require("../middlewares/authentication");
 
+router.get("/", controller.getAllFertilizers);
 router.get("/:id", controller.getFertilizerById);
 
-router.post("/", upload.single("image"), controller.createFertilizer);
-
-router.put("/:id", upload.single("image"), controller.updateFertilizer);
-
-router.delete("/:id", controller.deleteFertilizer);
+router.post("/", authentication, authorization("admin"), upload.single("image"), controller.createFertilizer);
+router.put("/:id", authentication, authorization("admin"), upload.single("image"), controller.updateFertilizer);
+router.delete("/:id", authentication, authorization("admin"), controller.deleteFertilizer);
 
 module.exports = router;

@@ -22,7 +22,7 @@ const plantSchema = new mongoose.Schema({
 
     waterNeeds: {
     level: String,
-    frequency: String
+    frequency: Number
     },
 
     nutritionalValue: String,
@@ -42,6 +42,12 @@ const plantSchema = new mongoose.Schema({
     min: Number,
     max: Number,
     unit: { type: String, default: "cm" }
+    }],
+
+    growthStages: [{
+        name: { type: String, required: true },
+        durationInDays: { type: Number, required: true },
+        description: String
     }]
 
 }, { timestamps: true });

@@ -5,14 +5,13 @@ const upload = require("../middlewares/upload");
 
 const controller = require("../controllers/disease");
 
-router.get("/", controller.getAllDiseases);
+const { authentication, authorization } = require("../middlewares/authentication");
 
+router.get("/", controller.getAllDiseases);
 router.get("/:id", controller.getDiseaseById);
 
-router.post("/", upload.single("image"), controller.createDisease);
-
-router.put("/:id", upload.single("image"), controller.updateDisease);
-
-router.delete("/:id", controller.deleteDisease);
+router.post("/", authentication, authorization("admin"), upload.single("image"), controller.createDisease);
+router.put("/:id", authentication, authorization("admin"), upload.single("image"), controller.updateDisease);
+router.delete("/:id", authentication, authorization("admin"), controller.deleteDisease);
 
 module.exports = router;

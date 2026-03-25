@@ -1,8 +1,10 @@
 const Disease = require("../models/disease");
 const Plant = require("../models/plant");
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/appError");
 
-exports.getAllDiseases = async (req, res) => {
-    try {
+// 1. Get All Diseases
+exports.getAllDiseases = catchAsync(async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -15,58 +17,65 @@ exports.getAllDiseases = async (req, res) => {
 
     const total = await Disease.countDocuments();
 
-    res.json({
+    res.status(200).json({
+        status: "success",
         page,
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-        data: diseases
+        data: { diseases }
     });
-    } catch (error) {
-    res.status(500).json({ message: error.message });
-    }
-};
+});
 
 // 2. Get Disease By ID
 exports.getDiseaseById = catchAsync(async (req, res, next) => {
     const disease = await Disease.findById(req.params.id)
-        .populate("affectedPlants", "name image");
+        .populate("affectedPlants", "commonName images");
 
     if (!disease) {
-        return res.status(404).json({ message: "Disease not found" });
+        return next(new AppError("No disease found with that ID", 404));
     }
 
-    res.json(disease);
-    } catch (error) {
-    res.status(500).json({ message: error.message });
-    }
+    res.status(200).json({
+        status: "success",
+        data: { disease }
+    });
+});
 
-exports.createDisease = async (req, res) => {
-    try {
+// 3. Create Disease (With Mutual Relationship Sync)
+exports.createDisease = catchAsync(async (req, res, next) => {
     if (req.file) {
         req.body.image = "uploads/" + req.file.filename;
     }
-    const disease = new Disease(req.body);
-    const saved = await disease.save();
 
-    if (saved.affectedPlants && saved.affectedPlants.length > 0) {
+    const savedDisease = await Disease.create(req.body);
+
+    // Bidirectional update: Add this Disease to associated Plants
+    if (savedDisease.affectedPlants && savedDisease.affectedPlants.length > 0) {
         await Plant.updateMany(
-            { _id: { $in: saved.affectedPlants } },
-            { $addToSet: { diseases: saved._id } }
+            { _id: { $in: savedDisease.affectedPlants } },
+            { $addToSet: { diseases: savedDisease._id } }
         );
     }
 
-    res.status(201).json(saved);
-    } catch (error) {
-    res.status(400).json({ message: error.message });
-    }
+    res.status(201).json({
+        status: "success",
+        data: { disease: savedDisease }
+    });
+});
 
-exports.updateDisease = async (req, res) => {
-    try {
+// 4. Update Disease (With Relationship Sync)
+exports.updateDisease = catchAsync(async (req, res, next) => {
     if (req.file) {
         req.body.image = "uploads/" + req.file.filename;
     }
-    const disease = await Disease.findByIdAndUpdate(
+
+    const oldDisease = await Disease.findById(req.params.id);
+    if (!oldDisease) {
+        return next(new AppError("No disease found with that ID", 404));
+    }
+
+    const updatedDisease = await Disease.findByIdAndUpdate(
         req.params.id, 
         req.body, 
         {
@@ -75,36 +84,36 @@ exports.updateDisease = async (req, res) => {
         }
     );
 
-    if (!disease) {
-        return res.status(404).json({ message: "Disease not found" });
+    // Sync Bidirectional Relationships if affectedPlants updated
+    if (req.body.affectedPlants) {
+        await Plant.updateMany(
+            { diseases: updatedDisease._id },
+            { $pull: { diseases: updatedDisease._id } }
+        );
+        await Plant.updateMany(
+            { _id: { $in: updatedDisease.affectedPlants } },
+            { $addToSet: { diseases: updatedDisease._id } }
+        );
     }
 
-    res.json(disease);
-    } catch (error) {
-    res.status(500).json({ message: error.message });
-    }
+    res.status(200).json({
+        status: "success",
+        data: { disease: updatedDisease }
+    });
+});
 
-exports.deleteDisease = async (req, res) => {
-    try {
+// 5. Delete Disease (With Relationship Cleanup)
+exports.deleteDisease = catchAsync(async (req, res, next) => {
     const deletedDisease = await Disease.findByIdAndDelete(req.params.id);
 
     if (!deletedDisease) {
-        return res.status(404).json({ message: "Disease not found" });
-    }
-
-    await Plant.updateMany(
-        { diseases: deletedDisease._id },
-        { $pull: { diseases: deletedDisease._id } }
-    );
-
-    if (!disease) {
         return next(new AppError("No disease found with that ID", 404));
     }
 
-    
+    // Bidirectional cleanup: Remove this Disease from associated Plants
     await Plant.updateMany(
-        { diseases: disease._id },
-        { $pull: { diseases: disease._id } }
+        { diseases: deletedDisease._id },
+        { $pull: { diseases: deletedDisease._id } }
     );
 
     res.status(204).json({

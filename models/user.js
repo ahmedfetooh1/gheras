@@ -80,6 +80,10 @@ const userModel = new mongoose.Schema({
     verificationCode: String,
     verificationCodeExpires: Date,
     time: Date ,
+    balance: {
+        type: Number,
+        default: 0
+    },
 
     // user Planets
     myPlants: [{

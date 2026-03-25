@@ -25,7 +25,6 @@ Router.patch("/forget-password", forgetPassword)
 Router.patch('/verify-password', verifyEmailAndResetPassword)
 
 
-//أي مسار هيتكتب تحت السطر ده، الـ Express هيفهم أوتوماتيكياً إنه "محمي" ولازم يعدي على الـ Middleware بتاع الـ Authentication الأول.
 //لسا مظبطناش الرولز بالظبط عايزين نراجع عليها
 Router.use(authentication)
 

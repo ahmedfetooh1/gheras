@@ -2,6 +2,7 @@ const Order = require("../models/order");
 const Cart = require("../models/cart");
 const Product = require("../models/product");
 const Payment = require("../models/payment");
+const User = require("../models/user");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 
@@ -142,9 +143,22 @@ const cancelOrder = catchAsync(async (req, res, next) => {
   order.status = "cancelled";
   await order.save();
 
-  // لو فيه payment مرتبط بالـ order، حدّث حالته لـ failed
+  // لو فيه payment مرتبط بالـ order، نعالجه
   if (order.payment) {
-    await Payment.findByIdAndUpdate(order.payment, { status: "failed" });
+    const paymentDoc = await Payment.findById(order.payment);
+    if (paymentDoc) {
+      if (paymentDoc.status === "paid") {
+        // Refund logic
+        const refundAmount = paymentDoc.amountCents / 100;
+        await User.findByIdAndUpdate(order.user, {
+          $inc: { balance: refundAmount },
+        });
+        paymentDoc.status = "refunded";
+      } else {
+        paymentDoc.status = "failed";
+      }
+      await paymentDoc.save();
+    }
   }
 
   res.status(200).json({ status: "success", data: order });
@@ -199,6 +213,13 @@ const updateOrderStatus = catchAsync(async (req, res, next) => {
     );
   }
 
+  // Validation: Ensure that an order cannot be moved to shipped unless its status is processing
+  if (status === "shipped" && order.status !== "processing") {
+    return next(
+      new AppError('Order must be in "processing" status to be shipped', 400)
+    );
+  }
+
   // لو الأدمن بيلغي الـ order، ارجع الـ stock
   if (status === "cancelled") {
     for (const item of order.items) {
@@ -208,7 +229,20 @@ const updateOrderStatus = catchAsync(async (req, res, next) => {
     }
 
     if (order.payment) {
-      await Payment.findByIdAndUpdate(order.payment, { status: "failed" });
+      const paymentDoc = await Payment.findById(order.payment);
+      if (paymentDoc) {
+        if (paymentDoc.status === "paid") {
+          // Refund logic
+          const refundAmount = paymentDoc.amountCents / 100;
+          await User.findByIdAndUpdate(order.user, {
+            $inc: { balance: refundAmount },
+          });
+          paymentDoc.status = "refunded";
+        } else {
+          paymentDoc.status = "failed";
+        }
+        await paymentDoc.save();
+      }
     }
   }
 

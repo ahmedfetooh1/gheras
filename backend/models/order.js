@@ -78,4 +78,29 @@ const orderSchema = new mongoose.Schema({
 
 }, { timestamps: true })
 
+orderSchema.pre('save', async function(next) {
+  if (this.isModified('status') && this.status === 'delivered') {
+    try {
+      // Require the model dynamically to avoid circular dependencies
+      const SucceededOrder = require('./succeededOrder');
+      // Use updateOne with upsert to avoid duplicate errors if the hook runs multiple times
+      await SucceededOrder.updateOne(
+        { orderId: this._id },
+        { 
+          $set: { 
+            orderId: this._id,
+            total: this.total,
+            user: this.user,
+            deliveredAt: Date.now()
+          }
+        },
+        { upsert: true }
+      );
+    } catch (err) {
+      console.error('Error in order presave hook:', err);
+    }
+  }
+  next();
+});
+
 module.exports = mongoose.model("Order", orderSchema)

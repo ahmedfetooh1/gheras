@@ -1,0 +1,312 @@
+/* ── Shop Hero ── */
+.shop-hero {
+    background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%);
+    padding: 4rem 2rem;
+    text-align: center;
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.shop-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.shop-hero p {
+    font-size: 1.1rem;
+    opacity: 0.85;
+}
+
+/* ── Shop Layout ── */
+.shop-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2.5rem;
+    padding: 0 2rem 5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+    .shop-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Sidebar ── */
+.shop-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.shop-sidebar-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    border: 1px solid var(--neutral-200);
+    box-shadow: var(--shadow-sm);
+}
+
+.shop-sidebar-title {
+    font-weight: 700;
+    color: var(--green-900);
+    margin-bottom: 1.25rem;
+    font-size: 1.1rem;
+    border-bottom: 2px solid var(--green-50);
+    padding-bottom: 0.5rem;
+}
+
+/* Categories */
+.cat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-sm);
+    color: var(--neutral-700);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 0.25rem;
+}
+
+.cat-item:hover {
+    background: var(--green-50);
+    color: var(--green-600);
+}
+
+.cat-item.active {
+    background: var(--green-600);
+    color: white;
+}
+
+.cat-count {
+    font-size: 0.75rem;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.1rem 0.5rem;
+    border-radius: 99px;
+    opacity: 0.7;
+}
+
+.cat-item.active .cat-count {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Price Range */
+input[type="range"] {
+    accent-color: var(--green-600);
+}
+
+/* ── Smart Recommendation Bar ── */
+.notif-bar {
+    background: linear-gradient(90deg, var(--green-700), var(--green-600));
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.95rem;
+    box-shadow: var(--shadow-md);
+}
+
+/* ── Products Grid ── */
+.product-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--neutral-200);
+    overflow: hidden;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.product-img {
+    height: 200px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    background: var(--neutral-50);
+}
+
+.product-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 5;
+}
+
+.product-body {
+    padding: 1.25rem;
+    flex-grow: 1;
+}
+
+.product-name {
+    font-weight: 700;
+    color: var(--green-900);
+    font-size: 1.1rem;
+    margin-bottom: 0.4rem;
+}
+
+.product-desc {
+    font-size: 0.85rem;
+    color: var(--neutral-500);
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+    height: 2.6rem;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.stars {
+    color: #fbbf24;
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+}
+
+.product-price {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--green-700);
+}
+
+.product-old-price {
+    font-size: 0.9rem;
+    text-decoration: line-through;
+    color: var(--neutral-400);
+    margin-left: 0.5rem;
+}
+
+.product-footer {
+    padding: 1rem 1.25rem;
+    background: var(--neutral-50);
+    border-top: 1px solid var(--neutral-100);
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* ── Cart Sidebar ── */
+.cart-sidebar {
+    position: fixed;
+    top: 0;
+    left: -400px;
+    /* Hidden on left (RTL) or right? User OS is windows, RTL project. Usually slides from side opposite to menu */
+    width: 380px;
+    height: 100vh;
+    background: white;
+    z-index: 2100;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* For RTL Project, let's slide from right for the cart if it's better, but the original HTML had cart-overlay. I'll stick to a standard side. */
+.cart-sidebar.active {
+    left: 0;
+}
+
+.cart-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 2050;
+    display: none;
+}
+
+.cart-overlay.active {
+    display: block;
+}
+
+.cart-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--neutral-100);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-items {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.cart-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--neutral-50);
+}
+
+.cart-item-emoji {
+    width: 64px;
+    height: 64px;
+    background: var(--neutral-50);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.cart-item-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--green-900);
+    margin-bottom: 0.2rem;
+}
+
+.cart-item-price {
+    color: var(--green-600);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.cart-qty {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--neutral-200);
+    width: fit-content;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+.qty-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--neutral-500);
+    padding: 0 0.4rem;
+}
+
+.cart-footer {
+    padding: 1.5rem;
+    background: var(--neutral-50);
+    border-top: 1px solid var(--neutral-100);
+}
+
+.cart-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}

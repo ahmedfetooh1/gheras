@@ -9,17 +9,23 @@
     <div class="shop-sidebar">
       <div class="shop-sidebar-card">
         <div class="shop-sidebar-title">الأقسام</div>
-        <div class="cat-item active" onclick="filterShop('all',this)">الكل <span class="cat-count">24</span></div>
-        <div class="cat-item" onclick="filterShop('أسمدة',this)">أسمدة <span class="cat-count">8</span></div>
-        <div class="cat-item" onclick="filterShop('تربة',this)">تربة وخلطات <span class="cat-count">5</span></div>
-        <div class="cat-item" onclick="filterShop('بذور',this)">بذور وشتلات <span class="cat-count">6</span></div>
-        <div class="cat-item" onclick="filterShop('أدوات',this)">أدوات <span class="cat-count">3</span></div>
-        <div class="cat-item" onclick="filterShop('علاجات',this)">علاجات <span class="cat-count">2</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">الكل <span
+            class="cat-count">24</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'أسمدة'" (click)="setFilter('أسمدة')">أسمدة <span
+            class="cat-count">8</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'تربة'" (click)="setFilter('تربة')">تربة وخلطات <span
+            class="cat-count">5</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'بذور'" (click)="setFilter('بذور')">بذور وشتلات <span
+            class="cat-count">6</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'أدوات'" (click)="setFilter('أدوات')">أدوات <span
+            class="cat-count">3</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'علاجات'" (click)="setFilter('علاجات')">علاجات <span
+            class="cat-count">2</span></div>
       </div>
       <div class="shop-sidebar-card">
         <div class="shop-sidebar-title">السعر</div>
-        <input type="range" min="0" max="500" value="500" style="width:100%" oninput="document.getElementById('price-val').textContent=this.value">
-        <div style="font-size:.82rem;color:var(--neutral-500);margin-top:.4rem">حتى <span id="price-val">500</span> ج.م</div>
+        <input type="range" min="0" max="1000" [(ngModel)]="maxPrice" style="width:100%">
+        <div style="font-size:.82rem;color:var(--neutral-500);margin-top:.4rem">حتى <span id="price-val">{{ maxPrice }}</span> ج.م</div>
       </div>
     </div>
 
@@ -27,11 +33,14 @@
     <div>
       <div class="notif-bar">
         <strong>توصية ذكية:</strong> نبتتك "الطماطم" محتاجة سماد NPK — متوفر في المتجر بـ 65 ج.م
-        <a href="#" style="color:var(--green-200);margin-right:auto;font-size:.82rem">اشتري دلوقتي ←</a>
+        <button (click)="addToCart(products[0])"
+          style="background:none;border:none;color:var(--green-100);margin-right:auto;font-size:.82rem;cursor:pointer;font-weight:700">اشتري
+          دلوقتي ←</button>
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-        <div style="font-size:.9rem;color:var(--neutral-500)">عرض <strong>8</strong> من <strong>24</strong> منتج</div>
+        <div style="font-size:.9rem;color:var(--neutral-500)">عرض <strong>{{ filteredProducts.length }}</strong> من
+          <strong>{{ products.length }}</strong> منتج</div>
         <select class="input-field" style="width:auto;padding:.4rem .8rem;font-size:.85rem">
           <option>الأحدث أولاً</option>
           <option>السعر: من الأقل للأعلى</option>
@@ -40,166 +49,68 @@
         </select>
       </div>
 
-      <div class="grid-auto" id="products-grid">
-        <!-- Fertilizers -->
-        <div class="product-card" data-cat="أسمدة">
-          <div class="product-img" style="background:linear-gradient(135deg,#fffbeb,#fef3c7)"><div class="product-badge"><span class="badge badge-amber">الأكثر مبيعاً</span></div></div>
+      <div class="grid-auto">
+        <div *ngFor="let product of filteredProducts" class="product-card">
+          <div class="product-img" [style.background]="product.color">
+            <div *ngIf="product.isBestSeller" class="product-badge"><span class="badge badge-amber">الأكثر مبيعاً</span>
+            </div>
+            <div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem">{{
+              product.emoji }}</div>
+          </div>
           <div class="product-body">
-            <div class="product-name">سماد NPK المتكامل</div>
-            <div class="product-desc">سماد متوازن للنمو العام — مناسب للطماطم والخضروات</div>
-            <div class="stars">★★★★★ <span style="color:var(--neutral-400)">(128)</span></div>
-            <div style="margin-top:.5rem"><span class="product-old-price">80</span><span class="product-price">65 ج.م</span></div>
+            <div class="product-name">{{ product.name }}</div>
+            <div class="product-desc">{{ product.desc }}</div>
+            <div class="stars">{{ getStars(product.rating) }} <span style="color:var(--neutral-400)">({{ product.reviews
+                }})</span></div>
+            <div style="margin-top:.5rem">
+              <span *ngIf="product.oldPrice" class="product-old-price">{{ product.oldPrice }}</span>
+              <span class="product-price">{{ product.price }} ج.م</span>
+            </div>
           </div>
           <div class="product-footer">
-            <button class="btn btn-primary btn-sm" style="flex:1" onclick="addToCart(this)">أضف للعربية</button>
-            <button class="btn btn-secondary btn-sm">حب</button>
+            <button class="btn btn-primary btn-sm" style="flex:1" (click)="addToCart(product)">أضف للعربية</button>
+            <button class="btn btn-secondary btn-sm">❤</button>
           </div>
         </div>
-
-        <div class="product-card" data-cat="أسمدة">
-          <div class="product-img" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7)"></div>
-          <div class="product-body">
-            <div class="product-name">سماد الأعشاب العضوي</div>
-            <div class="product-desc">100% طبيعي من مخلفات النباتات — آمن للاستخدام المنزلي</div>
-            <div class="stars">★★★★☆ <span style="color:var(--neutral-400)">(64)</span></div>
-            <div style="margin-top:.5rem"><span class="product-price">45 ج.م</span></div>
-          </div>
-          <div class="product-footer">
-            <button class="btn btn-primary btn-sm" style="flex:1" onclick="addToCart(this)">أضف للعربية</button>
-            <button class="btn btn-secondary btn-sm">حب</button>
-          </div>
-        </div>
-
-        <div class="product-card" data-cat="أسمدة">
-          <div class="product-img" style="background:linear-gradient(135deg,#fff1f2,#ffe4e6)"></div>
-          <div class="product-body">
-            <div class="product-name">سماد الزهور السائل</div>
-            <div class="product-desc">يعزز التزهير ويمنح الألوان حيوية — للورد والياسمين</div>
-            <div class="stars">★★★★★ <span style="color:var(--neutral-400)">(93)</span></div>
-            <div style="margin-top:.5rem"><span class="product-price">55 ج.م</span></div>
-          </div>
-          <div class="product-footer">
-            <button class="btn btn-primary btn-sm" style="flex:1" onclick="addToCart(this)">أضف للعربية</button>
-            <button class="btn btn-secondary btn-sm">حب</button>
-          </div>
-        </div>
-
-        <!-- Soil -->
-        <div class="product-card" data-cat="تربة">
-          <div class="product-img" style="background:linear-gradient(135deg,#faf5eb,#e7d5a8)"></div>
-          <div class="product-body">
-            <div class="product-name">تربة رملية للصبار</div>
-            <div class="product-desc">خلطة متخصصة للكاكتوس والصبار — صرف ممتاز للمياه</div>
-            <div class="stars">★★★★☆ <span style="color:var(--neutral-400)">(47)</span></div>
-            <div style="margin-top:.5rem"><span class="product-price">35 ج.م</span></div>
-          </div>
-          <div class="product-footer">
-            <button class="btn btn-primary btn-sm" style="flex:1" onclick="addToCart(this)">أضف للعربية</button>
-            <button class="btn btn-secondary btn-sm">حب</button>
-          </div>
-        </div>
-
-        <div class="product-card" data-cat="تربة">
-          <div class="product-img" style="background:linear-gradient(135deg,#f0fdf4,#bbf7d0)"></div>
-          <div class="product-body">
-            <div class="product-name">تربة خضروات غنية</div>
-            <div class="product-desc">خلطة عضوية غنية بالمغذيات — للطماطم والفلفل والخيار</div>
-            <div class="stars">★★★★★ <span style="color:var(--neutral-400)">(82)</span></div>
-            <div style="margin-top:.5rem"><span class="product-old-price">50</span><span class="product-price">40 ج.م</span></div>
-          </div>
-          <div class="product-footer">
-            <button class="btn btn-primary btn-sm" style="flex:1" onclick="addToCart(this)">أضف للعربية</button>
-            <button class="btn btn-secondary btn-sm">حب</button>
-          </div>
-        </div>
-
-        <!-- Seeds -->
-        <div class="product-card" data-cat="بذور">
-          <div class="product-img" style="background:linear-gradient(135deg,#fff5f5,#fee2e2)"></div>
-          <div class="product-body">
-            <div class="product-name">بذور طماطم هجين</div>
-            <div class="product-desc">إنتاجية عالية — 20 بذرة في العبوة الواحدة</div>
-            <div class="stars">★★★★☆ <span style="color:var(--neutral-400)">(55)</span></div>
-            <div style="margin-top:.5rem"><span class="product-price">25 ج.م</span></div>
-          </div>
-          <div class="product-footer">
-            <button class="btn btn-primary btn-sm" style="flex:1" onclick="addToCart(this)">أضف للعربية</button>
-            <button class="btn btn-secondary btn-sm">حب</button>
-          </div>
-        </div>
-
-        <!-- Tools -->
-        <div class="product-card" data-cat="أدوات">
-          <div class="product-img" style="background:linear-gradient(135deg,#f0f9ff,#bae6fd)"></div>
-          <div class="product-body">
-            <div class="product-name">بخاخ نباتات 1 لتر</div>
-            <div class="product-desc">بخاخ ضباب ناعم للأوراق — مقاوم للصدأ</div>
-            <div class="stars">★★★★★ <span style="color:var(--neutral-400)">(110)</span></div>
-            <div style="margin-top:.5rem"><span class="product-price">30 ج.م</span></div>
-          </div>
-          <div class="product-footer">
-            <button class="btn btn-primary btn-sm" style="flex:1" onclick="addToCart(this)">أضف للعربية</button>
-            <button class="btn btn-secondary btn-sm">حب</button>
-          </div>
-        </div>
-
-        <!-- Treatment -->
-        <div class="product-card" data-cat="علاجات">
-          <div class="product-img" style="background:linear-gradient(135deg,#fdf4ff,#e9d5ff)"></div>
-          <div class="product-body">
-            <div class="product-name">مبيد الحشرات الدقيقية</div>
-            <div class="product-desc">آمن للاستخدام المنزلي — يقضي على البق والحشرات الدقيقة</div>
-            <div class="stars">★★★★☆ <span style="color:var(--neutral-400)">(38)</span></div>
-            <div style="margin-top:.5rem"><span class="product-price">70 ج.م</span></div>
-          </div>
-          <div class="product-footer">
-            <button class="btn btn-primary btn-sm" style="flex:1" onclick="addToCart(this)">أضف للعربية</button>
-            <button class="btn btn-secondary btn-sm">حب</button>
-          </div>
-        </div>
+      </div>
+      <div *ngIf="filteredProducts.length === 0" style="text-align:center;padding:4rem;color:var(--neutral-500)">
+        🌵 لا توجد منتجات تطابق هذا البحث حالياً.
       </div>
     </div>
   </div>
 </div>
 
 <!-- Cart Sidebar -->
-<div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
-<div class="cart-sidebar" id="cart-sidebar">
+<div class="cart-overlay" [class.active]="isCartOpen()" (click)="toggleCart()"></div>
+<div class="cart-sidebar" [class.active]="isCartOpen()">
   <div class="cart-header">
     <div style="font-weight:700;font-size:1.05rem">عربية التسوق</div>
-    <button onclick="toggleCart()" style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
+    <button (click)="toggleCart()"
+      style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
   </div>
   <div class="cart-items">
-    <div class="cart-item">
-      <div class="cart-item-emoji"></div>
+    <div *ngFor="let item of cartItems" class="cart-item">
+      <div class="cart-item-emoji">{{ item.emoji }}</div>
       <div style="flex:1">
-        <div class="cart-item-name">سماد NPK المتكامل</div>
-        <div class="cart-item-price">65 ج.م</div>
+        <div class="cart-item-name">{{ item.name }}</div>
+        <div class="cart-item-price">{{ item.price }} ج.م</div>
         <div class="cart-qty">
-          <button class="qty-btn">−</button>
-          <span style="font-size:.9rem;font-weight:700">1</span>
-          <button class="qty-btn">+</button>
+          <button (click)="updateQty(item.id, -1)" class="qty-btn">−</button>
+          <span style="font-size:.9rem;font-weight:700">{{ item.qty }}</span>
+          <button (click)="updateQty(item.id, 1)" class="qty-btn">+</button>
         </div>
       </div>
-      <button style="background:none;border:none;color:var(--neutral-400);cursor:pointer">حذف</button>
+      <button (click)="updateQty(item.id, -item.qty)"
+        style="background:none;border:none;color:var(--neutral-400);cursor:pointer">حذف</button>
     </div>
-    <div class="cart-item">
-      <div class="cart-item-emoji"></div>
-      <div style="flex:1">
-        <div class="cart-item-name">تربة خضروات غنية</div>
-        <div class="cart-item-price">40 ج.م</div>
-        <div class="cart-qty">
-          <button class="qty-btn">−</button>
-          <span style="font-size:.9rem;font-weight:700">1</span>
-          <button class="qty-btn">+</button>
-        </div>
-      </div>
-      <button style="background:none;border:none;color:var(--neutral-400);cursor:pointer">حذف</button>
+    <div *ngIf="cartItems.length === 0" style="text-align:center;color:var(--neutral-500);padding-top:2rem">
+      عربة التسوق فارغة حالياً 🛒
     </div>
   </div>
   <div class="cart-footer">
-    <div class="cart-total"><span>الإجمالي</span><span style="color:var(--green-700)">105 ج.م</span></div>
-    <a href="checkout.html" class="btn btn-primary btn-block btn-lg">إتمام الشراء →</a>
-    <div style="text-align:center;font-size:.78rem;color:var(--neutral-400);margin-top:.6rem">شحن مجاني للطلبات فوق 200 ج.م</div>
+    <div class="cart-total"><span>الإجمالي</span><span style="color:var(--green-700)">{{ cartTotal }} ج.م</span></div>
+    <button [disabled]="cartItems.length === 0" class="btn btn-primary btn-block btn-lg">إتمام الشراء ←</button>
+    <div style="text-align:center;font-size:.78rem;color:var(--neutral-400);margin-top:.6rem">شحن مجاني للطلبات فوق 200
+      ج.م</div>
   </div>
 </div>

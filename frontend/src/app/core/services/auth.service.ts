@@ -93,6 +93,14 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/verify-email`, data);
   }
 
+  forgetPassword(email: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/forget-password`, { email });
+  }
+
+  verifyPassword(data: any): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/verify-password`, data);
+  }
+
   // ================= LOGIN =================
   login(credentials: Partial<User>): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials).pipe(

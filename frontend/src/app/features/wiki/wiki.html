@@ -3,165 +3,109 @@
     <h1>موسوعة النباتات</h1>
     <p>أكثر من 500 نبتة بمعلومات علمية دقيقة — ابحث واعرف كل حاجة</p>
     <div class="search-bar">
-      <input type="text" id="wiki-search" placeholder="ابحث عن نبتة... مثلاً: طماطم، كاكتوس، ورد">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="ابحث عن نبتة... مثلاً: طماطم، كاكتوس، ورد">
       <span class="search-icon"></span>
     </div>
   </div>
 
   <div class="wiki-tabs">
-    <button class="wiki-filter active" onclick="filterWiki('all',this)">الكل</button>
-    <button class="wiki-filter" onclick="filterWiki('خضروات',this)">خضروات</button>
-    <button class="wiki-filter" onclick="filterWiki('زهور',this)">زهور</button>
-    <button class="wiki-filter" onclick="filterWiki('فواكه',this)">فواكه</button>
-    <button class="wiki-filter" onclick="filterWiki('أعشاب',this)">أعشاب</button>
-    <button class="wiki-filter" onclick="filterWiki('صبار',this)">صبار</button>
-    <button class="wiki-filter" onclick="filterWiki('أشجار',this)">أشجار</button>
+    <button *ngFor="let cat of categories" class="wiki-filter"
+      [class.active]="activeFilter() === (cat === 'الكل' ? 'all' : cat)"
+      (click)="setFilter(cat === 'الكل' ? 'all' : cat)">
+      {{ cat }}
+    </button>
   </div>
 
   <div class="container section-sm">
-    <div class="wiki-grid" id="wiki-grid">
-
-      <!-- Card 1 -->
-      <div class="wiki-card" data-cat="خضروات" onclick="openModal('tomato')">
-        <div class="wiki-card-img" style="background:linear-gradient(135deg,#fff5f5,#fee2e2)"></div>
+    <div class="grid-auto">
+      <div *ngFor="let plant of filteredPlants" class="wiki-card" (click)="openModal(plant)">
+        <div class="wiki-card-img" [style.background]="plant.color">
+          <span>{{ plant.emoji }}</span>
+        </div>
         <div class="wiki-card-body">
-          <div class="wiki-card-name">الطماطم</div>
-          <div class="wiki-card-en">Solanum lycopersicum</div>
+          <div class="wiki-card-name">{{ plant.name }}</div>
+          <div class="wiki-card-en">{{ plant.en }}</div>
           <div class="wiki-card-meta">
-            <span class="badge badge-green">خضروات</span>
-            <span class="badge badge-earth">برة / جوه</span>
+            <span class="badge badge-green">{{ plant.cat }}</span>
+            <span class="badge badge-earth">{{ plant.habitat }}</span>
           </div>
         </div>
         <div class="wiki-card-footer">
-          <span style="font-size:.8rem;color:var(--neutral-500)">كل يومين · 15–35°</span>
-          <button class="btn btn-secondary btn-sm">تفاصيل</button>
+          <span style="font-size:.8rem;color:var(--neutral-500)">{{ plant.water }} · {{ plant.temp }}</span>
+          <button class="btn btn-secondary btn-sm">تـفاصيل</button>
         </div>
       </div>
-
-      <!-- Card 2 -->
-      <div class="wiki-card" data-cat="صبار" onclick="openModal('cactus')">
-        <div class="wiki-card-img" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7)"></div>
-        <div class="wiki-card-body">
-          <div class="wiki-card-name">الكاكتوس</div>
-          <div class="wiki-card-en">Cactaceae</div>
-          <div class="wiki-card-meta">
-            <span class="badge badge-green">صبار</span>
-            <span class="badge badge-earth">داخلي / خارجي</span>
-          </div>
-        </div>
-        <div class="wiki-card-footer">
-          <span style="font-size:.8rem;color:var(--neutral-500)">كل 14 يوم · 10–45°</span>
-          <button class="btn btn-secondary btn-sm">تفاصيل</button>
-        </div>
-      </div>
-
-      <!-- Card 3 -->
-      <div class="wiki-card" data-cat="زهور" onclick="openModal('rose')">
-        <div class="wiki-card-img" style="background:linear-gradient(135deg,#fff1f2,#ffe4e6)"></div>
-        <div class="wiki-card-body">
-          <div class="wiki-card-name">الورد الجوري</div>
-          <div class="wiki-card-en">Rosa damascena</div>
-          <div class="wiki-card-meta">
-            <span class="badge badge-green">زهور</span>
-            <span class="badge badge-earth">خارجي</span>
-          </div>
-        </div>
-        <div class="wiki-card-footer">
-          <span style="font-size:.8rem;color:var(--neutral-500)">يومياً · 15–28°</span>
-          <button class="btn btn-secondary btn-sm">تفاصيل</button>
-        </div>
-      </div>
-
-      <!-- Card 4 -->
-      <div class="wiki-card" data-cat="أعشاب" onclick="openModal('mint')">
-        <div class="wiki-card-img" style="background:linear-gradient(135deg,#f0fdf4,#bbf7d0)"></div>
-        <div class="wiki-card-body">
-          <div class="wiki-card-name">النعناع</div>
-          <div class="wiki-card-en">Mentha piperita</div>
-          <div class="wiki-card-meta">
-            <span class="badge badge-green">أعشاب</span>
-            <span class="badge badge-earth">داخلي / خارجي</span>
-          </div>
-        </div>
-        <div class="wiki-card-footer">
-          <span style="font-size:.8rem;color:var(--neutral-500)">يومياً · 10–25°</span>
-          <button class="btn btn-secondary btn-sm">تفاصيل</button>
-        </div>
-      </div>
-
-      <!-- Card 5 -->
-      <div class="wiki-card" data-cat="فواكه" onclick="openModal('strawberry')">
-        <div class="wiki-card-img" style="background:linear-gradient(135deg,#fff1f2,#fce7f3)"></div>
-        <div class="wiki-card-body">
-          <div class="wiki-card-name">الفراولة</div>
-          <div class="wiki-card-en">Fragaria × ananassa</div>
-          <div class="wiki-card-meta">
-            <span class="badge badge-green">فواكه</span>
-            <span class="badge badge-earth">خارجي</span>
-          </div>
-        </div>
-        <div class="wiki-card-footer">
-          <span style="font-size:.8rem;color:var(--neutral-500)">كل يومين · 10–26°</span>
-          <button class="btn btn-secondary btn-sm">تفاصيل</button>
-        </div>
-      </div>
-
-      <!-- Card 6 -->
-      <div class="wiki-card" data-cat="أعشاب">
-        <div class="wiki-card-img" style="background:linear-gradient(135deg,#fefce8,#fef08a)"></div>
-        <div class="wiki-card-body">
-          <div class="wiki-card-name">دوار الشمس</div>
-          <div class="wiki-card-en">Helianthus annuus</div>
-          <div class="wiki-card-meta">
-            <span class="badge badge-green">زهور</span>
-            <span class="badge badge-earth">خارجي</span>
-          </div>
-        </div>
-        <div class="wiki-card-footer">
-          <span style="font-size:.8rem;color:var(--neutral-500)">كل 3 أيام · 18–35°</span>
-          <button class="btn btn-secondary btn-sm">تفاصيل</button>
-        </div>
-      </div>
-
-      <!-- Card 7 -->
-      <div class="wiki-card" data-cat="خضروات">
-        <div class="wiki-card-img" style="background:linear-gradient(135deg,#f0fdf4,#86efac)"></div>
-        <div class="wiki-card-body">
-          <div class="wiki-card-name">البروكلي</div>
-          <div class="wiki-card-en">Brassica oleracea</div>
-          <div class="wiki-card-meta">
-            <span class="badge badge-green">خضروات</span>
-            <span class="badge badge-earth">خارجي</span>
-          </div>
-        </div>
-        <div class="wiki-card-footer">
-          <span style="font-size:.8rem;color:var(--neutral-500)">يومياً · 7–24°</span>
-          <button class="btn btn-secondary btn-sm">تفاصيل</button>
-        </div>
-      </div>
-
-      <!-- Card 8 -->
-      <div class="wiki-card" data-cat="أشجار">
-        <div class="wiki-card-img" style="background:linear-gradient(135deg,#fefce8,#fde68a)"></div>
-        <div class="wiki-card-body">
-          <div class="wiki-card-name">الليمون</div>
-          <div class="wiki-card-en">Citrus limon</div>
-          <div class="wiki-card-meta">
-            <span class="badge badge-green">أشجار</span>
-            <span class="badge badge-earth">خارجي</span>
-          </div>
-        </div>
-        <div class="wiki-card-footer">
-          <span style="font-size:.8rem;color:var(--neutral-500)">مرتين/أسبوع · 15–38°</span>
-          <button class="btn btn-secondary btn-sm">تفاصيل</button>
-        </div>
-      </div>
-
+    </div>
+    <div *ngIf="filteredPlants.length === 0" style="text-align:center;padding:4rem;color:var(--neutral-500)">
+      🌵 لا يوجد نتائج لهذا البحث... جرب شيئاً آخر.
     </div>
   </div>
 </div>
 
 <!-- ── Detail Modal ── -->
-<div class="modal-overlay" id="modal" onclick="closeModal(event)">
-  <div class="modal-box" id="modal-box"></div>
+<div class="modal-overlay" *ngIf="selectedPlant()" [class.active]="selectedPlant()" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div
+      style="height:250px;width:100%;display:flex;align-items:center;justify-content:center;font-size:8rem;position:relative;"
+      [style.background]="selectedPlant()?.color">
+      <button (click)="closeModal()"
+        style="position:absolute;top:1rem;right:1rem;background:white;border-radius:50%;width:40px;height:40px;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);">&times;</button>
+      <span>{{ selectedPlant()?.emoji }}</span>
+    </div>
+    <div style="padding:2.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;">
+        <div>
+          <h2 style="font-family:var(--font-display);font-size:2.2rem;color:var(--green-900);">{{ selectedPlant()?.name
+            }}</h2>
+          <p style="font-style:italic;color:var(--neutral-500);font-family:var(--font-display);">{{ selectedPlant()?.en
+            }}</p>
+        </div>
+        <span class="badge badge-green" style="font-size:1rem;padding:.4rem 1rem;">{{ selectedPlant()?.cat }}</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+        <div
+          style="background:var(--neutral-50);padding:1.2rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:1rem;">
+          <span style="font-size:1.5rem;">💧</span>
+          <div>
+            <div style="font-size:.75rem;color:var(--neutral-500);font-weight:700;">جدول الري</div>
+            <div style="font-weight:700;color:var(--green-800);">{{ selectedPlant()?.water }}</div>
+          </div>
+        </div>
+        <div
+          style="background:var(--neutral-50);padding:1.2rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:1rem;">
+          <span style="font-size:1.5rem;">🌡️</span>
+          <div>
+            <div style="font-size:.75rem;color:var(--neutral-500);font-weight:700;">الحرارة المثالية</div>
+            <div style="font-weight:700;color:var(--green-800);">{{ selectedPlant()?.temp }}</div>
+          </div>
+        </div>
+        <div
+          style="background:var(--neutral-50);padding:1.2rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:1rem;">
+          <span style="font-size:1.5rem;">🌍</span>
+          <div>
+            <div style="font-size:.75rem;color:var(--neutral-500);font-weight:700;">البيئة المناسبة</div>
+            <div style="font-weight:700;color:var(--green-800);">{{ selectedPlant()?.habitat }}</div>
+          </div>
+        </div>
+        <div
+          style="background:var(--neutral-50);padding:1.2rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:1rem;">
+          <span style="font-size:1.5rem;">📜</span>
+          <div>
+            <div style="font-size:.75rem;color:var(--neutral-500);font-weight:700;">الفصيلة</div>
+            <div style="font-weight:700;color:var(--green-800);">{{ selectedPlant()?.cat }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="line-height:1.75;color:var(--neutral-700);">
+        <h3 style="margin-bottom:.75rem;color:var(--green-900);">عن النبتة</h3>
+        <p>هذه النبتة من الأنواع المفضلة في "غراس" لسهولة العناية بها وقدرتها العالية على التكيف. توفر هذه الموسوعة
+          دليلاً شاملاً للمزارعين الهواة والمحترفين لضمان نمو صحي ومستدام.</p>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" style="margin-top:2.5rem;" (click)="closeModal()">حسـناً،
+        فهمت</button>
+    </div>
+  </div>
 </div>

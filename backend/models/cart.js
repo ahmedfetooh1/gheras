@@ -24,6 +24,14 @@ const cartSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  // Backward-compat: some existing DB indexes are on `userId`
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: false,
+    unique: true,
+    default: null
+  },
   items: [cartItemSchema],
   totalQty: { type: Number, default: 0 },
   subtotal: { type: Number, default: 0 }, // إجمالي السعر قبل الخصم
@@ -35,6 +43,11 @@ const cartSchema = new mongoose.Schema({
 
 // Middleware لحساب الإجماليات تلقائياً قبل الحفظ
 cartSchema.pre("save", function (next) {
+  // Keep `userId` in sync to satisfy unique indexes.
+  if (!this.userId && this.user) {
+    this.userId = this.user;
+  }
+
   this.totalQty = this.items.reduce((sum, item) => sum + item.quantity, 0);
   
   this.subtotal = this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -43,7 +56,8 @@ cartSchema.pre("save", function (next) {
   
   this.totalDiscount = this.subtotal - this.totalPrice;
   
-  next();
+  // Some Mongoose versions may not provide `next` for sync hooks.
+  if (typeof next === "function") next();
 });
 
 module.exports = mongoose.model("Cart", cartSchema);

@@ -1,12 +1,15 @@
 const Cart = require("../models/cart");
 const Product = require("../models/product");
-const catchAsync = require("../utils/catchAsync"); // تأكد من وجود الملف ده عندك
-const AppError = require("../utils/appError");    // تأكد من وجود الملف ده عندك
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/appError");
 
 // 1. الحصول على السلة
 exports.getCart = catchAsync(async (req, res, next) => {
-  const cart = await Cart.findOne({ user: req.user.id }).populate("items.product", "name images stock isActive");
-  
+  const userId = req.user.id;
+  const cart = await Cart.findOne({
+    $or: [{ user: userId }, { userId: userId }],
+  }).populate("items.product", "name images stock isActive");
+
   if (!cart) {
     return res.status(200).json({ status: "success", data: { items: [], totalPrice: 0 } });
   }
@@ -22,8 +25,11 @@ exports.addToCart = catchAsync(async (req, res, next) => {
   if (!product || !product.isActive) return next(new AppError("Product not found or inactive", 404));
   if (product.stock < quantity) return next(new AppError("Not enough stock", 400));
 
-  let cart = await Cart.findOne({ user: req.user.id });
-  if (!cart) cart = new Cart({ user: req.user.id, items: [] });
+  const userId = req.user.id;
+  let cart = await Cart.findOne({
+    $or: [{ user: userId }, { userId: userId }],
+  });
+  if (!cart) cart = new Cart({ user: userId, userId: userId, items: [] });
 
   const existingItem = cart.items.find(item => item.product.toString() === productId);
 
@@ -49,11 +55,12 @@ exports.addToCart = catchAsync(async (req, res, next) => {
 
 // 3. تعديل الكمية (Update Quantity)
 exports.updateCartItem = catchAsync(async (req, res, next) => {
-  const { productId, quantity } = req.body; // بنعدل بناءً على الـ productId
+  const { productId, quantity } = req.body;
 
   if (quantity < 1) return next(new AppError("Quantity must be at least 1", 400));
 
-  const cart = await Cart.findOne({ user: req.user.id });
+  const userId = req.user.id;
+  const cart = await Cart.findOne({ $or: [{ user: userId }, { userId: userId }] });
   if (!cart) return next(new AppError("Cart not found", 404));
 
   const item = cart.items.find(i => i.product.toString() === productId);
@@ -72,17 +79,19 @@ exports.updateCartItem = catchAsync(async (req, res, next) => {
 exports.removeCartItem = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
 
-  const cart = await Cart.findOne({ user: req.user.id });
+  const userId = req.user.id;
+  const cart = await Cart.findOne({ $or: [{ user: userId }, { userId: userId }] });
   if (!cart) return next(new AppError("Cart not found", 404));
 
   cart.items = cart.items.filter(item => item.product.toString() !== productId);
-  
+
   await cart.save();
   res.status(200).json({ status: "success", data: cart });
 });
 
 // 5. مسح السلة بالكامل
 exports.clearCart = catchAsync(async (req, res, next) => {
-  await Cart.findOneAndDelete({ user: req.user.id });
+  const userId = req.user.id;
+  await Cart.findOneAndDelete({ $or: [{ user: userId }, { userId: userId }] });
   res.status(204).json({ status: "success", data: null });
 });

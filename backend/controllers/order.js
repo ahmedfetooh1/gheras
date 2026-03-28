@@ -56,7 +56,8 @@ const createOrder = catchAsync(async (req, res, next) => {
     const payment = await Payment.create({
       user: req.user.id,
       method: paymentMethod,
-      amountCents: cart.total * 100,
+      // Cart model stores final payable amount in `totalPrice`
+      amountCents: Math.round((cart.totalPrice || 0) * 100),
       currency: "EGP",
       status: "pending",
     });

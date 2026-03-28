@@ -23,5 +23,7 @@ router.patch("/:id/cancel", cancelOrder);  // إلغاء order
 // Admin routes
 router.get("/admin/all", authorization("admin"), getAllOrders);          // جيب كل الـ orders
 router.patch("/admin/:id/status", authorization("admin"), updateOrderStatus);  // تغيير status
+// Alias for tools/clients that send POST by mistake
+router.post("/admin/:id/status", authorization("admin"), updateOrderStatus);
 
 module.exports = router;

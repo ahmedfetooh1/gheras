@@ -100,7 +100,8 @@ orderSchema.pre('save', async function(next) {
       console.error('Error in order presave hook:', err);
     }
   }
-  next();
+  // Some Mongoose versions may not provide `next` for async hooks.
+  if (typeof next === 'function') next();
 });
 
 module.exports = mongoose.model("Order", orderSchema)

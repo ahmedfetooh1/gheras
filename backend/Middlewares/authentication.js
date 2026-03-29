@@ -3,7 +3,8 @@ const util = require('util')
 //Abo Sofyan
 async function authentication (req, res, next){
 
-    let {token} = req.headers
+    // Support both standard "Authorization: Bearer <token>" and legacy "token: <token>" header
+    let token = req.headers['authorization']?.split(' ')[1] || req.headers['token'];
 
     if(!token){
        return res.status(401).json({message:"Please login first"})
@@ -17,8 +18,6 @@ async function authentication (req, res, next){
         id: decodedToken.id,
         role: decodedToken.role
     };
-        // req.userId =decodedToken.id
-        // req.role = decodedToken.role
 
         console.log(decodedToken)
 

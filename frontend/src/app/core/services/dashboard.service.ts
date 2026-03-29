@@ -25,4 +25,25 @@ export class DashboardService {
   getAllOrders(): Observable<any> {
     return this.http.get(`${this.baseUrl}/orders/admin/all`);
   }
+
+  // Admin Add Methods
+  addPlantAdmin(data: FormData): Observable<any> {
+    return this.http.post(`${this.baseUrl}/plants`, data);
+  }
+
+  addDiseaseAdmin(data: FormData): Observable<any> {
+    return this.http.post(`${this.baseUrl}/diseases`, data);
+  }
+
+  addFertilizerAdmin(data: FormData): Observable<any> {
+    return this.http.post(`${this.baseUrl}/fertilizers`, data);
+  }
+
+  addProductAdmin(data: FormData): Observable<any> {
+    return this.http.post(`${this.baseUrl}/product/add`, data);
+  }
+
+  addCategoryAdmin(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/category`, data);
+  }
 }

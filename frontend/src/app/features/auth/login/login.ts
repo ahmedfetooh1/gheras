@@ -37,14 +37,7 @@ export class Login {
       next: (res: any) => {
         this.status = 'success';
         console.log('Logged in successfully', res);
-
-        // جلب المستخدم الحالي لمعرفة صلاحياته
-        const user = this.authService.currentUser();
-        if (user?.role === 'admin') {
-          this.router.navigate(['/dashboard/admin']);
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
+        this.router.navigate(['/dashboard']);
       },
       error: (err: any) => {
         this.status = 'error';

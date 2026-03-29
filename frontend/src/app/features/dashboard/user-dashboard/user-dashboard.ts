@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -30,40 +30,37 @@ export class UserDashboard implements OnInit {
 
   // Add Plant Modal State
   showAddPlantModal = false;
-  
+  selectedCategory = signal('');
+  selectedPlantId = signal('');
+  plantNickname = signal('');
+
+  // Plant Details Drawer Logic
+  showDetailsModal = signal(false);
+  detailsLoading = signal(false);
+  activeTab = signal('plan');
+  selectedPlantDetails = signal<any>(null);
+
   // All plants fetched from DB
   allPlants = signal<any[]>([]);
   plantsLoading = false;
 
-  // Categories (Families)
+  // Computed signals for filtering
   categories = computed(() => {
     const plants = this.allPlants();
-    const families = plants.map(p => p.family || 'غير مصنف');
-    return [...new Set(families)]; // Unique list
+    const cats = new Set(plants.map(p => p.family).filter(f => !!f));
+    return Array.from(cats).sort();
   });
 
-  // Selections
-  selectedCategory = signal<string>('');
-  selectedPlantId = signal<string>('');
-  plantNickname = signal<string>('');
-
-  // Plants filtered by selected category
   filteredPlants = computed(() => {
-    const cat = this.selectedCategory();
     const plants = this.allPlants();
-    if (!cat) return plants; // Return all plants if no family is selected
-    return plants.filter(p => (p.family || 'غير مصنف') === cat);
+    const category = this.selectedCategory();
+    if (!category) return plants;
+    return plants.filter(p => p.family === category);
   });
-
-  // Plant Detail Side Drawer State
-  showDetailsModal = signal(false);
-  detailsLoading = signal(false);
-  selectedPlantDetails = signal<any>(null);
-  activeTab = signal<'plan' | 'disease' | 'history'>('plan');
 
   ngOnInit() {
     this.loadDashboardData();
-    this.loadPlantsCatalog();
+    this.loadPlants();
   }
 
   loadDashboardData() {
@@ -75,8 +72,8 @@ export class UserDashboard implements OnInit {
           this.myGarden.set(res.dashboardData?.myGarden || []);
           this.notifications.set(res.dashboardData?.notifications || []);
           this.dashboardStats.set({
-             totalPlants: res.totalPlants || res.dashboardData?.myGarden?.length || 0,
-             alerts: res.dashboardData?.notifications?.length || 0
+            totalPlants: res.totalPlants || res.dashboardData?.myGarden?.length || 0,
+            alerts: res.dashboardData?.notifications?.length || 0
           });
         }
         this.dashboardLoading.set(false);
@@ -88,7 +85,7 @@ export class UserDashboard implements OnInit {
     });
   }
 
-  loadPlantsCatalog() {
+  loadPlants() {
     this.plantsLoading = true;
     this.http.get<any>('http://localhost:3000/api/plants?limit=100').subscribe({
       next: (res) => {
@@ -109,7 +106,7 @@ export class UserDashboard implements OnInit {
     this.selectedCategory.set(selectElement.value);
     this.selectedPlantId.set(''); // Reset selected plant when category changes
   }
-  
+
   onPlantChange(event: Event) {
     const selectElement = event.target as HTMLSelectElement;
     this.selectedPlantId.set(selectElement.value);
@@ -152,7 +149,7 @@ export class UserDashboard implements OnInit {
     this.showDetailsModal.set(true);
     this.detailsLoading.set(true);
     this.activeTab.set('plan');
-    
+
     this.http.get<any>(`http://localhost:3000/api/dashboard/my-plant/${id}`).subscribe({
       next: (res) => {
         if (res.status === 'success') {
@@ -169,28 +166,26 @@ export class UserDashboard implements OnInit {
 
   closePlantDetail() {
     this.showDetailsModal.set(false);
-    // Optional: reset data, but maybe leave it for smooth closing animation
-    // this.selectedPlantDetails.set(null); 
   }
 
   // Calculate percentage of growth stage (Mock logic or use from DB)
   getGrowthProgress(addedAt: string): number {
-      const start = new Date(addedAt).getTime();
-      const now = new Date().getTime();
-      const diffDays = Math.floor((now - start) / (1000 * 3600 * 24));
-      // Assume 60 days standard harvest for visualization
-      const percentage = Math.max(0, Math.min((diffDays / 60) * 100, 100));
-      return Math.round(percentage);
+    const start = new Date(addedAt).getTime();
+    const now = new Date().getTime();
+    const diffDays = Math.floor((now - start) / (1000 * 3600 * 24));
+    // Assume 60 days standard harvest for visualization
+    const percentage = Math.max(0, Math.min((diffDays / 60) * 100, 100));
+    return Math.round(percentage);
   }
 
   // Calculate generic health status based on watering
   getHealthStatus(nextWatering: string): 'good' | 'warn' {
-      if (!nextWatering) return 'good';
-      const wateringDate = new Date(nextWatering).getTime();
-      const now = new Date().getTime();
-      return (wateringDate < now) ? 'warn' : 'good';
+    if (!nextWatering) return 'good';
+    const wateringDate = new Date(nextWatering).getTime();
+    const now = new Date().getTime();
+    return (wateringDate < now) ? 'warn' : 'good';
   }
-  
+
   // Create an image URL
   getImageUrl(imagePath: string): string {
     if (!imagePath) return '';

@@ -89,11 +89,7 @@ import {
   provideImgixLoader,
   provideNetlifyLoader,
   registerLocaleData
-<<<<<<< Updated upstream
-} from "./chunk-2XQDHU76.js";
-=======
 } from "./chunk-EBABSGL5.js";
->>>>>>> Stashed changes
 import {
   BrowserPlatformLocation,
   DomAdapter,
@@ -103,11 +99,7 @@ import {
   getDOM,
   parseCookieValue,
   setRootDomAdapter
-<<<<<<< Updated upstream
-} from "./chunk-66DXACXA.js";
-=======
 } from "./chunk-OKAVKWLW.js";
->>>>>>> Stashed changes
 import {
   DOCUMENT,
   IMAGE_CONFIG

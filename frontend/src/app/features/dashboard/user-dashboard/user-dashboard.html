@@ -4,7 +4,8 @@
     <div class="sidebar-logo">غِراس</div>
     <div class="sidebar-section-title">الرئيسية</div>
     <a routerLink="/dashboard" class="sidebar-link active"><span class="icon"></span> لوحتي</a>
-    <a href="#" class="sidebar-link"><span class="icon"></span> نباتاتي @if (dashboardStats().totalPlants > 0) { <span class="sidebar-badge">{{ dashboardStats().totalPlants }}</span> }</a>
+    <a href="#" class="sidebar-link"><span class="icon"></span> نباتاتي @if (dashboardStats().totalPlants > 0) { <span
+        class="sidebar-badge">{{ dashboardStats().totalPlants }}</span> }</a>
     <a href="#" class="sidebar-link"><span class="icon"></span> التنبيهات</a>
     <div class="sidebar-section-title">الأدوات</div>
     <a href="#" class="sidebar-link"><span class="icon"></span> تشخيص مرض</a>
@@ -21,9 +22,38 @@
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
       <div>
         <div class="page-title">أهلاً {{ userName() }}</div>
-        <div class="page-subtitle">عندك {{ dashboardStats().totalPlants }} نباتات — {{ dashboardStats().alerts }} تحتاج اهتمام اليوم</div>
+        <div class="page-subtitle">عندك {{ dashboardStats().totalPlants }} نباتات — {{ dashboardStats().alerts }} تحتاج
+          اهتمام اليوم</div>
       </div>
-      <button (click)="openAddPlant()" class="btn btn-primary">+ إضافة نبتة</button>
+      <div style="display:flex;gap:1.5rem;align-items:center;position:relative;">
+        <div style="position:relative;">
+           <button (click)="toggleNotifications()" class="btn btn-ghost" style="width:44px;height:44px;border-radius:50%;padding:0;background:var(--neutral-100);font-size:1.2rem;border:1px solid var(--neutral-200);cursor:pointer;">
+             🔔
+             @if (notifications().length > 0) {
+               <span style="position:absolute;top:-4px;right:-4px;background:var(--amber-500);color:white;border-radius:50%;width:20px;height:20px;font-size:.75rem;display:flex;align-items:center;justify-content:center;font-weight:bold;">
+                 {{ notifications().length }}
+               </span>
+             }
+           </button>
+           
+           @if (showNotificationsDropdown()) {
+             <div style="position:absolute;top:120%;left:0;background:white;border-radius:var(--radius-md);box-shadow:var(--shadow-xl);width:320px;z-index:200;max-height:400px;overflow-y:auto;border:1px solid var(--neutral-100);">
+                <div style="padding:1rem;border-bottom:1px solid var(--neutral-100);font-weight:700;background:var(--neutral-50);color:var(--neutral-700)">تنبيهات الري</div>
+                @if (notifications().length > 0) {
+                   @for (notif of notifications(); track notif.message) {
+                     <div style="padding:1rem;border-bottom:1px solid var(--neutral-50);font-size:.88rem;display:flex;gap:.75rem;align-items:flex-start;">
+                        <span style="font-size:1.5rem;line-height:1">💧</span>
+                        <div style="color:var(--neutral-800)">{{ notif.message }}</div>
+                     </div>
+                   }
+                } @else {
+                   <div style="padding:2rem 1rem;text-align:center;color:var(--neutral-500);">لا توجد إشعارات لري نباتاتك حالياً.</div>
+                }
+             </div>
+           }
+        </div>
+        <button (click)="openAddPlant()" class="btn btn-primary">+ إضافة نبتة</button>
+      </div>
     </div>
 
     <!-- Alerts -->
@@ -56,65 +86,68 @@
     <!-- Plants -->
     <div class="page-title" style="font-size:1.1rem;margin-bottom:1rem">نباتاتي</div>
     @if (dashboardLoading()) {
-      <div style="padding:2rem;text-align:center;color:var(--neutral-500)">جاري تحميل نباتاتك...</div>
+    <div style="padding:2rem;text-align:center;color:var(--neutral-500)">جاري تحميل نباتاتك...</div>
     } @else {
-      <div class="grid-3" style="margin-bottom:2rem">
-        @for (item of myGarden(); track item._id) {
-          <div class="plant-card">
-            <div class="plant-card-img" 
-                 [style.background]="item.image ? '' : 'linear-gradient(135deg,#fff5f5,#fee2e2)'"
-                 [style.background-image]="item.image ? 'url(' + getImageUrl(item.image) + ')' : ''"
-                 [style.background-size]="'cover'"
-                 [style.background-position]="'center'">
-              @if (!item.image) {
-                <div class="bg-pattern"></div>
-              }
-              @if (getHealthStatus(item.nextWatering) === 'good') {
-                <span style="position:absolute;top:.6rem;right:.6rem" class="badge badge-green">
-                  <span class="health-dot health-good" style="margin-left:.3rem"></span> صحية
-                </span>
-              } @else {
-                <span style="position:absolute;top:.6rem;right:.6rem" class="badge badge-amber">
-                  <span class="health-dot health-warn" style="margin-left:.3rem"></span> تحتاج ري
-                </span>
-              }
+    <div class="grid-3" style="margin-bottom:2rem">
+      @for (item of myGarden(); track item._id) {
+      <div class="plant-card">
+        <div class="plant-card-img" [style.background]="item.image ? '' : 'linear-gradient(135deg,#fff5f5,#fee2e2)'"
+          [style.background-image]="item.image ? 'url(' + getImageUrl(item.image) + ')' : ''"
+          [style.background-size]="'cover'" [style.background-position]="'center'">
+          @if (!item.image) {
+          <div class="bg-pattern"></div>
+          }
+          @if (getHealthStatus(item.nextWatering) === 'good') {
+          <span style="position:absolute;top:.6rem;right:.6rem" class="badge badge-green">
+            <span class="health-dot health-good" style="margin-left:.3rem"></span> صحية
+          </span>
+          } @else {
+          <span style="position:absolute;top:.6rem;right:.6rem" class="badge badge-amber">
+            <span class="health-dot health-warn" style="margin-left:.3rem"></span> تحتاج ري
+          </span>
+          }
+        </div>
+        <div class="plant-card-body">
+          <div class="plant-card-name">{{ item.plantName }}</div>
+          <div class="plant-card-sub">زُرعت {{ item.addedAt | date:'dd MMM yyyy' }}</div>
+          <div style="margin-top:.75rem">
+            <div
+              style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--neutral-500);margin-bottom:.2rem">
+              <span>نسبة النمو التقريبية</span><span>{{ getGrowthProgress(item.addedAt) }}%</span>
             </div>
-            <div class="plant-card-body">
-              <div class="plant-card-name">{{ item.plantName }}</div>
-              <div class="plant-card-sub">زُرعت {{ item.addedAt | date:'dd MMM yyyy' }}</div>
-              <div style="margin-top:.75rem">
-                <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--neutral-500);margin-bottom:.2rem">
-                  <span>نسبة النمو التقريبية</span><span>{{ getGrowthProgress(item.addedAt) }}%</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" [style.width.%]="getGrowthProgress(item.addedAt)"></div>
-                </div>
-              </div>
-              <div style="display:flex;gap:.5rem;margin-top:.75rem">
-                @if (item.nextWatering) {
-                  <span style="font-size:.78rem;background:var(--green-50);color:var(--green-700);padding:.2rem .6rem;border-radius:99px">
-                    الري الجاي: {{ item.nextWatering | date:'M/d/yy' }}
-                  </span>
-                } @else {
-                  <span style="font-size:.78rem;background:var(--neutral-100);color:var(--neutral-600);padding:.2rem .6rem;border-radius:99px">
-                    لا يوجد مجدول
-                  </span>
-                }
-              </div>
-            </div>
-            <div style="padding:.75rem 1rem;border-top:1px solid var(--neutral-100);display:flex;gap:.5rem">
-              <button (click)="openPlantDetail(item._id)" class="btn btn-secondary btn-sm" style="flex:1">التفاصيل</button>
-              <button class="btn btn-primary btn-sm">سقاية</button>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getGrowthProgress(item.addedAt)"></div>
             </div>
           </div>
-        } @empty {
-          <div style="grid-column: 1 / -1; padding:3rem;text-align:center;background:white;border-radius:var(--radius-xl)">
-            <div style="font-weight:700;color:var(--green-900);font-size:1.2rem;margin-bottom:.5rem">حديقتك فارغة حالياً</div>
-            <div style="color:var(--neutral-500);margin-bottom:1.5rem">ابدأ باكتشاف الموسوعة وإضافة نباتات لتتبع نموها هنا!</div>
-            <button (click)="openAddPlant()" class="btn btn-primary">إضافة أول نبتة</button>
+          <div style="display:flex;gap:.5rem;margin-top:.75rem">
+            @if (item.nextWatering) {
+            <span
+              style="font-size:.78rem;background:var(--green-50);color:var(--green-700);padding:.2rem .6rem;border-radius:99px">
+              الري الجاي: {{ item.nextWatering | date:'M/d/yy' }}
+            </span>
+            } @else {
+            <span
+              style="font-size:.78rem;background:var(--neutral-100);color:var(--neutral-600);padding:.2rem .6rem;border-radius:99px">
+              لا يوجد مجدول
+            </span>
+            }
           </div>
-        }
+        </div>
+        <div style="padding:.75rem 1rem;border-top:1px solid var(--neutral-100);display:flex;gap:.5rem">
+          <button (click)="openPlantDetail(item._id)" class="btn btn-secondary btn-sm" style="flex:1">التفاصيل</button>
+          <button (click)="waterPlant(item._id)" class="btn btn-primary btn-sm">سقاية</button>
+        </div>
       </div>
+      } @empty {
+      <div style="grid-column: 1 / -1; padding:3rem;text-align:center;background:white;border-radius:var(--radius-xl)">
+        <div style="font-weight:700;color:var(--green-900);font-size:1.2rem;margin-bottom:.5rem">حديقتك فارغة حالياً
+        </div>
+        <div style="color:var(--neutral-500);margin-bottom:1.5rem">ابدأ باكتشاف الموسوعة وإضافة نباتات لتتبع نموها هنا!
+        </div>
+        <button (click)="openAddPlant()" class="btn btn-primary">إضافة أول نبتة</button>
+      </div>
+      }
+    </div>
     }
 
     <!-- Upgrade Banner -->
@@ -137,92 +170,106 @@
   <div
     style="position:absolute;left:0;top:0;bottom:0;width:480px;background:white;overflow-y:auto;box-shadow:var(--shadow-xl)">
     @if (detailsLoading()) {
-       <div style="padding: 3rem; text-align:center;">جاري تحميل تفاصيل النبتة...</div>
+    <div style="padding: 3rem; text-align:center;">جاري تحميل تفاصيل النبتة...</div>
     } @else if (selectedPlantDetails()) {
-      <div
-        style="background:linear-gradient(135deg,#fff5f5,#fee2e2);padding:1.5rem;display:flex;gap:1rem;align-items:center">
-        <!-- Plant Icon or Image -->
-        <div style="width:60px;height:60px;background:white;border-radius:50%;overflow:hidden;flex-shrink:0;">
-           <img *ngIf="selectedPlantDetails()?.plant?.images?.[0]" [src]="getImageUrl(selectedPlantDetails()?.plant?.images[0])" style="width:100%;height:100%;object-fit:cover">
-        </div>
-        <div style="flex:1">
-          <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--green-900)">
-            {{ selectedPlantDetails()?.plant?.commonName }}
-          </div>
-          <div style="font-size:.82rem;color:var(--neutral-500)">
-            {{ selectedPlantDetails()?.plant?.family || 'غير مصنف' }} · زُرعت {{ selectedPlantDetails()?.addedAt | date:'dd MMM yyyy' }}
-          </div>
-          <span class="badge badge-green" style="margin-top:.3rem">صحية</span>
-        </div>
-        <button (click)="closePlantDetail()"
-          style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
+    <div
+      style="background:linear-gradient(135deg,#fff5f5,#fee2e2);padding:1.5rem;display:flex;gap:1rem;align-items:center">
+      <!-- Plant Icon or Image -->
+      <div style="width:60px;height:60px;background:white;border-radius:50%;overflow:hidden;flex-shrink:0;">
+        <img *ngIf="selectedPlantDetails()?.plant?.images?.[0]"
+          [src]="getImageUrl(selectedPlantDetails()?.plant?.images[0])" style="width:100%;height:100%;object-fit:cover">
       </div>
+      <div style="flex:1">
+        <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--green-900)">
+          {{ selectedPlantDetails()?.plant?.commonName }}
+        </div>
+        <div style="font-size:.82rem;color:var(--neutral-500)">
+          {{ selectedPlantDetails()?.plant?.family || 'غير مصنف' }} · زُرعت {{ selectedPlantDetails()?.addedAt |
+          date:'dd MMM yyyy' }}
+        </div>
+        <span class="badge badge-green" style="margin-top:.3rem">صحية</span>
+      </div>
+      <button (click)="closePlantDetail()"
+        style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
+    </div>
 
-      <div style="padding:1.5rem">
-        <!-- Tabs -->
-        <div class="tabs-wrapper">
-          <div class="tabs">
-            <button class="tab-btn" [class.active]="activeTab() === 'plan'" (click)="activeTab.set('plan')">خطة النمو</button>
-            <button class="tab-btn" [class.active]="activeTab() === 'disease'" (click)="activeTab.set('disease')">الأمراض</button>
-            <button class="tab-btn" [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">السجل</button>
+    <div style="padding:1.5rem">
+      <!-- Tabs -->
+      <div class="tabs-wrapper">
+        <div class="tabs">
+          <button class="tab-btn" [class.active]="activeTab() === 'plan'" (click)="activeTab.set('plan')">خطة
+            النمو</button>
+          <button class="tab-btn" [class.active]="activeTab() === 'disease'"
+            (click)="activeTab.set('disease')">الأمراض</button>
+          <button class="tab-btn" [class.active]="activeTab() === 'history'"
+            (click)="activeTab.set('history')">السجل</button>
+        </div>
+
+        <!-- Plan Tab -->
+        @if (activeTab() === 'plan') {
+        <div class="tab-content active">
+          <div class="grid-2" style="margin-bottom:1rem">
+            <div style="background:var(--green-50);border-radius:var(--radius-md);padding:1rem;text-align:center">
+              <div style="font-weight:700;color:var(--green-800)">{{ (getCalculatedNextWatering(selectedPlantDetails()) | date:'MMM d') || 'غير محدد' }}</div>
+              <div style="font-size:.78rem;color:var(--neutral-500)">الري القادم</div>
+            </div>
+            <div style="background:var(--amber-100);border-radius:var(--radius-md);padding:1rem;text-align:center">
+              <div style="font-weight:700;color:var(--amber-500)">{{ selectedPlantDetails().plant?.temperatureRange?.min
+                || '-' }} - {{ selectedPlantDetails().plant?.temperatureRange?.max || '-' }}°م</div>
+              <div style="font-size:.78rem;color:var(--neutral-500)">الحرارة المناسبة</div>
+            </div>
           </div>
 
-          <!-- Plan Tab -->
-          @if (activeTab() === 'plan') {
-          <div class="tab-content active">
-            <div class="grid-2" style="margin-bottom:1rem">
-              <div style="background:var(--green-50);border-radius:var(--radius-md);padding:1rem;text-align:center">
-                <div style="font-weight:700;color:var(--green-800)">{{ (selectedPlantDetails().wateringSchedule?.[0] | date:'MMM d') || 'غير محدد' }}</div>
-                <div style="font-size:.78rem;color:var(--neutral-500)">الري القادم</div>
-              </div>
-              <div style="background:var(--amber-100);border-radius:var(--radius-md);padding:1rem;text-align:center">
-                <div style="font-weight:700;color:var(--amber-500)">{{ selectedPlantDetails().plant?.temperatureRange?.min || '-' }} - {{ selectedPlantDetails().plant?.temperatureRange?.max || '-' }}°م</div>
-                <div style="font-size:.78rem;color:var(--neutral-500)">الحرارة المناسبة</div>
+          <div class="section-mini-title"
+            style="font-size:.75rem;font-weight:700;color:var(--neutral-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem">
+            مراحل النمو</div>
+          <div class="timeline">
+            @for (stage of selectedPlantDetails().calculatedGrowthPlan; track stage._id || stage.stageName) {
+            <div class="tl-item">
+              <div class="tl-dot" [class.done]="stage.isCompleted" [class.current]="!stage.isCompleted"></div>
+              <div style="font-size:.88rem">
+                <strong>{{ stage.stageName }}</strong>
+                <div style="color:var(--neutral-500);font-size:.8rem">{{ stage.startDate | date:'dd MMM yyyy' }} - {{
+                  stage.endDate | date:'dd MMM' }}</div>
               </div>
             </div>
+            }
+          </div>
+        </div>
+        }
 
-            <div class="section-mini-title" style="font-size:.75rem;font-weight:700;color:var(--neutral-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem">مراحل النمو</div>
-            <div class="timeline">
-              @for (stage of selectedPlantDetails().calculatedGrowthPlan; track stage._id || stage.stageName) {
-                 <div class="tl-item">
-                   <div class="tl-dot" [class.done]="stage.isCompleted" [class.current]="!stage.isCompleted"></div>
-                   <div style="font-size:.88rem">
-                     <strong>{{ stage.stageName }}</strong>
-                     <div style="color:var(--neutral-500);font-size:.8rem">{{ stage.startDate | date:'dd MMM yyyy' }} - {{ stage.endDate | date:'dd MMM' }}</div>
-                   </div>
-                 </div>
-              }
-            </div>
+        <!-- Diseases Tab -->
+        @if (activeTab() === 'disease') {
+        <div class="tab-content active">
+          @if (selectedPlantDetails().plant?.diseases?.length > 0) {
+          <div style="font-size:.88rem;color:var(--neutral-600);margin-bottom:.75rem">الأمراض المحتملة المرتبطة بهذه
+            النبتة:</div>
+          @for (disease of selectedPlantDetails().plant.diseases; track disease._id) {
+          <div class="alert alert-warning" style="margin-bottom:1rem;display:flex;flex-direction:column;gap:0.5rem">
+            <div style="font-weight:700;">{{ disease.name }} ({{ disease.scientificName }})</div>
+            @if (disease.symptoms) { <div style="font-size:.85rem"><strong>الأعراض:</strong> {{ disease.symptoms }}
+            </div> }
+            @if (disease.treatment) { <div style="font-size:.85rem"><strong>العلاج:</strong> {{ disease.treatment }}
+            </div> }
+            @if (disease.prevention) { <div style="font-size:.85rem"><strong>الوقاية:</strong> {{ disease.prevention }}
+            </div> }
           </div>
           }
-
-          <!-- Diseases Tab -->
-          @if (activeTab() === 'disease') {
-            <div class="tab-content active">
-              @if (selectedPlantDetails().plant?.diseases?.length > 0) {
-                <div style="font-size:.88rem;color:var(--neutral-600);margin-bottom:.75rem">الأمراض المحتملة المرتبطة بهذه النبتة:</div>
-                @for (disease of selectedPlantDetails().plant.diseases; track disease._id) {
-                  <div class="alert alert-warning" style="margin-bottom:1rem;display:flex;flex-direction:column;gap:0.5rem">
-                    <div style="font-weight:700;">{{ disease.name }} ({{ disease.scientificName }})</div>
-                    @if (disease.symptoms) { <div style="font-size:.85rem"><strong>الأعراض:</strong> {{ disease.symptoms }}</div> }
-                    @if (disease.treatment) { <div style="font-size:.85rem"><strong>العلاج:</strong> {{ disease.treatment }}</div> }
-                    @if (disease.prevention) { <div style="font-size:.85rem"><strong>الوقاية:</strong> {{ disease.prevention }}</div> }
-                  </div>
-                }
-              } @else {
-                 <div style="text-align:center;color:var(--neutral-500);padding:2rem;">لا توجد أمراض مسجلة مرتبطة بهذه النبتة حالياً.</div>
-              }
-            </div>
-          }
-
-          <!-- History Tab -->
-          @if (activeTab() === 'history') {
-            <div class="tab-content active">
-               <div style="text-align:center;color:var(--neutral-500);padding:2rem;">سجل النبتة سيظهر هنا قريباً.</div>
-            </div>
+          } @else {
+          <div style="text-align:center;color:var(--neutral-500);padding:2rem;">لا توجد أمراض مسجلة مرتبطة بهذه النبتة
+            حالياً.</div>
           }
         </div>
+        }
+
+        <!-- History Tab -->
+        @if (activeTab() === 'history') {
+        <div class="tab-content active">
+          <div style="text-align:center;color:var(--neutral-500);padding:2rem;">سجل النبتة سيظهر هنا قريباً.</div>
+        </div>
+        }
       </div>
+    </div>
     }
   </div>
 </div>
@@ -230,49 +277,53 @@
 
 <!-- Add Plant Modal (Angular-powered) -->
 @if (showAddPlantModal) {
-  <div class="add-plant-modal open">
-    <div class="modal-box">
-      <div style="padding:1.5rem;border-bottom:1px solid var(--neutral-100);display:flex;align-items:center;justify-content:space-between">
-        <div style="font-weight:700;font-size:1.1rem;color:var(--green-900)">إضافة نبتة جديدة</div>
-        <button (click)="closeAddPlant()" style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
+<div class="add-plant-modal open">
+  <div class="modal-box">
+    <div
+      style="padding:1.5rem;border-bottom:1px solid var(--neutral-100);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-weight:700;font-size:1.1rem;color:var(--green-900)">إضافة نبتة جديدة</div>
+      <button (click)="closeAddPlant()"
+        style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
+    </div>
+    <div style="padding:1.5rem">
+      @if (plantsLoading) {
+      <div style="padding:2rem;text-align:center;color:var(--neutral-500)">جاري تحميل الموسوعة...</div>
+      } @else {
+      <!-- Category Selection -->
+      <div class="input-group">
+        <label>عائلة النبتة (Family)</label>
+        <select class="input-field" [value]="selectedCategory()" (change)="onCategoryChange($event)">
+          <option value="">— جميع النباتات —</option>
+          @for (cat of categories(); track cat) {
+          <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
       </div>
-      <div style="padding:1.5rem">
-        @if (plantsLoading) {
-          <div style="padding:2rem;text-align:center;color:var(--neutral-500)">جاري تحميل الموسوعة...</div>
-        } @else {
-          <!-- Category Selection -->
-          <div class="input-group">
-            <label>عائلة النبتة (Family)</label>
-            <select class="input-field" [value]="selectedCategory()" (change)="onCategoryChange($event)">
-              <option value="">— جميع النباتات —</option>
-              @for (cat of categories(); track cat) {
-                <option [value]="cat">{{ cat }}</option>
-              }
-            </select>
-          </div>
 
-          <!-- Plant Selection -->
-          <div class="input-group" style="margin-top:1rem">
-            <label>اختر النبتة</label>
-            <select class="input-field" [value]="selectedPlantId()" (change)="onPlantChange($event)">
-              <option value="">— اختر نبتة —</option>
-              @for (plant of filteredPlants(); track plant._id) {
-                <option [value]="plant._id">{{ plant.commonName }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="input-group" style="margin-top:1rem">
-            <label>اسم شخصي للنبتة (اختياري)</label>
-            <input type="text" class="input-field" [value]="plantNickname()" (input)="plantNickname.set($any($event.target).value)" placeholder='مثلاً: "طماطمتي الحلوة"'>
-          </div>
-
-          <div style="display:flex;gap:.75rem;margin-top:1.5rem">
-            <button (click)="closeAddPlant()" class="btn btn-ghost" style="flex:1">إلغاء</button>
-            <button (click)="addPlant()" class="btn btn-primary" style="flex:2" [disabled]="!selectedPlantId()">أضف النبتة</button>
-          </div>
-        }
+      <!-- Plant Selection -->
+      <div class="input-group" style="margin-top:1rem">
+        <label>اختر النبتة</label>
+        <select class="input-field" [value]="selectedPlantId()" (change)="onPlantChange($event)">
+          <option value="">— اختر نبتة —</option>
+          @for (plant of filteredPlants(); track plant._id) {
+          <option [value]="plant._id">{{ plant.commonName }}</option>
+          }
+        </select>
       </div>
+
+      <div class="input-group" style="margin-top:1rem">
+        <label>اسم شخصي للنبتة (اختياري)</label>
+        <input type="text" class="input-field" [value]="plantNickname()"
+          (input)="plantNickname.set($any($event.target).value)" placeholder='مثلاً: "طماطمتي الحلوة"'>
+      </div>
+
+      <div style="display:flex;gap:.75rem;margin-top:1.5rem">
+        <button (click)="closeAddPlant()" class="btn btn-ghost" style="flex:1">إلغاء</button>
+        <button (click)="addPlant()" class="btn btn-primary" style="flex:2" [disabled]="!selectedPlantId()">أضف
+          النبتة</button>
+      </div>
+      }
     </div>
   </div>
+</div>
 }

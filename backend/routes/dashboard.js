@@ -15,5 +15,8 @@ router.get('/my-plant/:id', authentication, dashboardController.getMyPlantDetail
 // DELETE /api/dashboard/my-plant/:id → Remove a plant from user's garden
 router.delete('/my-plant/:id', authentication, dashboardController.removePlantFromDashboard);
 
+// PUT /api/dashboard/water-plant/:id → Update lastWateredDate and recalculate nextWateringDate
+router.put('/water-plant/:id', authentication, dashboardController.waterPlant);
+
 
 module.exports = router;

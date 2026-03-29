@@ -71,6 +71,8 @@ exports.addPlantToDashboard = catchAsync(async (req, res, next) => {
             user: userId,
             plant: plantId,
             addedAt: startDate,
+            lastWateredDate: startDate,
+            nextWateringDate: schedule.length > 0 ? schedule[0] : null,
             wateringSchedule: schedule,
             calculatedGrowthPlan: calculatedPlan
         }], { session });
@@ -118,23 +120,32 @@ exports.getUserDashboard = catchAsync(async (req, res, next) => {
         plantName: up.plant?.commonName || 'Unknown',
         image: up.plant?.images?.[0] || null,
         addedAt: up.addedAt,
-        nextWatering: up.nextWateringDate // استخدام الـ Virtual اللي عملناه في الموديل
+        nextWatering: up.nextWateringDate // تم تغييرها لتقرأ من الحقل مباشرة
     }));
 
-    // 4. التنبيهات (استعلام سريع لليوم فقط)
-    const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
-    const endOfToday = new Date(); endOfToday.setHours(23,59,59,999);
+    // 4. التنبيهات (استعلام لري اليوم وبكرة)
+    const today = new Date();
+    const tomorrowEndOfDay = new Date();
+    tomorrowEndOfDay.setDate(today.getDate() + 1);
+    tomorrowEndOfDay.setHours(23, 59, 59, 999);
 
     const wateringAlerts = await UserPlant.find({
         user: req.user.id,
-        wateringSchedule: { $gte: startOfToday, $lte: endOfToday }
+        nextWateringDate: { $lte: tomorrowEndOfDay }
     }).populate('plant', 'commonName');
 
-    const notifications = wateringAlerts.map(item => ({
-        plantName: item.plant?.commonName,
-        message: `ميعاد ري نبتة ${item.plant?.commonName} اليوم.`,
-        type: 'watering_alert'
-    }));
+    const notifications = wateringAlerts.map(item => {
+        const nextDate = new Date(item.nextWateringDate);
+        const isTomorrow = nextDate.getDate() !== today.getDate() && nextDate > today;
+        return {
+            plantName: item.plant?.commonName,
+            message: isTomorrow 
+                ? `نبتة ${item.plant?.commonName} تحتاج ري غداً.` 
+                : `نبتة ${item.plant?.commonName} تحتاج للري اليوم أو متأخرة!`,
+            type: 'watering_alert',
+            isTomorrow: isTomorrow
+        };
+    });
 
     res.status(200).json({
         status: 'success',
@@ -223,6 +234,8 @@ exports.getMyPlantDetails = catchAsync(async (req, res, next) => {
 
                 wateringSchedule: userPlant.wateringSchedule,
 
+                nextWateringDate: userPlant.nextWateringDate,
+
                 plant: userPlant.plant
 
             }
@@ -266,4 +279,40 @@ exports.removePlantFromDashboard = catchAsync(async (req, res, next) => {
 
     });
 
+});
+
+exports.waterPlant = catchAsync(async (req, res, next) => {
+    // جلب النبتة والتأكد من أنها تعود للمستخدم
+    const userPlant = await UserPlant.findOne({
+        _id: req.params.id,
+        user: req.user.id
+    }).populate('plant', 'waterNeeds');
+
+    if (!userPlant || !userPlant.plant) {
+        return next(new AppError('Plant record not found in your garden', 404));
+    }
+
+    // حساب التواريخ الجديدة
+    const now = new Date();
+    const frequency = Number(userPlant.plant.waterNeeds?.frequency) || 0;
+    
+    let nextDate = null;
+    if (frequency > 0) {
+        nextDate = new Date(now);
+        nextDate.setDate(now.getDate() + frequency);
+    }
+
+    // تحديث قاعدة البيانات
+    userPlant.lastWateredDate = now;
+    userPlant.nextWateringDate = nextDate;
+    await userPlant.save();
+
+    res.status(200).json({
+        status: 'success',
+        message: 'تم سقاية النبتة بنجاح، وتحديث موعد الري القادم.',
+        data: {
+            lastWateredDate: userPlant.lastWateredDate,
+            nextWateringDate: userPlant.nextWateringDate
+        }
+    });
 });

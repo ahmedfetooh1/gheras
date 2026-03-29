@@ -30,9 +30,9 @@
         <!-- Admin Link For Mobile -->
         @if (authService.currentUser()?.role === 'admin') {
           <a routerLink="/dashboard/admin" (click)="isMenuOpen = false" class="btn btn-primary w-100">لوحة الأدمن</a>
+        } @else {
+          <a routerLink="/dashboard" (click)="isMenuOpen = false" class="btn btn-ghost w-100">لوحة التحكم</a>
         }
-
-        <a routerLink="/dashboard" (click)="isMenuOpen = false" class="btn btn-ghost w-100">لوحة التحكم</a>
         <button (click)="logout()" class="btn btn-ghost w-100">تسجيل الخروج</button>
       }
     </li>

@@ -14,6 +14,10 @@ export class StoreService {
     return this.http.get<Product[]>(`${this.baseUrl}/product`);
   }
 
+  getProductById(id: string): Observable<Product> {
+    return this.http.get<Product>(`${this.baseUrl}/product/${id}`);
+  }
+
   getCategories(): Observable<Category[]> {
     return this.http.get<Category[]>(`${this.baseUrl}/category`);
   }

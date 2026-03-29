@@ -1,12 +1,16 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
+import { StoreService } from '../../core/services/store.service';
+import { AuthService } from '../../core/services/auth.service';
 
-interface Product {
+interface LocalProduct {
   id: string;
   name: string;
   desc: string;
-  cat: string;
+  catId: string;
+  catName: string;
   price: number;
   oldPrice?: number;
   rating: number;
@@ -19,38 +23,79 @@ interface Product {
 @Component({
   selector: 'app-shop',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './shop.html',
   styleUrl: './shop.css',
 })
-export class Shop {
+export class Shop implements OnInit {
   activeFilter = signal<string>('all');
-  maxPrice: number = 500;
+  maxPrice: number = 0;
   isCartOpen = signal<boolean>(false);
 
-  products: Product[] = [
-    { id: 'npk', name: 'سماد NPK المتكامل', desc: 'سماد متوازن للنمو العام — مناسب للطماطم والخضروات', cat: 'أسمدة', price: 65, oldPrice: 80, rating: 5, reviews: 128, emoji: '🧪', color: 'linear-gradient(135deg,#fffbeb,#fef3c7)', isBestSeller: true },
-    { id: 'organic', name: 'سماد الأعشاب العضوي', desc: '100% طبيعي من مخلفات النباتات — آمن للاستخدام المنزلي', cat: 'أسمدة', price: 45, rating: 4, reviews: 64, emoji: '🍂', color: 'linear-gradient(135deg,#f0fdf4,#dcfce7)' },
-    { id: 'flower', name: 'سماد الزهور السائل', desc: 'يعزز التزهير ويمنح الألوان حيوية — للورد والياسمين', cat: 'أسمدة', price: 55, rating: 5, reviews: 93, emoji: '🌸', color: 'linear-gradient(135deg,#fff1f2,#ffe4e6)' },
-    { id: 'cactus-soil', name: 'تربة رملية للصبار', desc: 'خلطة متخصصة للكاكتوس والصبار — صرف ممتاز للمياه', cat: 'تربة', price: 35, rating: 4, reviews: 47, emoji: '🏜️', color: 'linear-gradient(135deg,#faf5eb,#e7d5a8)' },
-    { id: 'veg-soil', name: 'تربة خضروات غنية', desc: 'خلطة عضوية غنية بالمغذيات — للطماطم والفلفل والخيار', cat: 'تربة', price: 40, oldPrice: 50, rating: 5, reviews: 82, emoji: '🪵', color: 'linear-gradient(135deg,#f0fdf4,#bbf7d0)' },
-    { id: 'seeds', name: 'بذور طماطم هجين', desc: 'إنتاجية عالية — 20 بذرة في العبوة الواحدة', cat: 'بذور', price: 25, rating: 4, reviews: 55, emoji: '🌱', color: 'linear-gradient(135deg,#fff5f5,#fee2e2)' },
-    { id: 'spray', name: 'بخاخ نباتات 1 لتر', desc: 'بخاخ ضباب ناعم للأوراق — مقاوم للصدأ', cat: 'أدوات', price: 30, rating: 5, reviews: 110, emoji: '🧴', color: 'linear-gradient(135deg,#f0f9ff,#bae6fd)' },
-    { id: 'pesticide', name: 'مبيد الحشرات الدقيقية', desc: 'آمن للاستخدام المنزلي — يقضي على البق والحشرات الدقيقة', cat: 'علاجات', price: 70, rating: 4, reviews: 38, emoji: '🛡️', color: 'linear-gradient(135deg,#fdf4ff,#e9d5ff)' }
-  ];
+  private storeService = inject(StoreService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-  cartItems: any[] = [
-    { id: 'npk', name: 'سماد NPK المتكامل', price: 65, qty: 1, emoji: '🧪' },
-    { id: 'veg-soil', name: 'تربة خضروات غنية', price: 40, qty: 1, emoji: '🪵' }
-  ];
+  products = signal<LocalProduct[]>([]);
+  categories = signal<any[]>([]);
 
-  get filteredProducts() {
-    return this.products.filter(p => {
-      const matchesFilter = this.activeFilter() === 'all' || p.cat === this.activeFilter();
-      const matchesPrice = p.price <= this.maxPrice;
-      return matchesFilter && matchesPrice;
+  cartItems: any[] = [];
+
+  ngOnInit() {
+    this.storeService.getProducts().subscribe((res: any) => {
+      const data = res.data || res;
+      this.products.set(data.map((p: any) => ({
+        id: p._id,
+        name: p.name,
+        desc: p.description || '',
+        catId: p.category?._id || p.category,
+        catName: p.category?.name || 'أخرى',
+        price: p.price,
+        rating: 4 + Math.random(),
+        reviews: Math.floor(Math.random() * 100) + 10,
+        emoji: '🌿',
+        color: 'linear-gradient(135deg,#f0fdf4,#dcfce7)',
+        isBestSeller: p.stock < 10 && p.stock > 0
+      })));
+    });
+
+    this.storeService.getCategories().subscribe((res: any) => {
+      this.categories.set(res.data || res);
+    });
+
+    this.fetchCart();
+  }
+
+  fetchCart() {
+    this.storeService.getCart().subscribe({
+      next: (res: any) => {
+        const cart = res.data || res;
+        if (cart && cart.items) {
+          this.cartItems = cart.items.map((i: any) => ({
+            id: i.product?._id || i.product, // Robust mapping
+            name: i.product?.name || 'منتج',
+            price: i.product?.price || 0,
+            qty: i.quantity,
+            emoji: '🛒'
+          }));
+        }
+      },
+      error: () => {
+        this.cartItems = [];
+      }
     });
   }
+
+  filteredProducts = computed(() => {
+    const list = this.products();
+    const filter = this.activeFilter();
+    const price = this.maxPrice;
+    return list.filter(p => {
+      const matchesFilter = filter === 'all' || p.catId === filter;
+      const matchesPrice = price === 0 || p.price <= price;
+      return matchesFilter && matchesPrice;
+    });
+  });
 
   get cartTotal() {
     return this.cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
@@ -64,27 +109,32 @@ export class Shop {
     this.isCartOpen.set(!this.isCartOpen());
   }
 
-  addToCart(product: Product) {
-    const existing = this.cartItems.find(item => item.id === product.id);
-    if (existing) {
-      existing.qty++;
-    } else {
-      this.cartItems.push({ id: product.id, name: product.name, price: product.price, qty: 1, emoji: product.emoji });
+  addToCart(product: LocalProduct) {
+    if (!this.authService.currentUser()) {
+      alert('الرجاء تسجيل الدخول أولاً لإضافة منتجات للسلة');
+      this.router.navigate(['/login']);
+      return;
     }
-    this.toggleCart();
+
+    this.storeService.addToCart(product.id, 1).subscribe({
+      next: () => {
+        this.fetchCart();
+        this.isCartOpen.set(true);
+      },
+      error: () => alert('عذراً، حدث خطأ أثناء الإضافة للسلة')
+    });
   }
 
   updateQty(itemId: string, delta: number) {
-    const item = this.cartItems.find(i => i.id === itemId);
-    if (item) {
-      item.qty += delta;
-      if (item.qty <= 0) {
-        this.cartItems = this.cartItems.filter(i => i.id !== itemId);
-      }
-    }
+    if (!this.authService.currentUser()) return;
+
+    this.storeService.addToCart(itemId, delta).subscribe(() => {
+      this.fetchCart();
+    });
   }
 
   getStars(rating: number) {
-    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+    const r = Math.round(rating);
+    return '★'.repeat(r) + '☆'.repeat(5 - r);
   }
 }

@@ -30,7 +30,7 @@ interface LocalProduct {
 export class Shop implements OnInit {
   activeFilter = signal<string>('all');
   maxPrice: number = 0;
-  isCartOpen = signal<boolean>(false);
+
 
   private storeService = inject(StoreService);
   private authService = inject(AuthService);
@@ -39,7 +39,7 @@ export class Shop implements OnInit {
   products = signal<LocalProduct[]>([]);
   categories = signal<any[]>([]);
 
-  cartItems: any[] = [];
+
 
   ngOnInit() {
     this.storeService.getProducts().subscribe((res: any) => {
@@ -62,29 +62,9 @@ export class Shop implements OnInit {
     this.storeService.getCategories().subscribe((res: any) => {
       this.categories.set(res.data || res);
     });
-
-    this.fetchCart();
   }
 
-  fetchCart() {
-    this.storeService.getCart().subscribe({
-      next: (res: any) => {
-        const cart = res.data || res;
-        if (cart && cart.items) {
-          this.cartItems = cart.items.map((i: any) => ({
-            id: i.product?._id || i.product, // Robust mapping
-            name: i.product?.name || 'منتج',
-            price: i.product?.price || 0,
-            qty: i.quantity,
-            emoji: '🛒'
-          }));
-        }
-      },
-      error: () => {
-        this.cartItems = [];
-      }
-    });
-  }
+
 
   filteredProducts = computed(() => {
     const list = this.products();
@@ -97,17 +77,13 @@ export class Shop implements OnInit {
     });
   });
 
-  get cartTotal() {
-    return this.cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
-  }
+
 
   setFilter(cat: string) {
     this.activeFilter.set(cat);
   }
 
-  toggleCart() {
-    this.isCartOpen.set(!this.isCartOpen());
-  }
+
 
   addToCart(product: LocalProduct) {
     if (!this.authService.currentUser()) {
@@ -116,22 +92,15 @@ export class Shop implements OnInit {
       return;
     }
 
-    this.storeService.addToCart(product.id, 1).subscribe({
+    this.storeService.addToCart(product.id, 1, product.price).subscribe({
       next: () => {
-        this.fetchCart();
-        this.isCartOpen.set(true);
+        this.storeService.isCartOpen.set(true);
       },
       error: () => alert('عذراً، حدث خطأ أثناء الإضافة للسلة')
     });
   }
 
-  updateQty(itemId: string, delta: number) {
-    if (!this.authService.currentUser()) return;
 
-    this.storeService.addToCart(itemId, delta).subscribe(() => {
-      this.fetchCart();
-    });
-  }
 
   getStars(rating: number) {
     const r = Math.round(rating);

@@ -14,10 +14,10 @@ const {
 // كل الـ cart routes محتاجة الـ user يكون logged in
 router.use(authentication);
 
-router.get("/", getCart);          // جيب الـ cart
-router.post("/", addToCart);       // أضف item للـ cart
-router.put("/:itemId", updateCartItem);      // عدّل quantity لـ item
-router.delete("/:itemId", removeCartItem);   // احذف item من الـ cart
-router.delete("/", clearCart);     // فرّغ الـ cart كلها
+router.get("/", getCart);
+router.post("/", addToCart);
+router.put("/:itemId", updateCartItem);
+router.delete("/:itemId", removeCartItem);
+router.delete("/", clearCart);
 
 module.exports = router;

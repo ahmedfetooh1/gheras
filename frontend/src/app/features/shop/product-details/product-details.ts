@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { StoreService } from '../../../core/services/store.service';
@@ -18,7 +18,7 @@ export class ProductDetails implements OnInit {
   private storeService = inject(StoreService);
   private authService = inject(AuthService);
 
-  product: any;
+  product = signal<any>(null);
   allProducts: any[] = [];
   relatedProducts: any[] = [];
 
@@ -26,7 +26,7 @@ export class ProductDetails implements OnInit {
   nextProductId: string | null = null;
 
   qty: number = 1;
-  isLoading = true;
+  isLoading = signal(true);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -38,46 +38,43 @@ export class ProductDetails implements OnInit {
   }
 
   loadProductData(id: string) {
-    this.isLoading = true;
-    this.product = null;
+    this.isLoading.set(true);
+    this.product.set(null);
 
     // 1. Fetch main product and show immediately
     this.storeService.getProductById(id).subscribe({
       next: (res: any) => {
-        // Robust data extraction
-        let p = res.data || res;
-        if (Array.isArray(p)) p = p[0];
+        // استخراج الكائن من خاصية data كما يظهر في Postman
+        const p = res.data;
 
-        if (!p || typeof p !== 'object') {
-          console.warn('Product data not found for ID:', id);
-          this.isLoading = false;
+        if (!p) {
+          this.isLoading.set(false);
           return;
         }
 
-        this.product = {
-          id: p._id || id,
-          name: p.name || 'منتج جديد',
-          desc: p.description || p.desc || '',
-          cat: p.category?.name || p.category || 'أخرى',
-          price: p.price || 0,
-          oldPrice: p.oldPrice || p.oldprice,
+        this.product.set({
+          id: p._id,
+          name: p.name,
+          desc: p.description,
+          cat: p.category?.name || 'أخرى',
+          price: p.finalPrice || p.price, // استخدم finalPrice لو موجود
+          oldPrice: p.price > p.finalPrice ? p.price : null,
           rating: p.rating || (4 + Math.random()),
           reviews: p.reviews || Math.floor(Math.random() * 100) + 10,
           emoji: '🌿',
+          // تأكد من مسار الصور لو عندك مصفوفة images
+          imageUrl: p.images && p.images.length > 0 ? p.images[0] : null,
           color: 'linear-gradient(135deg,#f0fdf4,#dcfce7)',
-          isBestSeller: (p.stock || 0) < 10 && (p.stock || 0) > 0,
-          imageUrl: p.imageUrl
-        };
+          isBestSeller: p.stock < 10 && p.stock > 0
+        });
 
-        this.isLoading = false; // Hide "Loading..." now
+        this.isLoading.set(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        // 2. Fetch all products in background for navigation and related
         this.fetchRelatedData(id);
       },
       error: (err) => {
         console.error('Error fetching product:', err);
-        this.isLoading = false;
+        this.isLoading.set(false);
         alert('حدث خطأ أثناء تحميل المنتج.');
       }
     });
@@ -105,7 +102,7 @@ export class ProductDetails implements OnInit {
             this.prevProductId = index > 0 ? this.allProducts[index - 1].id : null;
             this.nextProductId = index < this.allProducts.length - 1 ? this.allProducts[index + 1].id : null;
             this.relatedProducts = this.allProducts
-              .filter(item => item.id !== id && (item.cat === (this.product?.cat || '') || true))
+              .filter(item => item.id !== id && (item.cat === (this.product()?.cat || '') || true))
               .slice(0, 4);
           }
         }
@@ -120,9 +117,12 @@ export class ProductDetails implements OnInit {
       return;
     }
 
-    if (this.product) {
-      this.storeService.addToCart(this.product.id, this.qty).subscribe({
-        next: () => alert('تمت الإضافة إلى السلة بنجاح! 🛒'),
+    if (this.product()) {
+      this.storeService.addToCart(this.product().id, this.qty, this.product().price).subscribe({
+        next: () => {
+          alert('تمت الإضافة إلى السلة بنجاح! 🛒');
+          this.storeService.isCartOpen.set(true);
+        },
         error: () => alert('عذراً، حدث خطأ أثناء الإضافة للسلة')
       });
     }

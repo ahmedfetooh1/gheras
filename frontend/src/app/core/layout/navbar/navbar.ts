@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, computed, ViewEncapsulation } from '@angular/core';
+import { Component, inject, computed, ViewEncapsulation, OnInit } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { StoreService } from '../../services/store.service';
 
 @Component({
   selector: 'app-navbar',
@@ -11,9 +12,24 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './navbar.css',
   encapsulation: ViewEncapsulation.None
 })
-export class NavbarComponent {
-  public authService = inject(AuthService); // Public for HTML access
+export class NavbarComponent implements OnInit {
+  public authService = inject(AuthService);
+  public storeService = inject(StoreService);
   private router = inject(Router);
+
+  ngOnInit() {
+    if (this.authService.currentUser()) {
+      this.storeService.getCart().subscribe();
+    }
+  }
+
+  handleCartClick() {
+    if (this.authService.currentUser()) {
+      this.storeService.toggleCart();
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
 
   isMenuOpen = false;
 

@@ -53,6 +53,7 @@ export interface Category {
 export interface CartItem {
   product: Product;
   quantity: number;
+  price?: number;
 }
 
 export interface Cart {

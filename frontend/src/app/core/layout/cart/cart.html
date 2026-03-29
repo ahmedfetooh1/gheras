@@ -1,0 +1,64 @@
+<!-- Cart Sidebar Overlay -->
+<div class="cart-overlay" [class.active]="storeService.isCartOpen()" (click)="toggleCart()"></div>
+
+<!-- Cart Sidebar Content -->
+<div class="cart-sidebar" [class.active]="storeService.isCartOpen()">
+    <div class="cart-header">
+        <div style="font-weight:700;font-size:1.05rem">عربية التسوق</div>
+        <button (click)="toggleCart()"
+            style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
+    </div>
+
+    <div class="cart-items">
+        @if (storeService.cartItems().length > 0) {
+        <div style="display: flex; justify-content: flex-end; padding-bottom: 1rem;">
+            <button (click)="clearCart()"
+                style="background: none; border: none; color: #dc2626; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">تفريغ
+                العربة</button>
+        </div>
+        }
+
+        @for (item of storeService.cartItems(); track item._id) {
+        <div class="cart-item">
+            <div class="cart-item-emoji">
+                @if (item.product?.images?.[0]) {
+                <img [src]="getImageUrl(item.product.images[0])"
+                    style="width:100%;height:100%;object-fit:cover;border-radius:4px">
+                } @else {
+                🌿
+                }
+            </div>
+            <div style="flex:1">
+                <div class="cart-item-name">{{ item.product?.name || 'منتج' }}</div>
+                <div class="cart-item-price">{{ (item.product?.finalPrice || item.product?.price || item.price || 0) }}
+                    ج.م</div>
+                <div class="cart-qty">
+                    <button (click)="updateQty(item, -1)" class="qty-btn">−</button>
+                    <span style="font-size:.9rem;font-weight:700">{{ item.quantity }}</span>
+                    <button (click)="updateQty(item, 1)" class="qty-btn">+</button>
+                </div>
+            </div>
+            <button (click)="removeItem(item)"
+                style="background:none;border:none;color:var(--neutral-400);cursor:pointer">حذف</button>
+        </div>
+        } @empty {
+        <div style="text-align:center;color:var(--neutral-500);padding-top:2rem">
+            عربة التسوق فارغة حالياً 🛒
+        </div>
+        }
+    </div>
+
+    <div class="cart-footer">
+        <div class="cart-total">
+            <span>الإجمالي</span>
+            <span style="color:var(--green-700)">{{ storeService.cartTotalAmount() }} ج.م</span>
+        </div>
+        <button [disabled]="storeService.cartItems().length === 0" class="btn btn-primary btn-block btn-lg"
+            (click)="toggleCart()">
+            إتمام الشراء ←
+        </button>
+        <div style="text-align:center;font-size:.78rem;color:var(--neutral-400);margin-top:.6rem">
+            شحن مجاني للطلبات فوق 200 ج.م
+        </div>
+    </div>
+</div>

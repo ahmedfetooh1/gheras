@@ -1,0 +1,53 @@
+.sidebar-submenu {
+  margin-right: 1.5rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding-right: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-link.has-chevron {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chevron-icon {
+  font-size: 0.6rem;
+  transition: transform 0.3s ease;
+  opacity: 0.5;
+}
+
+.rotated {
+  transform: rotate(90deg);
+}
+
+.sidebar-sub-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.82rem;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.sidebar-sub-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.sidebar-sub-link.active {
+  color: var(--green-400);
+  font-weight: 700;
+  background: rgba(25, 135, 84, 0.1);
+}
+
+.sidebar-group {
+  margin-bottom: 4px;
+}

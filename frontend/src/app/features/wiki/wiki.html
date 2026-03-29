@@ -23,7 +23,7 @@
       <ng-container *ngIf="activeTab() === 'plants'">
         <div *ngFor="let plant of filteredPlants" class="wiki-card" (click)="openModal(plant)">
           <div class="wiki-card-img">
-            <img [src]="plant.images[0] || 'assets/images/default.png'">
+            <img [src]="plant.images?.[0] || 'assets/images/default.png'">
           </div>
           <div class="wiki-card-body">
             <h3 class="wiki-card-name">{{ plant.commonName }}</h3>
@@ -58,6 +58,13 @@
         </div>
       </ng-container>
 
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="totalPages() > 1">
+      <button class="pagination-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">السابق</button>
+      <span class="page-info">صفحة {{ currentPage() }} من {{ totalPages() }}</span>
+      <button class="pagination-btn" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)">التالي</button>
     </div>
 
     <div

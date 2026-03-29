@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
 const plantSchema = new mongoose.Schema({
-    commonName: { type: String, required: true },
-    scientificName: { type: String, required: true },
-    family: String,
-    description: String,
+    commonName: { type: String, required: true, trim: true },
+    scientificName: { type: String, required: true, trim: true },
+    family: { type: String, required: true, trim: true },
+    description: { type: String, trim: true },
     images: [String],
 
     growingSeason: String,

@@ -10,8 +10,8 @@ exports.getAllDiseases = catchAsync(async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const diseases = await Disease.find()
-        .select("name scientificName image")
         .populate("affectedPlants", "commonName")
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 

@@ -21,16 +21,36 @@ export class Wiki implements OnInit {
   diseases = signal<Disease[]>([]);
   fertilizers = signal<Fertilizer[]>([]);
 
+  currentPage = signal(1);
+  totalPages = signal(1);
+
   selectedItem = signal<any>(null);
 
   ngOnInit() {
-    this.fetchAllData();
+    this.goToPage(1);
   }
 
-  fetchAllData() {
-    this.wikiService.getPlants().subscribe(data => this.plants.set(data));
-    this.wikiService.getDiseases().subscribe(data => this.diseases.set(data));
-    this.wikiService.getFertilizers().subscribe(data => this.fertilizers.set(data));
+  goToPage(page: number) {
+    if (page < 1 || (this.totalPages() > 0 && page > this.totalPages())) return;
+    
+    this.currentPage.set(page);
+    
+    if (this.activeTab() === 'plants') {
+      this.wikiService.getPlants(page).subscribe(res => {
+        this.plants.set(res.data?.plants || []);
+        this.totalPages.set(res.totalPages || 1);
+      });
+    } else if (this.activeTab() === 'diseases') {
+      this.wikiService.getDiseases(page).subscribe(res => {
+        this.diseases.set(res.data?.diseases || []);
+        this.totalPages.set(res.totalPages || 1);
+      });
+    } else {
+      this.wikiService.getFertilizers(page).subscribe(res => {
+        this.fertilizers.set(res.data?.fertilizers || []);
+        this.totalPages.set(res.totalPages || 1);
+      });
+    }
   }
 
   get filteredPlants() {
@@ -47,6 +67,7 @@ export class Wiki implements OnInit {
 
   setTab(tab: 'plants' | 'diseases' | 'fertilizers') {
     this.activeTab.set(tab);
+    this.goToPage(1);
   }
 
   openModal(item: any) {
@@ -58,7 +79,7 @@ export class Wiki implements OnInit {
   }
 
   isPlant(item: any): item is Plant {
-    return item && 'wateringSchedule' in item;
+    return item && 'commonName' in item;
   }
 
   isDisease(item: any): item is Disease {

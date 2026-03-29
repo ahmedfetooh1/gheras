@@ -12,10 +12,8 @@ export class WikiService {
   private baseUrl = 'http://localhost:3000/api';
 
   // Plants
-  getPlants(): Observable<Plant[]> {
-    return this.http.get<any>(`${this.baseUrl}/plants`).pipe(
-      map(res => res.data?.plants || [])
-    );
+  getPlants(page: number = 1, limit: number = 15): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/plants?page=${page}&limit=${limit}`);
   }
 
   getPlantById(id: string): Observable<Plant> {
@@ -39,11 +37,9 @@ export class WikiService {
   }
 
   // Diseases
-  getDiseases(): Observable<Disease[]> {
-    return this.http.get<any>(`${this.baseUrl}/diseases`)
-      .pipe(
-        map(res => res.data.diseases)
-      );
+  // Diseases
+  getDiseases(page: number = 1, limit: number = 20): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/diseases?page=${page}&limit=${limit}`);
   }
 
   getDiseaseById(id: string): Observable<Disease> {
@@ -54,11 +50,8 @@ export class WikiService {
   }
 
   // Fertilizers
-  getFertilizers(): Observable<Fertilizer[]> {
-    return this.http.get<any>(`${this.baseUrl}/fertilizers`)
-      .pipe(
-        map(res => res.data.fertilizers)
-      );
+  getFertilizers(page: number = 1, limit: number = 20): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/fertilizers?page=${page}&limit=${limit}`);
   }
 
   getFertilizerById(id: string): Observable<Fertilizer> {

@@ -2,18 +2,19 @@ const mongoose = require('mongoose')
 
 const productSchema = new mongoose.Schema(
 {
-  name: { type: String, required: true },
+  name: { type: String, required: true, trim: true },
 
-  description: String,
+  description: { type: String, required: true, trim: true },
 
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
+    required: true
   },
 
-  price: { type: Number, required: true },
+  price: { type: Number, required: true, min: 0 },
 
-  costPrice: { type: Number, required: true, default: 0 },
+  costPrice: { type: Number, required: true, default: 0, min: 0 },
 
   discountPercent: {
     type: Number,
@@ -26,7 +27,9 @@ const productSchema = new mongoose.Schema(
 
   stock: {
     type: Number,
-    default: 0
+    required: true,
+    default: 0,
+    min: 0
   },
 
   images: [String],
@@ -38,7 +41,6 @@ const productSchema = new mongoose.Schema(
     }
   ],
 
-
   isActive: {
     type: Boolean,
     default: true
@@ -48,18 +50,11 @@ const productSchema = new mongoose.Schema(
 { timestamps: true }
 )
 
-// auto-calculate finalPrice before saving
-// productSchema.pre('save', function (next) {
-//   this.finalPrice = this.price - (this.price * this.discountPercent / 100)
-//   next()
-// })
-
-productSchema.pre('save', function () {
-  if(this.discountPercent){
-    this.finalPrice = this.price - (this.price * this.discountPercent / 100);
-  }else{
-    this.finalPrice = this.price;
+productSchema.pre('save', function (next) {
+  if (this.price !== undefined) {
+    this.finalPrice = this.price - (this.price * (this.discountPercent || 0) / 100);
   }
+  next();
 });
 
 module.exports = mongoose.model("Product", productSchema);

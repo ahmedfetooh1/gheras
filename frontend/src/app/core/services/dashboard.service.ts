@@ -43,6 +43,14 @@ export class DashboardService {
     return this.http.post(`${this.baseUrl}/product/add`, data);
   }
 
+  updateProductAdmin(id: string, data: FormData): Observable<any> {
+    return this.http.put(`${this.baseUrl}/product/${id}`, data);
+  }
+
+  deleteProductAdmin(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/product/${id}`);
+  }
+
   addCategoryAdmin(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/category`, data);
   }
@@ -54,5 +62,23 @@ export class DashboardService {
 
   deletePlantAdmin(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/plants/${id}`);
+  }
+
+  // Disease Admin
+  updateDiseaseAdmin(id: string, data: FormData | any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/diseases/${id}`, data);
+  }
+
+  deleteDiseaseAdmin(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/diseases/${id}`);
+  }
+
+  // Fertilizer Admin
+  updateFertilizerAdmin(id: string, data: FormData | any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/fertilizers/${id}`, data);
+  }
+
+  deleteFertilizerAdmin(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/fertilizers/${id}`);
   }
 }

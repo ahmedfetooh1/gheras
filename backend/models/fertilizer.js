@@ -1,16 +1,16 @@
 const mongoose = require("mongoose");
 
 const fertilizerSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    type: String,
+    name: { type: String, required: true, trim: true },
+    type: { type: String, required: true, trim: true },
     image: String,
 
     composition: [{
-    element: String,
-    percentage: Number
+    element: { type: String, required: true },
+    percentage: { type: Number, required: true }
     }],
 
-    benefits: [String],
+    benefits: [{ type: String, required: true }],
     applicationMethod: String,
     applicationRate: String,
 

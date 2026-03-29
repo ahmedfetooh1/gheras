@@ -10,8 +10,8 @@ exports.getAllFertilizers = catchAsync(async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const fertilizers = await Fertilizer.find()
-        .select("name type image")
         .populate("suitablePlants", "commonName")
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 

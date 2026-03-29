@@ -26,6 +26,7 @@ export class UserDashboard implements OnInit {
   myGarden = signal<any[]>([]);
   dashboardStats = signal<any>({ totalPlants: 0, alerts: 0 });
   notifications = signal<any[]>([]);
+  showNotificationsDropdown = signal(false);
   dashboardLoading = signal(true);
 
   // Add Plant Modal State
@@ -144,6 +145,35 @@ export class UserDashboard implements OnInit {
     });
   }
 
+  toggleNotifications() {
+    this.showNotificationsDropdown.update(v => !v);
+  }
+
+  scrollToPlants() {
+    const el = document.getElementById('my-garden');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  waterPlant(id: string) {
+    this.http.put<any>(`http://localhost:3000/api/dashboard/water-plant/${id}`, {}).subscribe({
+      next: (res) => {
+        if (res.status === 'success') {
+          // تحديث بيانات اللوحة بعد السقاية للحصول على التواريخ الجديدة
+          this.loadDashboardData();
+          
+          // إذا كانت نافذة التفاصيل مفتوحة، يتم مراجعة بيانات نفس النبتة لتحديثها
+          if (this.showDetailsModal() && this.selectedPlantDetails() && this.selectedPlantDetails()._id === id) {
+             this.openPlantDetail(id);
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error watering plant:', err);
+        alert(err.error?.message || 'حدث خطأ أثناء محاولة سقاية النبتة.');
+      }
+    });
+  }
+
   // Plant Details Drawer Logic
   openPlantDetail(id: string) {
     this.showDetailsModal.set(true);
@@ -192,4 +222,27 @@ export class UserDashboard implements OnInit {
     if (imagePath.startsWith('http')) return imagePath;
     return `http://localhost:3000/${imagePath}`;
   }
+
+  // Calculate generic next watering date fallback
+  getCalculatedNextWatering(plantDetails: any): Date | null {
+    if (!plantDetails) return null;
+    // إذا كان الموعد موجوداً مباشرة من الداتابيز
+    if (plantDetails.nextWateringDate) return new Date(plantDetails.nextWateringDate);
+    
+    // خلاف ذلك نحسبه بناءً على تاريخ آخر سقاية وعدد الأيام (frequency)
+    const baseDateString = plantDetails.lastWateredDate || plantDetails.addedAt;
+    if (!baseDateString) return null;
+
+    const baseDate = new Date(baseDateString);
+    const freq = plantDetails.plant?.waterNeeds?.frequency ? Number(plantDetails.plant.waterNeeds.frequency) : 0;
+    
+    if (freq > 0) {
+      const nextDate = new Date(baseDate);
+      nextDate.setDate(baseDate.getDate() + freq);
+      return nextDate;
+    }
+    
+    return null;
+  }
 }
+

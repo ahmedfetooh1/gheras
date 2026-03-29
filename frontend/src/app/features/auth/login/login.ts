@@ -37,7 +37,20 @@ export class Login {
       next: (res: any) => {
         this.status = 'success';
         console.log('Logged in successfully', res);
-        this.router.navigate(['/dashboard']);
+
+        // جلب المستخدم لتقرير الوجهة المناسبة بناءً على دوره
+        const user = this.authService.currentUser();
+        const role = user?.role?.toLowerCase();
+
+        if (role === 'admin') {
+          this.router.navigate(['/dashboard/admin']);
+        } else if (role === 'specialist') {
+          this.router.navigate(['/dashboard/specialist']);
+        } else if (role === 'premium') {
+          this.router.navigate(['/dashboard/premium']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
       },
       error: (err: any) => {
         this.status = 'error';

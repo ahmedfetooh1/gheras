@@ -11,25 +11,57 @@ export interface User {
 }
 
 export interface Plant {
-  _id?: string;
-  name: string;
-  description: string;
-  wateringSchedule: string;
-  sunlight: string;
-  imageUrl?: string;
-  diseases?: Disease[];
-  fertilizers?: Fertilizer[];
+  _id: string;
+  id?: string;
+  commonName: string;
+  name?: string;
+  scientificName: string;
+  family?: string;
+  description?: string;
+  images: string[];
+  growingSeason?: string;
+  temperatureRange?: {
+    min?: number;
+    max?: number;
+  };
+  sunlightHours?: number;
+  soilPH?: {
+    min?: number;
+    max?: number;
+  };
+  waterNeeds?: {
+    level?: string;
+    frequency?: number;
+  };
+  nutritionalValue?: string;
+  fertilizers: any[];
+  diseases: any[];
+  potSizeOptions?: {
+    plantType: string;
+    min: number;
+    max: number;
+    unit: string;
+  }[];
+  growthStages?: {
+    name: string;
+    durationInDays: number;
+    description?: string;
+  }[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Disease {
-  _id?: string;
+  _id: string;
+  id?: string;
   name: string;
   symptoms: string;
   treatment: string;
 }
 
 export interface Fertilizer {
-  _id?: string;
+  _id: string;
+  id?: string;
   name: string;
   type: string;
   usageInstructions: string;

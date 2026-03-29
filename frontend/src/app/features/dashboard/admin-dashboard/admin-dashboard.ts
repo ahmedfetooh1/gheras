@@ -3,33 +3,44 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { DashboardService } from '../../../core/services/dashboard.service';
+import { WikiService } from '../../../core/services/wiki.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-admin-dashboard',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
 })
 export class AdminDashboard implements OnInit {
   private dashboardService = inject(DashboardService);
+  private wikiService = inject(WikiService);
   private http = inject(HttpClient);
   private base = 'http://localhost:3000/api';
+  private cdr = inject(ChangeDetectorRef);
 
   activeView: string = 'stats';
 
   // -------------------- lists for linking --------------------
+  allPlants: any[] = [];
   allDiseases: any[] = [];
   allFertilizers: any[] = [];
   allCategories: any[] = [];
   selectedDiseaseIds: string[] = [];
   selectedFertilizerIds: string[] = [];
 
+  // ==================== EDIT PLANT ====================
+  selectedPlantId: string = '';
+
   // -------------------- PLANT FORM --------------------
   plantForm: any = {
     commonName: '', scientificName: '', family: '', description: '',
     growingSeason: '', temperatureMin: null, temperatureMax: null,
     sunlightHours: null, soilPHMin: null, soilPHMax: null,
-    waterLevel: '', waterFrequency: null, nutritionalValue: ''
+    waterLevel: '', waterFrequency: null, nutritionalValue: '',
+    potSizeOptions: [],
+    growthStages: []
   };
   plantImages: File[] = [];
 
@@ -61,21 +72,36 @@ export class AdminDashboard implements OnInit {
 
   // ==================== INIT ====================
   ngOnInit() {
-    this.http.get<any>(`${this.base}/diseases`).subscribe({
-      next: (res) => { this.allDiseases = res.data?.diseases || res.data || res || []; },
-      error: () => {}
+    this.loadAllData();
+  }
+
+  loadAllData() {
+    this.wikiService.getPlants().subscribe({
+      next: (plants) => {
+        console.log('🌱 All Plants fetched:', plants);
+        this.allPlants = plants || [];
+      },
+      error: (err) => { console.error('Error fetching plants:', err); }
     });
-    this.http.get<any>(`${this.base}/fertilizers`).subscribe({
-      next: (res) => { this.allFertilizers = res.data?.fertilizers || res.data || res || []; },
-      error: () => {}
+    this.wikiService.getDiseases().subscribe({
+      next: (diseases) => { this.allDiseases = diseases || []; },
+      error: (err) => { console.error('Error fetching diseases:', err); }
+    });
+    this.wikiService.getFertilizers().subscribe({
+      next: (fertilizers) => { this.allFertilizers = fertilizers || []; },
+      error: (err) => { console.error('Error fetching fertilizers:', err); }
     });
     this.http.get<any>(`${this.base}/category`).subscribe({
       next: (res) => { this.allCategories = res.data || res || []; },
-      error: () => {}
+      error: () => { }
     });
   }
 
-  setView(view: string) { this.activeView = view; }
+  setView(view: string) {
+    this.activeView = view;
+    this.resetPlantForm(); // ريست للفورم عند تغيير الواجهة عشان البيانات متتداخلش
+    this.loadAllData();    // تأكد إن البيانات فريش دائماً
+  }
 
   // ==================== FILE CHANGE ====================
   onFileChange(event: any, type: string) {
@@ -108,7 +134,7 @@ export class AdminDashboard implements OnInit {
   }
 
   // ==================== SUBMIT PLANT ====================
-  submitPlant() {
+  submitPlant(isUpdate: boolean = false) {
     const body: any = {
       commonName: this.plantForm.commonName,
       scientificName: this.plantForm.scientificName,
@@ -127,39 +153,151 @@ export class AdminDashboard implements OnInit {
       body.waterNeeds = { level: this.plantForm.waterLevel, frequency: this.plantForm.waterFrequency };
     }
     if (this.plantForm.nutritionalValue) body.nutritionalValue = this.plantForm.nutritionalValue;
+
+    // arrays
     if (this.selectedDiseaseIds.length > 0) body.diseases = this.selectedDiseaseIds;
     if (this.selectedFertilizerIds.length > 0) body.fertilizers = this.selectedFertilizerIds;
+    if (this.plantForm.potSizeOptions?.length > 0) body.potSizeOptions = this.plantForm.potSizeOptions;
+    if (this.plantForm.growthStages?.length > 0) body.growthStages = this.plantForm.growthStages;
 
-    // If images → use FormData, else JSON
-    if (this.plantImages.length > 0) {
+    // DETERMINING DATA TO SEND (JSON OR FORMDATA)
+    let dataToSend: any = body;
+    const hasImages = this.plantImages.length > 0;
+
+    if (hasImages) {
       const formData = new FormData();
       Object.entries(body).forEach(([k, v]) => {
         if (Array.isArray(v)) {
-          (v as any[]).forEach(item => formData.append(k, item));
+          v.forEach((item, index) => {
+            if (typeof item === 'object') {
+              // Convert nested objects to string in FormData if needed, but best is JSON.stringify for complex
+              formData.append(`${k}[${index}]`, JSON.stringify(item));
+            } else {
+              formData.append(k, item as any);
+            }
+          });
         } else if (typeof v === 'object' && v !== null) {
-          Object.entries(v as any).forEach(([sk, sv]) => formData.append(`${k}[${sk}]`, sv as any));
+          formData.append(k, JSON.stringify(v));
         } else {
           formData.append(k, v as any);
         }
       });
       this.plantImages.forEach(file => formData.append('images', file));
-      this.dashboardService.addPlantAdmin(formData).subscribe({
-        next: () => { alert('تم إضافة النبات بنجاح ✅'); this.resetPlantForm(); this.setView('stats'); },
-        error: (err) => { console.error(err); alert('حدث خطأ: ' + (err.error?.message || '')); }
+      dataToSend = formData;
+    }
+
+    if (isUpdate && this.selectedPlantId) {
+      this.dashboardService.updatePlantAdmin(this.selectedPlantId, dataToSend).subscribe({
+        next: () => {
+          alert('تم تحديث النبات بنجاح ✅');
+          this.resetPlantForm();
+          this.setView('stats');
+          this.loadAllData();
+        },
+        error: (err) => {
+          console.error('Update error:', err);
+          alert('حدث خطأ أثناء التحديث: ' + (err.error?.message || 'هذا الروت غير موجود أو هناك خطأ في البيانات'));
+        }
       });
     } else {
-      this.http.post(`${this.base}/plants`, body).subscribe({
-        next: () => { alert('تم إضافة النبات بنجاح ✅'); this.resetPlantForm(); this.setView('stats'); },
-        error: (err) => { console.error(err); alert('حدث خطأ: ' + (err.error?.message || '')); }
+      this.dashboardService.addPlantAdmin(dataToSend).subscribe({
+        next: () => {
+          alert('تم إضافة النبات بنجاح ✅');
+          this.resetPlantForm();
+          this.setView('stats');
+          this.loadAllData();
+        },
+        error: (err) => {
+          console.error('Add error:', err);
+          alert('حدث خطأ أثناء الإضافة: ' + (err.error?.message || ''));
+        }
       });
     }
   }
 
+  // ==================== EDIT HELPERS ====================
+  private lastSelectedPlantId: string = '';
+
+  onPlantSelect(id: string) {
+    if (!id || id === 'undefined' || id === 'null') {
+      this.resetPlantForm();
+      return;
+    }
+
+
+    this.lastSelectedPlantId = id;
+
+    this.wikiService.getPlantById(id).subscribe({
+      next: (res: any) => {
+
+        // ❗ تجاهل أي response قديم
+        if (this.lastSelectedPlantId !== id) return;
+
+        const p = res;
+
+        if (!p) {
+          alert('بيانات النبات غير موجودة في السيرفر');
+          return;
+        }
+
+        this.selectedPlantId = p._id || p.id;
+
+        this.plantForm = {
+          commonName: p.commonName || p.name || '',
+          scientificName: p.scientificName || '',
+          family: p.family || '',
+          description: p.description || '',
+          growingSeason: p.growingSeason || '',
+          temperatureMin: p.temperatureRange?.min,
+          temperatureMax: p.temperatureRange?.max,
+          sunlightHours: p.sunlightHours,
+          soilPHMin: p.soilPH?.min,
+          soilPHMax: p.soilPH?.max,
+          waterLevel: p.waterNeeds?.level || '',
+          waterFrequency: p.waterNeeds?.frequency,
+          nutritionalValue: p.nutritionalValue || '',
+          potSizeOptions: p.potSizeOptions ? JSON.parse(JSON.stringify(p.potSizeOptions)) : [],
+          growthStages: p.growthStages ? JSON.parse(JSON.stringify(p.growthStages)) : []
+        };
+
+        this.selectedDiseaseIds = (p.diseases || []).map((d: any) =>
+          typeof d === 'string' ? d : (d._id || d.id)
+        );
+
+        this.selectedFertilizerIds = (p.fertilizers || []).map((f: any) =>
+          typeof f === 'string' ? f : (f._id || f.id)
+        );
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching plant details:', err);
+        alert('حدث خطأ أثناء جلب بيانات النبات');
+      }
+    });
+  }
+
+  addPotSize() {
+    this.plantForm.potSizeOptions.push({ plantType: '', min: 0, max: 0, unit: 'cm' });
+  }
+  removePotSize(index: number) { this.plantForm.potSizeOptions.splice(index, 1); }
+
+  addGrowthStage() {
+    this.plantForm.growthStages.push({ name: '', durationInDays: 0, description: '' });
+  }
+  removeGrowthStage(index: number) { this.plantForm.growthStages.splice(index, 1); }
+
   private resetPlantForm() {
-    this.plantForm = { commonName: '', scientificName: '', family: '', description: '', growingSeason: '', temperatureMin: null, temperatureMax: null, sunlightHours: null, soilPHMin: null, soilPHMax: null, waterLevel: '', waterFrequency: null, nutritionalValue: '' };
+    this.plantForm = {
+      commonName: '', scientificName: '', family: '', description: '', growingSeason: '',
+      temperatureMin: null, temperatureMax: null, sunlightHours: null, soilPHMin: null, soilPHMax: null,
+      waterLevel: '', waterFrequency: null, nutritionalValue: '',
+      potSizeOptions: [],
+      growthStages: []
+    };
     this.plantImages = [];
     this.selectedDiseaseIds = [];
     this.selectedFertilizerIds = [];
+    this.selectedPlantId = '';
   }
 
   // ==================== SUBMIT DISEASE ====================

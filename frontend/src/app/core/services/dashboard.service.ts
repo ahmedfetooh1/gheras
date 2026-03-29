@@ -46,4 +46,13 @@ export class DashboardService {
   addCategoryAdmin(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/category`, data);
   }
+
+  // Edit/List Methods
+  updatePlantAdmin(id: string, data: FormData | any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/plants/${id}`, data);
+  }
+
+  deletePlantAdmin(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/plants/${id}`);
+  }
 }

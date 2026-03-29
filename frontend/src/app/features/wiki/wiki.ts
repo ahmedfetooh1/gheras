@@ -1,18 +1,8 @@
-import { Component, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, signal, CUSTOM_ELEMENTS_SCHEMA, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Plant {
-  id: string;
-  name: string;
-  en: string;
-  cat: string;
-  habitat: string;
-  water: string;
-  temp: string;
-  emoji: string;
-  color: string;
-}
+import { WikiService } from '../../core/services/wiki.service';
+import { Plant, Disease, Fertilizer } from '../../core/models/interfaces';
 
 @Component({
   selector: 'app-wiki',
@@ -21,43 +11,62 @@ interface Plant {
   templateUrl: './wiki.html',
   styleUrl: './wiki.css',
 })
-export class Wiki {
+export class Wiki implements OnInit {
+  private wikiService = inject(WikiService);
+
   searchQuery = '';
-  activeFilter = signal<string>('all');
-  selectedPlant = signal<Plant | null>(null);
+  activeTab = signal<'plants' | 'diseases' | 'fertilizers'>('plants');
 
-  plants: Plant[] = [
-    { id: 'tomato', name: 'الطماطم', en: 'Solanum lycopersicum', cat: 'خضروات', habitat: 'برة / جوه', water: 'كل يومين', temp: '15–35°', emoji: '🍅', color: 'linear-gradient(135deg,#fff5f5,#fee2e2)' },
-    { id: 'cactus', name: 'الكاكتوس', en: 'Cactaceae', cat: 'صبار', habitat: 'داخلي / خارجي', water: 'كل 14 يوم', temp: '10–45°', emoji: '🌵', color: 'linear-gradient(135deg,#f0fdf4,#dcfce7)' },
-    { id: 'rose', name: 'الورد الجوري', en: 'Rosa damascena', cat: 'زهور', habitat: 'خارجي', water: 'يومياً', temp: '15–28°', emoji: '🌹', color: 'linear-gradient(135deg,#fff1f2,#ffe4e6)' },
-    { id: 'mint', name: 'النعناع', en: 'Mentha piperita', cat: 'أعشاب', habitat: 'داخلي / خارجي', water: 'يومياً', temp: '10–25°', emoji: '🌿', color: 'linear-gradient(135deg,#f0fdf4,#bbf7d0)' },
-    { id: 'strawberry', name: 'الفراولة', en: 'Fragaria × ananassa', cat: 'فواكه', habitat: 'خارجي', water: 'كل يومين', temp: '10–26°', emoji: '🍓', color: 'linear-gradient(135deg,#fff1f2,#fce7f3)' },
-    { id: 'sunflower', name: 'دوار الشمس', en: 'Helianthus annuus', cat: 'زهور', habitat: 'خارجي', water: 'كل 3 أيام', temp: '18–35°', emoji: '🌻', color: 'linear-gradient(135deg,#fefce8,#fef08a)' },
-    { id: 'broccoli', name: 'البروكلي', en: 'Brassica oleracea', cat: 'خضروات', habitat: 'خارجي', water: 'يومياً', temp: '7–24°', emoji: '🥦', color: 'linear-gradient(135deg,#f0fdf4,#86efac)' },
-    { id: 'lemon', name: 'الليمون', en: 'Citrus limon', cat: 'أشجار', habitat: 'خارجي', water: 'مرتين/أسبوع', temp: '15–38°', emoji: '🍋', color: 'linear-gradient(135deg,#fefce8,#fde68a)' },
-    { id: 'aloe', name: 'الألوفيرا', en: 'Aloe vera', cat: 'صبار', habitat: 'داخلي', water: 'كل 10 أيام', temp: '10–40°', emoji: '🪴', color: 'linear-gradient(135deg,#f0fdf4,#dcfce7)' },
-    { id: 'basil', name: 'الريحان', en: 'Ocimum basilicum', cat: 'أعشاب', habitat: 'داخلي', water: 'يومياً', temp: '15–30°', emoji: '🍃', color: 'linear-gradient(135deg,#f0fdf4,#bbf7d0)' }
-  ];
+  plants = signal<Plant[]>([]);
+  diseases = signal<Disease[]>([]);
+  fertilizers = signal<Fertilizer[]>([]);
 
-  categories = ['الكل', 'خضروات', 'زهور', 'فواكه', 'أعشاب', 'صبار', 'أشجار'];
+  selectedItem = signal<any>(null);
+
+  ngOnInit() {
+    this.fetchAllData();
+  }
+
+  fetchAllData() {
+    this.wikiService.getPlants().subscribe(data => this.plants.set(data));
+    this.wikiService.getDiseases().subscribe(data => this.diseases.set(data));
+    this.wikiService.getFertilizers().subscribe(data => this.fertilizers.set(data));
+  }
 
   get filteredPlants() {
-    return this.plants.filter(p => {
-      const matchesSearch = p.name.includes(this.searchQuery) || p.en.toLowerCase().includes(this.searchQuery.toLowerCase());
-      const matchesFilter = this.activeFilter() === 'all' || this.activeFilter() === 'الكل' || p.cat === this.activeFilter();
-      return matchesSearch && matchesFilter;
-    });
+    return this.plants().filter(p => p.commonName.includes(this.searchQuery) || (p.scientificName && p.scientificName.includes(this.searchQuery)));
   }
 
-  setFilter(cat: string) {
-    this.activeFilter.set(cat);
+  get filteredDiseases() {
+    return this.diseases().filter(d => d.name.includes(this.searchQuery) || d.symptoms.includes(this.searchQuery));
   }
 
-  openModal(plant: Plant) {
-    this.selectedPlant.set(plant);
+  get filteredFertilizers() {
+    return this.fertilizers().filter(f => f.name.includes(this.searchQuery) || f.type.includes(this.searchQuery));
+  }
+
+  setTab(tab: 'plants' | 'diseases' | 'fertilizers') {
+    this.activeTab.set(tab);
+  }
+
+  openModal(item: any) {
+    this.selectedItem.set(item);
   }
 
   closeModal() {
-    this.selectedPlant.set(null);
+    this.selectedItem.set(null);
+  }
+
+  isPlant(item: any): item is Plant {
+    return item && 'wateringSchedule' in item;
+  }
+
+  isDisease(item: any): item is Disease {
+    return item && 'symptoms' in item;
+  }
+
+  isFertilizer(item: any): item is Fertilizer {
+    return item && 'usageInstructions' in item;
   }
 }
+

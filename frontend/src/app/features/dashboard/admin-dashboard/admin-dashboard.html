@@ -1,0 +1,606 @@
+<div class="sidebar-layout page-wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-logo">الإدارة</div>
+    <div class="sidebar-section-title">الرئيسية</div>
+    <a (click)="setView('stats')" [class.active]="activeView === 'stats'" class="sidebar-link"
+      style="cursor: pointer;"><span class="icon"></span> الإحصائيات</a>
+
+    <div class="sidebar-section-title">إضافة بيانات للقاعدة</div>
+    <a (click)="setView('add-plant')" [class.active]="activeView === 'add-plant'" class="sidebar-link"
+      style="cursor: pointer;"><span class="icon"></span> إضافة نبات</a>
+    <a (click)="setView('add-disease')" [class.active]="activeView === 'add-disease'" class="sidebar-link"
+      style="cursor: pointer;"><span class="icon"></span> إضافة مرض</a>
+    <a (click)="setView('add-fertilizer')" [class.active]="activeView === 'add-fertilizer'" class="sidebar-link"
+      style="cursor: pointer;"><span class="icon"></span> إضافة سماد</a>
+    <a (click)="setView('add-category')" [class.active]="activeView === 'add-category'" class="sidebar-link"
+      style="cursor: pointer;"><span class="icon"></span> إضافة تصنيف منتج</a>
+    <a (click)="setView('add-product')" [class.active]="activeView === 'add-product'" class="sidebar-link"
+      style="cursor: pointer;"><span class="icon"></span> إضافة منتج للمتجر</a>
+
+    <div class="sidebar-section-title">إدارة المحتوى</div>
+    <a href="#" class="sidebar-link"><span class="icon"></span> الويكي (بذور/أمراض)</a>
+    <a href="#" class="sidebar-link"><span class="icon"></span> المنتدى <span class="sidebar-badge">7</span></a>
+    <a href="#" class="sidebar-link"><span class="icon"></span> المدونة</a>
+    <div class="sidebar-section-title">إدارة المتجر</div>
+    <a href="#" class="sidebar-link"><span class="icon"></span> المنتجات</a>
+    <a href="#" class="sidebar-link"><span class="icon"></span> الطلبات <span class="sidebar-badge">4</span></a>
+    <div class="sidebar-section-title">إدارة المستخدمين</div>
+    <a href="#" class="sidebar-link"><span class="icon"></span> المستخدمون</a>
+    <a href="#" class="sidebar-link"><span class="icon"></span> المهندسون</a>
+  </aside>
+
+  <main class="main-content">
+    <ng-container *ngIf="activeView === 'stats'">
+      <div style="margin-bottom:1.5rem">
+        <div class="page-title">لوحة الإدارة</div>
+        <div class="page-subtitle">الثلاثاء، 15 أبريل 2025</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:2rem">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--green-50)"></div>
+          <div class="stat-value">12,480</div>
+          <div class="stat-label">إجمالي المستخدمين</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--amber-100)"></div>
+          <div class="stat-value">1,234</div>
+          <div class="stat-label">مشتركو البريميوم</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dcfce7"></div>
+          <div class="stat-value">38,920</div>
+          <div class="stat-label">نباتات مضافة</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fef9c3"></div>
+          <div class="stat-value">7</div>
+          <div class="stat-label">بوستات تنتظر موافقة</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dbeafe"></div>
+          <div class="stat-value">4</div>
+          <div class="stat-label">طلبات جديدة</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:2rem">
+        <!-- Growth chart -->
+        <div class="card">
+          <div class="card-body">
+            <div style="font-weight:700;margin-bottom:1rem;color:var(--green-900)">نمو المستخدمين (آخر 7 أيام)</div>
+            <div class="mini-chart">
+              <div class="bar" style="height:40%"></div>
+              <div class="bar" style="height:55%"></div>
+              <div class="bar" style="height:45%"></div>
+              <div class="bar" style="height:70%"></div>
+              <div class="bar" style="height:60%"></div>
+              <div class="bar" style="height:85%"></div>
+              <div class="bar" style="height:100%;background:var(--green-600);opacity:1"></div>
+            </div>
+            <div
+              style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--neutral-400);margin-top:.3rem">
+              <span>السبت</span><span>الأحد</span><span>الاثنين</span><span>الثلاثاء</span><span>الأربعاء</span><span>الخميس</span><span>الجمعة</span>
+            </div>
+            <div style="margin-top:1rem;display:flex;gap:1rem">
+              <div>
+                <div style="font-size:1.3rem;font-weight:800;color:var(--green-700)">+248</div>
+                <div style="font-size:.78rem;color:var(--neutral-500)">مستخدم جديد الأسبوع</div>
+              </div>
+              <div>
+                <div style="font-size:1.3rem;font-weight:800;color:var(--amber-500)">+32</div>
+                <div style="font-size:.78rem;color:var(--neutral-500)">اشتراك بريميوم جديد</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top plants -->
+        <div class="card">
+          <div class="card-body">
+            <div style="font-weight:700;margin-bottom:1rem;color:var(--green-900)">أكثر النباتات إضافةً</div>
+            <div style="display:flex;flex-direction:column;gap:.6rem">
+              <div style="display:flex;align-items:center;gap:.75rem">
+                <span style="font-size:1.2rem"></span>
+                <div style="flex:1">
+                  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem">
+                    <span>الطماطم</span><span style="font-weight:700">8,240</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width:82%"></div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:.75rem">
+                <span style="font-size:1.2rem"></span>
+                <div style="flex:1">
+                  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem">
+                    <span>الكاكتوس</span><span style="font-weight:700">7,100</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width:71%"></div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:.75rem">
+                <span style="font-size:1.2rem"></span>
+                <div style="flex:1">
+                  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem">
+                    <span>الورد الجوري</span><span style="font-weight:700">5,900</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width:59%"></div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:.75rem">
+                <span style="font-size:1.2rem"></span>
+                <div style="flex:1">
+                  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem">
+                    <span>النعناع</span><span style="font-weight:700">4,200</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width:42%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forum Moderation -->
+      <div class="page-title" style="font-size:1.05rem;margin-bottom:1rem">بوستات المنتدى — تنتظر الموافقة (7)</div>
+      <div class="table-wrap" style="margin-bottom:2rem">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>المستخدم</th>
+              <th>العنوان</th>
+              <th>الكاتيجوري</th>
+              <th>تاريخ الكتابة</th>
+              <th>الإجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>محمد أحمد</td>
+              <td>نبتتي الأوراق بتصفر — إيه الحل؟</td>
+              <td><span class="badge badge-earth">أمراض وآفات</span></td>
+              <td>منذ 2 ساعة</td>
+              <td>
+                <div style="display:flex;gap:.4rem"><button class="btn btn-primary btn-sm"
+                    style="background:var(--green-500)">قبول</button><button class="btn btn-sm"
+                    style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5">رفض</button></div>
+              </td>
+            </tr>
+            <tr>
+              <td>نور حسين</td>
+              <td>أفضل طريقة لزراعة الطماطم في الشقة</td>
+              <td><span class="badge badge-green">نصائح</span></td>
+              <td>منذ 4 ساعات</td>
+              <td>
+                <div style="display:flex;gap:.4rem"><button class="btn btn-primary btn-sm"
+                    style="background:var(--green-500)">قبول</button><button class="btn btn-sm"
+                    style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5">رفض</button></div>
+              </td>
+            </tr>
+            <tr>
+              <td>خالد سالم</td>
+              <td>سماد طبيعي من المطبخ — تجربتي</td>
+              <td><span class="badge badge-green">نصائح</span></td>
+              <td>أمس</td>
+              <td>
+                <div style="display:flex;gap:.4rem"><button class="btn btn-primary btn-sm"
+                    style="background:var(--green-500)">قبول</button><button class="btn btn-sm"
+                    style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5">رفض</button></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Orders -->
+      <div class="page-title" style="font-size:1.05rem;margin-bottom:1rem">الطلبات الجديدة (4)</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>العميل</th>
+              <th>المنتجات</th>
+              <th>الإجمالي</th>
+              <th>طريقة الدفع</th>
+              <th>الحالة</th>
+              <th>تعديل</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:700;color:var(--green-700)">#1042</td>
+              <td>منى عبد الله</td>
+              <td>سماد NPK × 2 ، تربة × 1</td>
+              <td style="font-weight:700">170 ج.م</td>
+              <td><span class="badge badge-green">Paymob</span></td>
+              <td><span class="badge badge-amber">معلق</span></td>
+              <td><select class="input-field" style="padding:.3rem .5rem;width:120px;font-size:.8rem">
+                  <option>معلق</option>
+                  <option>مؤكد</option>
+                  <option>تم الشحن</option>
+                  <option>مُستلم</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;color:var(--green-700)">#1043</td>
+              <td>أحمد مصطفى</td>
+              <td>بذور طماطم × 3</td>
+              <td style="font-weight:700">75 ج.م</td>
+              <td><span class="badge badge-earth">كاش</span></td>
+              <td><span class="badge badge-amber">معلق</span></td>
+              <td><select class="input-field" style="padding:.3rem .5rem;width:120px;font-size:.8rem">
+                  <option>معلق</option>
+                  <option>مؤكد</option>
+                  <option>تم الشحن</option>
+                  <option>مُستلم</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;color:var(--green-700)">#1041</td>
+              <td>رانيا حسن</td>
+              <td>بخاخ × 1 ، مبيد × 1</td>
+              <td style="font-weight:700">100 ج.م</td>
+              <td><span class="badge badge-green">Paymob</span></td>
+              <td><span class="badge badge-green">مؤكد</span></td>
+              <td><select class="input-field" style="padding:.3rem .5rem;width:120px;font-size:.8rem">
+                  <option>مؤكد</option>
+                  <option>تم الشحن</option>
+                  <option>مُستلم</option>
+                </select></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <!-- Forms -->
+    <div *ngIf="activeView === 'add-plant'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إضافة نبات جديد</h2>
+        <form (ngSubmit)="submitPlant()">
+
+          <!-- الأسماء -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الاسم الشائع *</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.commonName" name="commonName" required
+              placeholder="مثال: الريحان">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الاسم العلمي *</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.scientificName" name="scientificName"
+              required placeholder="مثال: Ocimum basilicum">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">العائلة النباتية</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.family" name="family"
+              placeholder="مثال: الشفويات">
+          </div>
+
+          <!-- الوصف -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الوصف</label>
+            <textarea class="form-control" [(ngModel)]="plantForm.description" name="description" rows="3"
+              placeholder="وصف مختصر للنبات..."></textarea>
+          </div>
+
+          <!-- موسم النمو -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">موسم النمو</label>
+            <select class="form-control" [(ngModel)]="plantForm.growingSeason" name="growingSeason">
+              <option value="">-- اختر الموسم --</option>
+              <option value="الربيع">الربيع</option>
+              <option value="الصيف">الصيف</option>
+              <option value="الخريف">الخريف</option>
+              <option value="الشتاء">الشتاء</option>
+              <option value="طوال العام">طوال العام</option>
+            </select>
+          </div>
+
+          <!-- درجة الحرارة -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">درجة الحرارة الدنيا (°م)</label>
+              <input type="number" class="form-control" [(ngModel)]="plantForm.temperatureMin" name="temperatureMin"
+                placeholder="مثال: 15">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">درجة الحرارة القصوى (°م)</label>
+              <input type="number" class="form-control" [(ngModel)]="plantForm.temperatureMax" name="temperatureMax"
+                placeholder="مثال: 35">
+            </div>
+          </div>
+
+          <!-- ساعات الشمس -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">ساعات الشمس في اليوم</label>
+            <input type="number" class="form-control" [(ngModel)]="plantForm.sunlightHours" name="sunlightHours"
+              placeholder="مثال: 8">
+          </div>
+
+          <!-- درجة حموضة التربة -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">حموضة التربة pH (أدنى)</label>
+              <input type="number" step="0.1" class="form-control" [(ngModel)]="plantForm.soilPHMin" name="soilPHMin"
+                placeholder="مثال: 5.5">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">حموضة التربة pH (أعلى)</label>
+              <input type="number" step="0.1" class="form-control" [(ngModel)]="plantForm.soilPHMax" name="soilPHMax"
+                placeholder="مثال: 7.0">
+            </div>
+          </div>
+
+          <!-- احتياجات الري -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">مستوى الري</label>
+              <select class="form-control" [(ngModel)]="plantForm.waterLevel" name="waterLevel">
+                <option value="">-- اختر مستوى الري --</option>
+                <option value="منخفض">منخفض</option>
+                <option value="متوسط">متوسط</option>
+                <option value="عالي">عالي</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">تكرار الري (مرة/أسبوع)</label>
+              <input type="number" class="form-control" [(ngModel)]="plantForm.waterFrequency" name="waterFrequency"
+                placeholder="مثال: 3">
+            </div>
+          </div>
+
+          <!-- القيمة الغذائية -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">القيمة الغذائية</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.nutritionalValue" name="nutritionalValue"
+              placeholder="مثال: غني بالفيتامين C">
+          </div>
+
+          <!-- ربط الأمراض الموجودة -->
+          <div class="mb-3" *ngIf="allDiseases.length > 0">
+            <label class="form-label fw-bold text-secondary">الأمراض المرتبطة (اختر من الموجود)</label>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem">
+              <span *ngFor="let d of allDiseases" (click)="toggleDisease(d._id)"
+                [style.background]="isSelectedDisease(d._id) ? 'var(--green-600)' : '#e5e7eb'"
+                [style.color]="isSelectedDisease(d._id) ? '#fff' : '#374151'"
+                style="padding:.3rem .8rem;border-radius:999px;cursor:pointer;font-size:.85rem;transition:all .2s">
+                {{ d.name }}
+              </span>
+            </div>
+          </div>
+
+          <!-- ربط الأسمدة الموجودة -->
+          <div class="mb-4" *ngIf="allFertilizers.length > 0">
+            <label class="form-label fw-bold text-secondary">الأسمدة المرتبطة (اختر من الموجود)</label>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem">
+              <span *ngFor="let f of allFertilizers" (click)="toggleFertilizer(f._id)"
+                [style.background]="isSelectedFertilizer(f._id) ? 'var(--green-600)' : '#e5e7eb'"
+                [style.color]="isSelectedFertilizer(f._id) ? '#fff' : '#374151'"
+                style="padding:.3rem .8rem;border-radius:999px;cursor:pointer;font-size:.85rem;transition:all .2s">
+                {{ f.name }}
+              </span>
+            </div>
+          </div>
+
+          <!-- الصور -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">صور النبات (يمكنك اختيار أكثر من صورة)</label>
+            <input type="file" multiple (change)="onFileChange($event, 'plant')" class="form-control">
+          </div>
+
+          <button type="submit" class="btn btn-success w-100 fw-bold">حفظ النبات</button>
+        </form>
+      </div>
+    </div>
+
+
+    <div *ngIf="activeView === 'add-disease'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إضافة مرض جديد</h2>
+        <form (ngSubmit)="submitDisease()">
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم المرض *</label>
+            <input type="text" class="form-control" [(ngModel)]="diseaseForm.name" name="diseaseName" required
+              placeholder="مثال: المن">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الاسم العلمي</label>
+            <input type="text" class="form-control" [(ngModel)]="diseaseForm.scientificName"
+              name="diseaseScientificName" placeholder="مثال: Aphididae">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">نوع الممرض</label>
+            <select class="form-control" [(ngModel)]="diseaseForm.pathogenType" name="pathogenType">
+              <option value="">-- اختر نوع الممرض --</option>
+              <option value="فطري">فطري</option>
+              <option value="بكتيري">بكتيري</option>
+              <option value="فيروسي">فيروسي</option>
+              <option value="حشري">حشري</option>
+              <option value="بيئي">بيئي</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الظروف المواتية للانتشار</label>
+            <input type="text" class="form-control" [(ngModel)]="diseaseForm.favorableConditions"
+              name="favorableConditions" placeholder="مثال: الرطوبة العالية">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الأعراض (كل سطر = عرض واحد)</label>
+            <textarea class="form-control" [(ngModel)]="diseaseForm.symptomsText" name="symptomsText" rows="4"
+              placeholder="تجمع حشرات صغيرة خلف الأوراق&#10;تجعد الأوراق وخروج مادة عسلية"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الوقاية (كل سطر = خطوة وقاية)</label>
+            <textarea class="form-control" [(ngModel)]="diseaseForm.preventionText" name="preventionText" rows="3"
+              placeholder="تهوية جيدة&#10;تجنب الإفراط في الري"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">طرق العلاج (كل سطر = خطوة علاج)</label>
+            <textarea class="form-control" [(ngModel)]="diseaseForm.treatmentText" name="treatmentText" rows="4"
+              placeholder="الخطوة 1 - غسيل النبات بضغط ماء قوي&#10;الخطوة 2 - رش صابون زراعي"></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">صورة المرض</label>
+            <input type="file" (change)="onFileChange($event, 'disease')" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-success w-100 fw-bold">حفظ المرض</button>
+        </form>
+      </div>
+    </div>
+
+    <div *ngIf="activeView === 'add-fertilizer'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إضافة سماد جديد</h2>
+        <form (ngSubmit)="submitFertilizer()">
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم السماد *</label>
+            <input type="text" class="form-control" [(ngModel)]="fertilizerForm.name" name="fertName" required
+              placeholder="مثال: يوريا 46%">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">نوع السماد</label>
+            <select class="form-control" [(ngModel)]="fertilizerForm.type" name="fertType">
+              <option value="">-- اختر النوع --</option>
+              <option value="كيميائي">كيميائي</option>
+              <option value="عضوي">عضوي</option>
+              <option value="كيميائي / محب">كيميائي / محب</option>
+              <option value="بيولوجي">بيولوجي</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">التركيبة (كل سطر: اسم العنصر:النسبة%)</label>
+            <textarea class="form-control" [(ngModel)]="fertilizerForm.compositionText" name="compositionText" rows="3"
+              placeholder="نيتروجين (N):46&#10;فوسفور (P):10"></textarea>
+            <small class="text-muted">اكتب اسم العنصر ثم نقطتين ثم النسبة، مثال: نيتروجين (N):46</small>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الفوائد (كل سطر = فائدة)</label>
+            <textarea class="form-control" [(ngModel)]="fertilizerForm.benefitsText" name="benefitsText" rows="3"
+              placeholder="دفع النمو الخضري السريع&#10;زيادة اخضرار الأوراق"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">طريقة التطبيق</label>
+            <input type="text" class="form-control" [(ngModel)]="fertilizerForm.applicationMethod"
+              name="applicationMethod" placeholder="مثال: نثر على التربة قبل الري مباشرة">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">معدل التطبيق</label>
+            <input type="text" class="form-control" [(ngModel)]="fertilizerForm.applicationRate" name="applicationRate"
+              placeholder="مثال: 1 كجم لكل 100 متر مربع">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">صورة السماد</label>
+            <input type="file" (change)="onFileChange($event, 'fertilizer')" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-success w-100 fw-bold">حفظ السماد</button>
+        </form>
+      </div>
+    </div>
+
+    <div *ngIf="activeView === 'add-category'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إضافة تصنيف متجر جديد</h2>
+        <form (ngSubmit)="submitCategory()">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم التصنيف *</label>
+            <input type="text" class="form-control" [(ngModel)]="categoryForm.name" name="catName" required
+              placeholder="مثال: Tools">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary"> (Slug) *</label>
+            <input type="text" class="form-control" [(ngModel)]="categoryForm.slug" name="catSlug" required
+              placeholder="مثال: tools (إنجليزي بدون مسافات)">
+            <small class="text-muted">استخدم الأحرف الصغيرة والشرطة (-) بدون مسافات. مثال: hand-tools</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">وصف التصنيف</label>
+            <textarea class="form-control" [(ngModel)]="categoryForm.description" name="catDescription" rows="2"
+              placeholder="وصف مختصر للتصنيف..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-success w-100 fw-bold">حفظ التصنيف</button>
+        </form>
+      </div>
+    </div>
+
+    <div *ngIf="activeView === 'add-product'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إضافة منتج متجر جديد</h2>
+        <form (ngSubmit)="submitProduct()">
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم المنتج *</label>
+            <input type="text" class="form-control" [(ngModel)]="productForm.name" name="prodName" required
+              placeholder="مثال: Professional Pruning Shears">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">وصف المنتج</label>
+            <textarea class="form-control" [(ngModel)]="productForm.description" name="prodDescription" rows="3"
+              placeholder="وصف مفصل للمنتج..."></textarea>
+          </div>
+
+          <!-- التصنيف -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">تصنيف المنتج</label>
+            <select class="form-control" [(ngModel)]="productForm.category" name="prodCategory">
+              <option value="">-- اختر تصنيف --</option>
+              <option *ngFor="let cat of allCategories" [value]="cat._id">{{ cat.name }}</option>
+            </select>
+          </div>
+
+          <!-- الأسعار -->
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-secondary">سعر البيع *</label>
+              <input type="number" class="form-control" [(ngModel)]="productForm.price" name="prodPrice" required
+                placeholder="350">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-secondary">سعر التكلفة *</label>
+              <input type="number" class="form-control" [(ngModel)]="productForm.costPrice" name="prodCostPrice"
+                required placeholder="200">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-secondary">نسبة الخصم (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="productForm.discountPercent" name="prodDiscount"
+                min="0" max="100" placeholder="5">
+              <small class="text-muted">السعر النهائي يحتسب تلقائياً</small>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الكمية المتوفرة (المخزون) *</label>
+            <input type="number" class="form-control" [(ngModel)]="productForm.stock" name="prodStock" required
+              placeholder="25">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">صور المنتج</label>
+            <input type="file" multiple (change)="onFileChange($event, 'product')" class="form-control">
+          </div>
+
+          <button type="submit" class="btn btn-success w-100 fw-bold">حفظ المنتج</button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+</div>

@@ -1,0 +1,75 @@
+<div class="register-container d-flex align-items-center justify-content-center">
+  <div class="card register-card shadow-sm my-5">
+    <div class="card-body p-5">
+      <div class="text-center mb-4">
+        <h2 class="brand-title">غراس</h2>
+        <p class="text-muted">إنشاء حساب جديد في مجتمع النباتات</p>
+      </div>
+
+      <div *ngIf="status === 'error'" class="alert alert-danger px-3 py-2 mb-3 small d-flex align-items-center">
+        <span class="ms-2">⚠️</span> {{ errorMessage }}
+      </div>
+
+      <div *ngIf="status === 'success'" class="alert alert-success px-3 py-2 mb-3 small d-flex align-items-center">
+        <span class="ms-2">✅</span> تم التسجيل بنجاح! جاري تحويلك...
+      </div>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label class="form-label">الاسم الأول</label>
+          <input type="text" class="form-control custom-input"
+                 [(ngModel)]="user.firstName"
+                 name="firstName"
+                 placeholder="أدخل اسمك الأول"
+                 [disabled]="status === 'loading'">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">الاسم الأخير</label>
+          <input type="text" class="form-control custom-input"
+                 [(ngModel)]="user.lastName"
+                 name="lastName"
+                 placeholder= "أدخل اسمك الأخير"
+                 [disabled]="status === 'loading'">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">اسم المستخدم (Username)</label>
+          <input type="text" class="form-control custom-input"
+                 [(ngModel)]="user.username"
+                 name="username"
+                 placeholder="مثال: azeez_26"
+                 [disabled]="status === 'loading'">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">البريد الإلكتروني</label>
+          <input type="email" class="form-control custom-input"
+                 [(ngModel)]="user.email"
+                 name="email"
+                 placeholder="example@mail.com"
+                 [disabled]="status === 'loading'">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">كلمة المرور</label>
+          <input type="password" class="form-control custom-input"
+                 [(ngModel)]="user.password"
+                 name="password"
+                 placeholder="********"
+                 [disabled]="status === 'loading'">
+        </div>
+
+        <button type="submit" class="btn btn-ghiras w-100 mt-4" [disabled]="status === 'loading'">
+          <span *ngIf="status === 'loading'" class="spinner-border spinner-border-sm me-2"></span>
+          إنشاء حساب
+        </button>
+
+        
+        <div class="text-center mt-3">
+          <small>لديك حساب بالفعل؟ <a routerLink="/login" class="login-link">تسجيل دخول</a></small>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

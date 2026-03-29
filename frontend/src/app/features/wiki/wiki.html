@@ -1,0 +1,111 @@
+<div class="page-wrapper">
+  <div class="wiki-hero">
+    <h1>موسوعة النباتات</h1>
+    <p>أكثر من 500 نبتة بمعلومات علمية دقيقة — ابحث واعرف كل حاجة</p>
+    <div class="search-bar">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="ابحث عن نبتة... مثلاً: طماطم، كاكتوس، ورد">
+      <span class="search-icon"></span>
+    </div>
+  </div>
+
+  <div class="wiki-tabs">
+    <button *ngFor="let cat of categories" class="wiki-filter"
+      [class.active]="activeFilter() === (cat === 'الكل' ? 'all' : cat)"
+      (click)="setFilter(cat === 'الكل' ? 'all' : cat)">
+      {{ cat }}
+    </button>
+  </div>
+
+  <div class="container section-sm">
+    <div class="grid-auto">
+      <div *ngFor="let plant of filteredPlants" class="wiki-card" (click)="openModal(plant)">
+        <div class="wiki-card-img" [style.background]="plant.color">
+          <span>{{ plant.emoji }}</span>
+        </div>
+        <div class="wiki-card-body">
+          <div class="wiki-card-name">{{ plant.name }}</div>
+          <div class="wiki-card-en">{{ plant.en }}</div>
+          <div class="wiki-card-meta">
+            <span class="badge badge-green">{{ plant.cat }}</span>
+            <span class="badge badge-earth">{{ plant.habitat }}</span>
+          </div>
+        </div>
+        <div class="wiki-card-footer">
+          <span style="font-size:.8rem;color:var(--neutral-500)">{{ plant.water }} · {{ plant.temp }}</span>
+          <button class="btn btn-secondary btn-sm">تـفاصيل</button>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="filteredPlants.length === 0" style="text-align:center;padding:4rem;color:var(--neutral-500)">
+      🌵 لا يوجد نتائج لهذا البحث... جرب شيئاً آخر.
+    </div>
+  </div>
+</div>
+
+<!-- ── Detail Modal ── -->
+<div class="modal-overlay" *ngIf="selectedPlant()" [class.active]="selectedPlant()" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div
+      style="height:250px;width:100%;display:flex;align-items:center;justify-content:center;font-size:8rem;position:relative;"
+      [style.background]="selectedPlant()?.color">
+      <button (click)="closeModal()"
+        style="position:absolute;top:1rem;right:1rem;background:white;border-radius:50%;width:40px;height:40px;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);">&times;</button>
+      <span>{{ selectedPlant()?.emoji }}</span>
+    </div>
+    <div style="padding:2.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;">
+        <div>
+          <h2 style="font-family:var(--font-display);font-size:2.2rem;color:var(--green-900);">{{ selectedPlant()?.name
+            }}</h2>
+          <p style="font-style:italic;color:var(--neutral-500);font-family:var(--font-display);">{{ selectedPlant()?.en
+            }}</p>
+        </div>
+        <span class="badge badge-green" style="font-size:1rem;padding:.4rem 1rem;">{{ selectedPlant()?.cat }}</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+        <div
+          style="background:var(--neutral-50);padding:1.2rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:1rem;">
+          <span style="font-size:1.5rem;">💧</span>
+          <div>
+            <div style="font-size:.75rem;color:var(--neutral-500);font-weight:700;">جدول الري</div>
+            <div style="font-weight:700;color:var(--green-800);">{{ selectedPlant()?.water }}</div>
+          </div>
+        </div>
+        <div
+          style="background:var(--neutral-50);padding:1.2rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:1rem;">
+          <span style="font-size:1.5rem;">🌡️</span>
+          <div>
+            <div style="font-size:.75rem;color:var(--neutral-500);font-weight:700;">الحرارة المثالية</div>
+            <div style="font-weight:700;color:var(--green-800);">{{ selectedPlant()?.temp }}</div>
+          </div>
+        </div>
+        <div
+          style="background:var(--neutral-50);padding:1.2rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:1rem;">
+          <span style="font-size:1.5rem;">🌍</span>
+          <div>
+            <div style="font-size:.75rem;color:var(--neutral-500);font-weight:700;">البيئة المناسبة</div>
+            <div style="font-weight:700;color:var(--green-800);">{{ selectedPlant()?.habitat }}</div>
+          </div>
+        </div>
+        <div
+          style="background:var(--neutral-50);padding:1.2rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:1rem;">
+          <span style="font-size:1.5rem;">📜</span>
+          <div>
+            <div style="font-size:.75rem;color:var(--neutral-500);font-weight:700;">الفصيلة</div>
+            <div style="font-weight:700;color:var(--green-800);">{{ selectedPlant()?.cat }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="line-height:1.75;color:var(--neutral-700);">
+        <h3 style="margin-bottom:.75rem;color:var(--green-900);">عن النبتة</h3>
+        <p>هذه النبتة من الأنواع المفضلة في "غراس" لسهولة العناية بها وقدرتها العالية على التكيف. توفر هذه الموسوعة
+          دليلاً شاملاً للمزارعين الهواة والمحترفين لضمان نمو صحي ومستدام.</p>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" style="margin-top:2.5rem;" (click)="closeModal()">حسـناً،
+        فهمت</button>
+    </div>
+  </div>
+</div>

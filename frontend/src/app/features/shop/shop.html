@@ -1,0 +1,116 @@
+<div class="page-wrapper">
+  <div class="shop-hero">
+    <h1>المتجر الزراعي</h1>
+    <p>كل اللي نباتاتك محتاجاه — توصيل لحد بيتك</p>
+  </div>
+
+  <div class="shop-layout">
+    <!-- Sidebar -->
+    <div class="shop-sidebar">
+      <div class="shop-sidebar-card">
+        <div class="shop-sidebar-title">الأقسام</div>
+        <div class="cat-item" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">الكل <span
+            class="cat-count">24</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'أسمدة'" (click)="setFilter('أسمدة')">أسمدة <span
+            class="cat-count">8</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'تربة'" (click)="setFilter('تربة')">تربة وخلطات <span
+            class="cat-count">5</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'بذور'" (click)="setFilter('بذور')">بذور وشتلات <span
+            class="cat-count">6</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'أدوات'" (click)="setFilter('أدوات')">أدوات <span
+            class="cat-count">3</span></div>
+        <div class="cat-item" [class.active]="activeFilter() === 'علاجات'" (click)="setFilter('علاجات')">علاجات <span
+            class="cat-count">2</span></div>
+      </div>
+      <div class="shop-sidebar-card">
+        <div class="shop-sidebar-title">السعر</div>
+        <input type="range" min="0" max="1000" [(ngModel)]="maxPrice" style="width:100%">
+        <div style="font-size:.82rem;color:var(--neutral-500);margin-top:.4rem">حتى <span id="price-val">{{ maxPrice }}</span> ج.م</div>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div>
+      <div class="notif-bar">
+        <strong>توصية ذكية:</strong> نبتتك "الطماطم" محتاجة سماد NPK — متوفر في المتجر بـ 65 ج.م
+        <button (click)="addToCart(products[0])"
+          style="background:none;border:none;color:var(--green-100);margin-right:auto;font-size:.82rem;cursor:pointer;font-weight:700">اشتري
+          دلوقتي ←</button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div style="font-size:.9rem;color:var(--neutral-500)">عرض <strong>{{ filteredProducts.length }}</strong> من
+          <strong>{{ products.length }}</strong> منتج</div>
+        <select class="input-field" style="width:auto;padding:.4rem .8rem;font-size:.85rem">
+          <option>الأحدث أولاً</option>
+          <option>السعر: من الأقل للأعلى</option>
+          <option>السعر: من الأعلى للأقل</option>
+          <option>الأعلى تقييماً</option>
+        </select>
+      </div>
+
+      <div class="grid-auto">
+        <div *ngFor="let product of filteredProducts" class="product-card">
+          <div class="product-img" [style.background]="product.color">
+            <div *ngIf="product.isBestSeller" class="product-badge"><span class="badge badge-amber">الأكثر مبيعاً</span>
+            </div>
+            <div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem">{{
+              product.emoji }}</div>
+          </div>
+          <div class="product-body">
+            <div class="product-name">{{ product.name }}</div>
+            <div class="product-desc">{{ product.desc }}</div>
+            <div class="stars">{{ getStars(product.rating) }} <span style="color:var(--neutral-400)">({{ product.reviews
+                }})</span></div>
+            <div style="margin-top:.5rem">
+              <span *ngIf="product.oldPrice" class="product-old-price">{{ product.oldPrice }}</span>
+              <span class="product-price">{{ product.price }} ج.م</span>
+            </div>
+          </div>
+          <div class="product-footer">
+            <button class="btn btn-primary btn-sm" style="flex:1" (click)="addToCart(product)">أضف للعربية</button>
+            <button class="btn btn-secondary btn-sm">❤</button>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="filteredProducts.length === 0" style="text-align:center;padding:4rem;color:var(--neutral-500)">
+        🌵 لا توجد منتجات تطابق هذا البحث حالياً.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cart Sidebar -->
+<div class="cart-overlay" [class.active]="isCartOpen()" (click)="toggleCart()"></div>
+<div class="cart-sidebar" [class.active]="isCartOpen()">
+  <div class="cart-header">
+    <div style="font-weight:700;font-size:1.05rem">عربية التسوق</div>
+    <button (click)="toggleCart()"
+      style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
+  </div>
+  <div class="cart-items">
+    <div *ngFor="let item of cartItems" class="cart-item">
+      <div class="cart-item-emoji">{{ item.emoji }}</div>
+      <div style="flex:1">
+        <div class="cart-item-name">{{ item.name }}</div>
+        <div class="cart-item-price">{{ item.price }} ج.م</div>
+        <div class="cart-qty">
+          <button (click)="updateQty(item.id, -1)" class="qty-btn">−</button>
+          <span style="font-size:.9rem;font-weight:700">{{ item.qty }}</span>
+          <button (click)="updateQty(item.id, 1)" class="qty-btn">+</button>
+        </div>
+      </div>
+      <button (click)="updateQty(item.id, -item.qty)"
+        style="background:none;border:none;color:var(--neutral-400);cursor:pointer">حذف</button>
+    </div>
+    <div *ngIf="cartItems.length === 0" style="text-align:center;color:var(--neutral-500);padding-top:2rem">
+      عربة التسوق فارغة حالياً 🛒
+    </div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>الإجمالي</span><span style="color:var(--green-700)">{{ cartTotal }} ج.م</span></div>
+    <button [disabled]="cartItems.length === 0" class="btn btn-primary btn-block btn-lg">إتمام الشراء ←</button>
+    <div style="text-align:center;font-size:.78rem;color:var(--neutral-400);margin-top:.6rem">شحن مجاني للطلبات فوق 200
+      ج.م</div>
+  </div>
+</div>

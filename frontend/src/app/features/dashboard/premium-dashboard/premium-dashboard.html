@@ -1,0 +1,140 @@
+<div class="sidebar-layout page-wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-logo">نبتتي</div>
+    <div class="sidebar-section-title">الرئيسية</div>
+    <a routerLink="/dashboard" class="sidebar-link"><span class="icon"></span> لوحتي</a>
+    <a href="#" class="sidebar-link"><span class="icon"></span> نباتاتي <span class="sidebar-badge">7</span></a>
+    <a href="#" class="sidebar-link"><span class="icon"></span> التنبيهات</a>
+    <div class="sidebar-section-title">بريميوم حصري</div>
+    <a routerLink="/dashboard/premium" class="sidebar-link active"><span class="icon"></span> مهندسي الزراعي</a>
+    <a href="#" class="sidebar-link"><span class="icon"></span> الشات المباشر <span class="sidebar-badge">2</span></a>
+    <a href="#" class="sidebar-link"><span class="icon"></span> تقرير صحي شهري</a>
+    <div class="sidebar-section-title">الأدوات</div>
+    <a href="#" class="sidebar-link"><span class="icon"></span> تشخيص مرض</a>
+    <a routerLink="/wiki" class="sidebar-link"><span class="icon"></span> الموسوعة</a>
+    <a routerLink="/shop" class="sidebar-link"><span class="icon"></span> المتجر <span
+        style="font-size:.65rem;color:var(--green-300)">خصم 10%</span></a>
+  </aside>
+
+  <main class="main-content">
+    <div style="margin-bottom:1.5rem">
+      <div class="page-title">أهلاً سارة</div>
+      <div class="page-subtitle">خطتك البريميوم نشطة — تنتهي 1 مايو 2025</div>
+    </div>
+
+    <!-- Specialist Card -->
+    <div
+      style="background:linear-gradient(135deg,var(--earth-100),#fef9ef);border:1.5px solid var(--amber-400);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.5rem;display:flex;gap:1.25rem;align-items:center">
+      <div
+        style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--green-500),var(--green-700));display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">
+      </div>
+      <div style="flex:1">
+        <div style="font-weight:800;font-size:1.05rem;color:var(--green-900)">م. أحمد الشربيني</div>
+        <div style="font-size:.85rem;color:var(--neutral-500);margin-top:.1rem">مهندس زراعي متخصص — خضروات وأعشاب</div>
+        <div style="display:flex;gap:.5rem;margin-top:.5rem">
+          <span class="badge badge-green">متاح الآن</span>
+          <span style="font-size:.78rem;color:var(--neutral-500)"> 4.9 من 5 (120 تقييم)</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        <a href="dashboard-premium.html#chat" class="btn btn-primary">ابدأ الشات</a>
+        <div style="font-size:.75rem;color:var(--neutral-400);text-align:center">رد في أقل من ساعة عادةً</div>
+      </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div style="margin-bottom:1.5rem" id="chat">
+      <div class="page-title" style="font-size:1.05rem;margin-bottom:1rem">الشات مع المهندس</div>
+      <div class="chat-wrap">
+        <div class="chat-header">
+          <div class="chat-avatar"></div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem">م. أحمد الشربيني</div>
+            <div style="font-size:.75rem;color:var(--green-600)">متاح الآن</div>
+          </div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg msg-in">
+            <div class="msg-bubble">أهلاً سارة! كيف حال نباتاتك النهارده؟</div>
+            <div class="msg-time">10:30 ص</div>
+          </div>
+          <div class="msg msg-out">
+            <div class="msg-bubble">الطماطم أوراقها بدأت تصفر من تحت، مش عارفة إيه السبب</div>
+            <div class="msg-time">10:32 ص</div>
+          </div>
+          <div class="msg msg-in">
+            <div class="msg-bubble">ده غالباً نقص نيتروجين أو الري الزيادة. ممكن تبعتيلي صورة؟</div>
+            <div class="msg-time">10:33 ص</div>
+          </div>
+          <div class="msg msg-out">
+            <div class="msg-bubble">[صورة الطماطم]</div>
+            <div class="msg-time">10:35 ص</div>
+          </div>
+          <div class="msg msg-in">
+            <div class="msg-bubble">شفت الصورة — ده نقص نيتروجين واضح. أضيفي سماد NPK كل 14 يوم وسقيها بانتظام. هتتحسن
+              في أسبوع إن شاء الله</div>
+            <div class="msg-time">10:38 ص</div>
+          </div>
+        </div>
+        <form class="chat-input-area" id="chat-form">
+          <button type="button" class="btn btn-ghost btn-sm" style="padding:.5rem">إرفاق</button>
+          <input class="chat-input" id="chat-input" placeholder="اكتب رسالة للمهندس...">
+          <button type="submit" class="btn btn-primary btn-sm">إرسال</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- My Plants with specialist notes -->
+    <div class="page-title" style="font-size:1.05rem;margin-bottom:1rem">نباتاتي — مراجَعة من المهندس</div>
+    <div class="grid-3">
+      <div class="plant-card">
+        <div class="plant-card-img" style="background:linear-gradient(135deg,#fff5f5,#fee2e2)">
+          <div class="bg-pattern"></div><span style="position:absolute;top:.6rem;right:.6rem"
+            class="badge badge-amber">تحذير</span>
+        </div>
+        <div class="plant-card-body">
+          <div class="plant-card-name">طماطمي</div>
+          <div
+            style="background:var(--green-50);border-radius:var(--radius-sm);padding:.6rem;margin-top:.6rem;font-size:.8rem">
+            <strong style="color:var(--green-700)">ملاحظة المهندس:</strong><br>أضيفي سماد NPK كل 14 يوم
+          </div>
+        </div>
+        <div style="padding:.75rem 1rem;border-top:1px solid var(--neutral-100)">
+          <button class="btn btn-secondary btn-sm btn-block">التفاصيل</button>
+        </div>
+      </div>
+      <div class="plant-card">
+        <div class="plant-card-img" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7)">
+          <div class="bg-pattern"></div><span style="position:absolute;top:.6rem;right:.6rem"
+            class="badge badge-green">صحية</span>
+        </div>
+        <div class="plant-card-body">
+          <div class="plant-card-name">نعناعي</div>
+          <div
+            style="background:var(--green-50);border-radius:var(--radius-sm);padding:.6rem;margin-top:.6rem;font-size:.8rem">
+            <strong style="color:var(--green-700)">ملاحظة المهندس:</strong><br>ممتازة! استمري على نفس الروتين
+          </div>
+        </div>
+        <div style="padding:.75rem 1rem;border-top:1px solid var(--neutral-100)">
+          <button class="btn btn-secondary btn-sm btn-block">التفاصيل</button>
+        </div>
+      </div>
+      <div class="plant-card">
+        <div class="plant-card-img" style="background:linear-gradient(135deg,#fff1f2,#ffe4e6)">
+          <div class="bg-pattern"></div><span style="position:absolute;top:.6rem;right:.6rem"
+            class="badge badge-green">صحية</span>
+        </div>
+        <div class="plant-card-body">
+          <div class="plant-card-name">وردتي</div>
+          <div
+            style="background:var(--green-50);border-radius:var(--radius-sm);padding:.6rem;margin-top:.6rem;font-size:.8rem">
+            <strong style="color:var(--green-700)">ملاحظة المهندس:</strong><br>رشي بالماء كل مساء في الصيف
+          </div>
+        </div>
+        <div style="padding:.75rem 1rem;border-top:1px solid var(--neutral-100)">
+          <button class="btn btn-secondary btn-sm btn-block">التفاصيل</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

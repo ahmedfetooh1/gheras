@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -14,6 +14,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class Login {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   credentials = {
     email: '',
@@ -22,6 +23,53 @@ export class Login {
 
   status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
   errorMessage: string = '';
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const token = params['token'];
+      const error = params['error'];
+
+      if (token) {
+        this.status = 'loading';
+        localStorage.setItem('token', token);
+
+        // تحديث حالة المستخدم في الـ service
+        this.authService.loadUserFromStorage();
+
+        // التوجيه للداشبورد (التنقل بالـ router هيمسح الـ query params من الـ URL)
+        const user = this.authService.currentUser();
+        if (user) {
+          this.redirectToDashboard(user.role);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
+      } else if (error) {
+        this.status = 'error';
+        this.errorMessage = error;
+      }
+    });
+
+    // لو المستخدم موجود بالفعل (بعد الـ reload مثلاً) ولسه في صفحة الـ login، وديه الداشبورد
+    setTimeout(() => {
+      const user = this.authService.currentUser();
+      if (user) {
+        this.redirectToDashboard(user.role);
+      }
+    }, 500);
+  }
+
+  private redirectToDashboard(role?: string) {
+    const r = role?.toLowerCase();
+    if (r === 'admin') {
+      this.router.navigate(['/dashboard/admin']);
+    } else if (r === 'specialist') {
+      this.router.navigate(['/dashboard/specialist']);
+    } else if (r === 'premium') {
+      this.router.navigate(['/dashboard/premium']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
+  }
 
   onSubmit() {
     if (!this.credentials.email || !this.credentials.password) {
@@ -38,19 +86,8 @@ export class Login {
         this.status = 'success';
         console.log('Logged in successfully', res);
 
-        // جلب المستخدم لتقرير الوجهة المناسبة بناءً على دوره
         const user = this.authService.currentUser();
-        const role = user?.role?.toLowerCase();
-
-        if (role === 'admin') {
-          this.router.navigate(['/dashboard/admin']);
-        } else if (role === 'specialist') {
-          this.router.navigate(['/dashboard/specialist']);
-        } else if (role === 'premium') {
-          this.router.navigate(['/dashboard/premium']);
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
+        this.redirectToDashboard(user?.role);
       },
       error: (err: any) => {
         this.status = 'error';

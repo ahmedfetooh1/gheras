@@ -186,7 +186,10 @@ let login = async (req, res) => {
             return res.status(401).json({ message: "Please verify your email first" })
         }
 
-        let token = jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.SECRET_KEY)
+        let token = jwt.sign(
+            { id: user._id, email: user.email, role: user.role, username: user.username },
+            process.env.SECRET_KEY
+        )
         res.status(200).json({ token: token, username: username })
     } catch (error) {
         res.status(500).json(error.message)
@@ -314,15 +317,15 @@ let verifyEmailAndResetPassword = async (req, res) => {
 let googleAuthCallback = async (req, res) => {
     try {
         const user = req.user;
-        let token = jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.SECRET_KEY);
-        // Normally, for Google popup logins, you might redirect to front-end with token in URL 
-        // OR send back as JSON depending on your FE setup.
-        res.status(200).json({
-            message: "Login successful with Google",
-            token: token
-        });
+        let token = jwt.sign(
+            { id: user._id, email: user.email, role: user.role, username: user.username },
+            process.env.SECRET_KEY
+        );
+        
+        // Redirect back to front-end (Angular) with token in query params
+        res.redirect(`http://localhost:4200/login?token=${token}`);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.redirect("http://localhost:4200/login?error=" + encodeURIComponent(error.message));
     }
 }
 

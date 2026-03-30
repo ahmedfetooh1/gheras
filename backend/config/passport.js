@@ -11,7 +11,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                 clientID: process.env.GOOGLE_CLIENT_ID,
                 clientSecret: process.env.GOOGLE_CLIENT_SECRET,
                 callbackURL:
-                    "http://localhost:3000/users/auth/google/callback",
+                    "http://localhost:3000/api/users/auth/google/callback",
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
@@ -45,10 +45,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
                     user = await userModel.create({
                         googleId: profile.id,
-                        username: newUsername.substring(0, 14),
+                        username: newUsername.replace(/\s+/g, '_').toLowerCase().substring(0, 14),
                         email,
                         firstName,
                         lastName,
+                        role: 'user',
                         isVerified: true,
                     });
 

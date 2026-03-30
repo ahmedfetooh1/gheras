@@ -5,7 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { WikiService } from '../../../core/services/wiki.service';
 import { ChangeDetectorRef } from '@angular/core';
-import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -19,7 +18,6 @@ export class AdminDashboard implements OnInit {
   private dashboardService = inject(DashboardService);
   private wikiService = inject(WikiService);
   private http = inject(HttpClient);
-  private alertService = inject(AlertService);
   private base = 'http://localhost:3000/api';
   private cdr = inject(ChangeDetectorRef);
 
@@ -47,8 +45,155 @@ export class AdminDashboard implements OnInit {
   selectedDiseaseIds: string[] = [];
   selectedFertilizerIds: string[] = [];
 
-  // ==================== EDIT PLANT ====================
+  // ==================== EDIT/DELETE PLANT ====================
   selectedPlantId: string = '';
+  plantToDeleteId: string = '';
+
+  // ==================== EDIT/DELETE DISEASE ====================
+  selectedDiseaseId: string = '';
+  diseaseToDeleteId: string = '';
+
+  // ==================== EDIT/DELETE FERTILIZER ====================
+  selectedFertilizerId: string = '';
+  fertilizerToDeleteId: string = '';
+
+  // ==================== EDIT/DELETE PRODUCT ====================
+  allProducts: any[] = [];
+  selectedProductId: string = '';
+  productToDeleteId: string = '';
+
+  // ==================== USER MANAGEMENT ====================
+  allUsers: any[] = [];
+
+  get regularUsers() {
+    return this.allUsers.filter(u => u.role !== 'admin');
+  }
+
+  get adminUsers() {
+    return this.allUsers.filter(u => u.role === 'admin');
+  }
+
+  get premiumCount(): number {
+    return this.allUsers.filter(u => u.premium === true).length;
+  }
+
+  deletePlant() {
+    if (!this.plantToDeleteId) {
+      alert('الرجاء اختيار نبات لحذفه أولاً');
+      return;
+    }
+
+    const plant = this.allPlants.find(p => (p._id || p.id) === this.plantToDeleteId);
+    const plantName = plant ? (plant.commonName || plant.name) : 'هذا النبات';
+
+    if (confirm(`هل أنت متأكد من رغبتك في حذف "${plantName}"؟ لا يمكن التراجع عن هذا الإجراء.`)) {
+      this.dashboardService.deletePlantAdmin(this.plantToDeleteId).subscribe({
+        next: () => {
+          alert('تم حذف النبات بنجاح 🗑️');
+          this.plantToDeleteId = '';
+          this.loadAllData();
+          this.setView('stats');
+        },
+        error: (err) => {
+          console.error('Delete error:', err);
+          alert('حدث خطأ أثناء الحذف: ' + (err.error?.message || 'تأكد من صلاحياتك أو اتصالك بالسيرفر'));
+        }
+      });
+    }
+  }
+
+  deleteDisease() {
+    if (!this.diseaseToDeleteId) {
+      alert('الرجاء اختيار مرض لحذفه أولاً');
+      return;
+    }
+
+    const disease = this.allDiseases.find(d => (d._id || d.id) === this.diseaseToDeleteId);
+    const diseaseName = disease ? disease.name : 'هذا المرض';
+
+    if (confirm(`هل أنت متأكد من رغبتك في حذف "${diseaseName}"؟ لا يمكن التراجع عن هذا الإجراء.`)) {
+      this.dashboardService.deleteDiseaseAdmin(this.diseaseToDeleteId).subscribe({
+        next: () => {
+          alert('تم حذف المرض بنجاح 🗑️');
+          this.diseaseToDeleteId = '';
+          this.loadAllData();
+          this.setView('stats');
+        },
+        error: (err) => {
+          console.error('Delete error:', err);
+          alert('حدث خطأ أثناء الحذف: ' + (err.error?.message || 'تأكد من صلاحياتك'));
+        }
+      });
+    }
+  }
+
+  deleteFertilizer() {
+    if (!this.fertilizerToDeleteId) {
+      alert('الرجاء اختيار سماد لحذفه أولاً');
+      return;
+    }
+
+    const fert = this.allFertilizers.find(f => (f._id || f.id) === this.fertilizerToDeleteId);
+    const fertName = fert ? fert.name : 'هذا السماد';
+
+    if (confirm(`هل أنت متأكد من رغبتك في حذف "${fertName}"؟ لا يمكن التراجع عن هذا الإجراء.`)) {
+      this.dashboardService.deleteFertilizerAdmin(this.fertilizerToDeleteId).subscribe({
+        next: () => {
+          alert('تم حذف السماد بنجاح 🗑️');
+          this.fertilizerToDeleteId = '';
+          this.loadAllData();
+          this.setView('stats');
+        },
+        error: (err) => {
+          console.error('Delete error:', err);
+          alert('حدث خطأ أثناء الحذف: ' + (err.error?.message || 'تأكد من صلاحياتك'));
+        }
+      });
+    }
+  }
+
+  deleteProduct() {
+    if (!this.productToDeleteId) {
+      alert('الرجاء اختيار منتج لحذفه أولاً');
+      return;
+    }
+    const product = this.allProducts.find(p => (p._id || p.id) === this.productToDeleteId);
+    const productName = product ? product.name : 'هذا المنتج';
+
+    if (confirm(`هل أنت متأكد من رغبتك في حذف "${productName}"؟`)) {
+      this.dashboardService.deleteProductAdmin(this.productToDeleteId).subscribe({
+        next: () => {
+          alert('تم حذف المنتج بنجاح 🗑️');
+          this.productToDeleteId = '';
+          this.loadAllData();
+          this.setView('stats');
+        },
+        error: (err) => {
+          console.error('Delete error:', err);
+          alert('حدث خطأ أثناء الحذف');
+        }
+      });
+    }
+  }
+
+  deleteUser(userId: string, userName: string) {
+    if (confirm(`هل أنت متأكد من رغبتك في حذف المستخدم "${userName}"؟ لا يمكن التراجع عن هذا الإجراء.`)) {
+      this.dashboardService.deleteUserAdmin(userId).subscribe({
+        next: () => {
+          alert('تم حذف المستخدم بنجاح 🗑️');
+          // Update local list instantly without refresh
+          this.allUsers = this.allUsers.filter(u => (u._id || u.id) !== userId);
+          // Refresh total counts
+          this.loadAllData();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Delete user error:', err);
+          alert('حدث خطأ أثناء حذف المستخدم: ' + (err.error?.message || 'تأكد من الصلاحيات'));
+        }
+      });
+    }
+  }
 
   // -------------------- PLANT FORM --------------------
   plantForm: any = {
@@ -96,34 +241,54 @@ export class AdminDashboard implements OnInit {
   }
 
   loadAllData() {
-    this.wikiService.getPlants(1, 1000).subscribe({
-      next: (res) => {
-        this.allPlants = res.data?.plants || [];
+    this.dashboardService.getAdminStats().subscribe({
+      next: (res: any) => {
+        console.log('Admin Stats Response:', res); // لتشوف الشكل الحقيقي
+        this.adminStats = res?.stats || res?.data || res || null;
+        this.cdr.detectChanges();
+      },
+      error: (err) => { console.error('Error fetching admin stats:', err); }
+    });
+
+    this.wikiService.getPlants(1, 200).subscribe({
+      next: (res: any) => {
+        this.allPlants = res?.data?.plants || res?.data || res || [];
       },
       error: (err) => { console.error('Error fetching plants:', err); }
     });
-    this.wikiService.getDiseases(1, 1000).subscribe({
-      next: (res) => {
-        this.allDiseases = res.data?.diseases || [];
+    this.wikiService.getDiseases(1, 100).subscribe({
+      next: (res: any) => {
+        this.allDiseases = res?.data?.diseases || res?.data || res || [];
       },
       error: (err) => { console.error('Error fetching diseases:', err); }
     });
-    this.wikiService.getFertilizers(1, 1000).subscribe({
-      next: (res) => {
-        this.allFertilizers = res.data?.fertilizers || [];
+    this.wikiService.getFertilizers(1, 100).subscribe({
+      next: (res: any) => {
+        this.allFertilizers = res?.data?.fertilizers || res?.data || res || [];
       },
       error: (err) => { console.error('Error fetching fertilizers:', err); }
     });
     this.http.get<any>(`${this.base}/category`).subscribe({
-      next: (res) => { this.allCategories = res.data || res || []; },
+      next: (res: any) => { this.allCategories = res?.data || res || []; },
       error: () => { }
+    });
+    this.http.get<any>(`${this.base}/product`).subscribe({
+      next: (res: any) => { this.allProducts = res?.data || res || []; },
+      error: () => { }
+    });
+    this.dashboardService.getUsersAdmin().subscribe({
+      next: (res: any) => { this.allUsers = res?.data || res || []; },
+      error: (err) => { console.error('Error fetching users:', err); }
     });
   }
 
   setView(view: string) {
     this.activeView = view;
-    this.resetPlantForm(); // ريست للفورم عند تغيير الواجهة عشان البيانات متتداخلش
-    this.loadAllData();    // تأكد إن البيانات فريش دائماً
+    this.resetPlantForm();
+    this.resetDiseaseForm();
+    this.resetFertilizerForm();
+    this.resetProductForm(); // ريست للفورم عند تغيير الواجهة
+    this.loadAllData();
   }
 
   // ==================== FILE CHANGE ====================
@@ -158,6 +323,10 @@ export class AdminDashboard implements OnInit {
 
   // ==================== SUBMIT PLANT ====================
   submitPlant(isUpdate: boolean = false) {
+    if (!this.plantForm.commonName?.trim() || !this.plantForm.scientificName?.trim() || !this.plantForm.family?.trim()) {
+      alert('الرجاء ملء الحقول الأساسية: الاسم الشائع، الاسم العلمي، والفصيلة');
+      return;
+    }
     const body: any = {
       commonName: this.plantForm.commonName,
       scientificName: this.plantForm.scientificName,
@@ -212,27 +381,27 @@ export class AdminDashboard implements OnInit {
     if (isUpdate && this.selectedPlantId) {
       this.dashboardService.updatePlantAdmin(this.selectedPlantId, dataToSend).subscribe({
         next: () => {
-          this.alertService.show('تم تحديث النبات بنجاح ✅', 'success');
+          alert('تم تحديث النبات بنجاح ✅');
           this.resetPlantForm();
           this.setView('stats');
           this.loadAllData();
         },
         error: (err) => {
           console.error('Update error:', err);
-          this.alertService.show('حدث خطأ أثناء التحديث: ' + (err.error?.message || 'هناك خطأ في البيانات'), 'error');
+          alert('حدث خطأ أثناء التحديث: ' + (err.error?.message || 'هذا الروت غير موجود أو هناك خطأ في البيانات'));
         }
       });
     } else {
       this.dashboardService.addPlantAdmin(dataToSend).subscribe({
         next: () => {
-          this.alertService.show('تم إضافة النبات بنجاح ✅', 'success');
+          alert('تم إضافة النبات بنجاح ✅');
           this.resetPlantForm();
           this.setView('stats');
           this.loadAllData();
         },
         error: (err) => {
           console.error('Add error:', err);
-          this.alertService.show('حدث خطأ أثناء الإضافة: ' + (err.error?.message || ''), 'error');
+          alert('حدث خطأ أثناء الإضافة: ' + (err.error?.message || ''));
         }
       });
     }
@@ -252,13 +421,14 @@ export class AdminDashboard implements OnInit {
 
     this.wikiService.getPlantById(id).subscribe({
       next: (res: any) => {
+
         // ❗ تجاهل أي response قديم
         if (this.lastSelectedPlantId !== id) return;
 
-        const p = res.data?.plant || res.plant || res;
+        const p = res;
 
         if (!p) {
-          this.alertService.show('بيانات النبات غير موجودة في السيرفر', 'warning');
+          alert('بيانات النبات غير موجودة في السيرفر');
           return;
         }
 
@@ -293,7 +463,7 @@ export class AdminDashboard implements OnInit {
       },
       error: (err) => {
         console.error('Error fetching plant details:', err);
-        this.alertService.show('حدث خطأ أثناء جلب بيانات النبات', 'error');
+        alert('حدث خطأ أثناء جلب بيانات النبات');
       }
     });
   }
@@ -355,17 +525,6 @@ export class AdminDashboard implements OnInit {
         if (Array.isArray(v)) (v as string[]).forEach(item => formData.append(k, item));
         else formData.append(k, v as any);
       });
-<<<<<<< HEAD
-      formData.append('image', this.diseaseImage);
-      this.dashboardService.addDiseaseAdmin(formData).subscribe({
-        next: () => { this.alertService.show('تم إضافة المرض بنجاح ✅', 'success'); this.resetDiseaseForm(); this.setView('stats'); },
-        error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
-      });
-    } else {
-      this.http.post(`${this.base}/diseases`, body).subscribe({
-        next: () => { this.alertService.show('تم إضافة المرض بنجاح ✅', 'success'); this.resetDiseaseForm(); this.setView('stats'); },
-        error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
-=======
       formData.append('image', this.diseaseImage!);
       dataToSend = formData;
     }
@@ -395,7 +554,6 @@ export class AdminDashboard implements OnInit {
           console.error('Add error:', err);
           alert('حدث خطأ أثناء الإضافة: ' + (err.error?.message || ''));
         }
->>>>>>> a3a0af15975cabad1543a4e724efe6a5b7611f51
       });
     }
   }
@@ -477,17 +635,6 @@ export class AdminDashboard implements OnInit {
           formData.append(k, v as any);
         }
       });
-<<<<<<< HEAD
-      formData.append('image', this.fertilizerImage);
-      this.dashboardService.addFertilizerAdmin(formData).subscribe({
-        next: () => { this.alertService.show('تم إضافة السماد بنجاح ✅', 'success'); this.resetFertilizerForm(); this.setView('stats'); },
-        error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
-      });
-    } else {
-      this.http.post(`${this.base}/fertilizers`, body).subscribe({
-        next: () => { this.alertService.show('تم إضافة السماد بنجاح ✅', 'success'); this.resetFertilizerForm(); this.setView('stats'); },
-        error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
-=======
       formData.append('image', this.fertilizerImage!);
       dataToSend = formData;
     }
@@ -517,7 +664,6 @@ export class AdminDashboard implements OnInit {
           console.error('Add error:', err);
           alert('حدث خطأ أثناء الإضافة: ' + (err.error?.message || ''));
         }
->>>>>>> a3a0af15975cabad1543a4e724efe6a5b7611f51
       });
     }
   }
@@ -572,16 +718,6 @@ export class AdminDashboard implements OnInit {
     if (this.productForm.category) formData.append('category', this.productForm.category);
     if (this.productForm.discountPercent) formData.append('discountPercent', this.productForm.discountPercent.toString());
     this.productImages.forEach(file => formData.append('images', file));
-<<<<<<< HEAD
-    this.dashboardService.addProductAdmin(formData).subscribe({
-      next: () => { 
-        this.alertService.show('تم إضافة المنتج بنجاح ✅', 'success'); 
-        this.productForm = { name: '', description: '', category: '', price: 0, costPrice: 0, discountPercent: 0, stock: 0 }; 
-        this.productImages = []; 
-        this.setView('stats'); 
-      },
-      error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
-=======
 
     if (isUpdate && this.selectedProductId) {
       this.dashboardService.updateProductAdmin(this.selectedProductId, formData).subscribe({
@@ -639,7 +775,6 @@ export class AdminDashboard implements OnInit {
         console.error('Error fetching product details:', err);
         alert('حدث خطأ أثناء جلب بيانات المنتج');
       }
->>>>>>> a3a0af15975cabad1543a4e724efe6a5b7611f51
     });
   }
 
@@ -652,12 +787,8 @@ export class AdminDashboard implements OnInit {
   // ==================== SUBMIT CATEGORY ====================
   submitCategory() {
     this.dashboardService.addCategoryAdmin(this.categoryForm).subscribe({
-      next: () => { 
-        this.alertService.show('تم إضافة التصنيف بنجاح ✅', 'success'); 
-        this.categoryForm = { name: '', slug: '', description: '' }; 
-        this.setView('stats'); 
-      },
-      error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
+      next: () => { alert('تم إضافة التصنيف بنجاح ✅'); this.categoryForm = { name: '', slug: '', description: '' }; this.setView('stats'); },
+      error: (err) => { console.error(err); alert('حدث خطأ: ' + (err.error?.message || '')); }
     });
   }
 }

@@ -11,7 +11,6 @@ import { Shop } from './features/shop/shop';
 import { Forum } from './features/community/forum/forum';
 import { Blog } from './features/community/blog/blog';
 import { ProductDetails } from './features/shop/product-details/product-details';
-import { Checkout } from './features/shop/checkout/checkout';
 import { UserDashboard } from './features/dashboard/user-dashboard/user-dashboard';
 import { AdminDashboard } from './features/dashboard/admin-dashboard/admin-dashboard';
 import { SpecialistDashboard } from './features/dashboard/specialist-dashboard/specialist-dashboard';
@@ -25,8 +24,6 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPassword },
   { path: 'wiki', component: Wiki },
   { path: 'shop', component: Shop },
-  { path: 'shop/checkout', component: Checkout, canActivate: [authGuard] },
-  { path: 'shop/checkout/payment/:orderId', loadComponent: () => import('./features/shop/payment/payment').then(m => m.PaymentComponent), canActivate: [authGuard] },
   { path: 'shop/product/:id', component: ProductDetails },
   { path: 'forum', component: Forum },
   { path: 'blog', component: Blog },

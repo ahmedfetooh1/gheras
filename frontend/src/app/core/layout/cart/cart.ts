@@ -1,43 +1,20 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StoreService } from '../../services/store.service';
-import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { AlertService } from '../../services/alert.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
     selector: 'app-cart',
     standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule],
+    imports: [CommonModule, RouterModule],
     templateUrl: './cart.html',
     styleUrl: './cart.css',
 })
 export class CartComponent {
     public storeService = inject(StoreService);
-    private alertService = inject(AlertService);
-    private router = inject(Router);
-
-    // Checkout Steps: 'cart' | 'shipping' | 'payment-selection' | 'processing' | 'iframe'
-    checkoutStep = signal<string>('cart');
-    
-    // Shipping Data
-    phone = signal<string>('');
-    city = signal<string>('');
-    street = signal<string>('');
-    paymentMethod = signal<string>('cash'); // 'cash' | 'card'
-    
-    // Payment Loading State
-    orderLoading = signal<boolean>(false);
 
     toggleCart() {
         this.storeService.toggleCart();
-        if (!this.storeService.isCartOpen()) {
-            this.checkoutStep.set('cart');
-        }
-    }
-
-    setStep(step: string) {
-        this.checkoutStep.set(step);
     }
 
     updateQty(item: any, delta: number) {
@@ -57,63 +34,12 @@ export class CartComponent {
     }
 
     clearCart() {
-        this.storeService.clearCart().subscribe(() => {
-            this.alertService.show('تم إفراغ العربة بنجاح');
-        });
-    }
-
-    proceedToCheckout() {
-        if (this.storeService.cartItems().length === 0) return;
-        this.checkoutStep.set('shipping');
-    }
-
-    placeOrder() {
-        if (!this.phone() || !this.city() || !this.street()) {
-            this.alertService.show('الرجاء إكمال كافة بيانات الشحن', 'error');
-            return;
+        if (confirm('هل تريد فعلاً إفراغ عربة التسوق؟')) {
+            this.storeService.clearCart().subscribe();
         }
-
-        this.orderLoading.set(true);
-        const orderData = {
-            phone: this.phone(),
-            address: {
-                city: this.city(),
-                street: this.street()
-            },
-            paymentMethod: this.paymentMethod()
-        };
-
-        this.storeService.checkout(orderData).subscribe({
-            next: (res: any) => {
-                const order = res.data || res;
-                if (this.paymentMethod() === 'card') {
-                    this.initiateCardPayment(order._id);
-                } else {
-                    this.alertService.show('تم تسجيل طلبك بنجاح! شكراً لتعاملك معنا ✅');
-                    this.storeService.clearCart().subscribe();
-                    this.checkoutStep.set('cart');
-                    setTimeout(() => this.storeService.isCartOpen.set(false), 2000);
-                    this.orderLoading.set(false);
-                }
-            },
-            error: (err: any) => {
-                console.error('Checkout error:', err);
-                const msg = err.error?.message || err.error?.error || 'حدث خطأ أثناء إتمام الطلب';
-                this.alertService.show(msg, 'error');
-                this.orderLoading.set(false);
-            }
-        });
-    }
-
-    initiateCardPayment(orderId: string) {
-        this.router.navigate(['/shop/checkout/payment', orderId]);
-        this.orderLoading.set(false);
-        this.toggleCart(); // Close cart sidebar
     }
 
     getImageUrl(path: string) {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
         return `http://localhost:3000/${path}`;
     }
 }

@@ -26,7 +26,7 @@ export class AuthService {
   }
 
   // ================= LOAD USER =================
-  private loadUserFromStorage() {
+  public loadUserFromStorage() {
     const token = localStorage.getItem('token');
     const userJson = localStorage.getItem('user');
 

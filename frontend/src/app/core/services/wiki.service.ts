@@ -1,57 +1,65 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export interface WikiResponse {
-  status: string;
-  page: number;
-  total: number;
-  totalPages: number;
-  data: {
-    plants?: any[];
-    diseases?: any[];
-    fertilizers?: any[];
-  }
-}
+import { map } from 'rxjs/operators';
+import { Plant, Disease, Fertilizer } from '../models/interfaces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WikiService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:3000'; // Root URL for static files
+  private baseUrl = 'http://localhost:3000/api';
 
-  getPlants(page: number = 1, limit: number = 15): Observable<WikiResponse> {
-    return this.http.get<WikiResponse>(`${this.baseUrl}/api/plants?page=${page}&limit=${limit}`);
+  // Plants
+  getPlants(page: number = 1, limit: number = 15): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/plants?page=${page}&limit=${limit}`);
   }
 
-  getDiseases(page: number = 1, limit: number = 15): Observable<WikiResponse> {
-    return this.http.get<WikiResponse>(`${this.baseUrl}/api/diseases?page=${page}&limit=${limit}`);
+  getPlantById(id: string): Observable<Plant> {
+    return this.http.get<any>(`${this.baseUrl}/plants/${id}`).pipe(
+      map(res => res.data?.plant)  // هنا ناخد plant من data
+    );
   }
   updatePlant(id: string, plantData: any, images: File[] = []): Observable<Plant> {
     const formData = new FormData();
 
-  getFertilizers(page: number = 1, limit: number = 15): Observable<WikiResponse> {
-    return this.http.get<WikiResponse>(`${this.baseUrl}/api/fertilizers?page=${page}&limit=${limit}`);
+    Object.keys(plantData).forEach(key => {
+      formData.append(key, plantData[key]);
+    });
+
+    images.forEach(img => formData.append('images', img));
+
+    return this.http.put<any>(`${this.baseUrl}/plants/${id}`, formData)
+      .pipe(
+        map(res => res.data.plant)
+      );
   }
 
-  getPlantById(id: string): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/api/plants/${id}`);
+  // Diseases
+  // Diseases
+  getDiseases(page: number = 1, limit: number = 20): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/diseases?page=${page}&limit=${limit}`);
   }
 
-  getDiseaseById(id: string): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/api/diseases/${id}`);
+  getDiseaseById(id: string): Observable<Disease> {
+    return this.http.get<any>(`${this.baseUrl}/diseases/${id}`)
+      .pipe(
+        map(res => res.data.disease)
+      );
   }
 
-  getFertilizerById(id: string): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/api/fertilizers/${id}`);
+  // Fertilizers
+  getFertilizers(page: number = 1, limit: number = 20): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/fertilizers?page=${page}&limit=${limit}`);
   }
 
-  getImageUrl(path: string): string {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    // Ensure path doesn't start with / before adding it
-    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    return `${this.baseUrl}/${cleanPath}`;
+  getFertilizerById(id: string): Observable<Fertilizer> {
+    return this.http.get<any>(`${this.baseUrl}/fertilizers/${id}`)
+      .pipe(
+        map(res => res.data.fertilizer)
+      );
   }
+
+
 }

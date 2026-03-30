@@ -11,7 +11,6 @@ exports.getAllPlants = catchAsync(async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const plants = await Plant.find()
-        .select("commonName scientificName images family sunlightHours waterNeeds temperatureRange")
         .populate("fertilizers", "name")
         .populate("diseases", "name")
         .sort({ createdAt: -1 })

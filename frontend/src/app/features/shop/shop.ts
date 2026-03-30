@@ -4,21 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { StoreService } from '../../core/services/store.service';
 import { AuthService } from '../../core/services/auth.service';
-
-interface LocalProduct {
-  id: string;
-  name: string;
-  desc: string;
-  catId: string;
-  catName: string;
-  price: number;
-  oldPrice?: number;
-  rating: number;
-  reviews: number;
-  emoji: string;
-  color: string;
-  isBestSeller?: boolean;
-}
+import { Product } from '../../core/models/interfaces';
 
 @Component({
   selector: 'app-shop',
@@ -29,33 +15,22 @@ interface LocalProduct {
 })
 export class Shop implements OnInit {
   activeFilter = signal<string>('all');
-  maxPrice = signal<number>(10000);
-  sortOption = signal<string>('latest');
+  maxPrice: number = 0;
+
 
   private storeService = inject(StoreService);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private alertService = inject(AlertService);
 
   products = signal<Product[]>([]);
   categories = signal<any[]>([]);
 
+
+
   ngOnInit() {
     this.storeService.getProducts().subscribe((res: any) => {
       const data = res.data || res;
-      this.products.set(data.map((p: any) => ({
-        id: p._id,
-        name: p.name,
-        desc: p.description || '',
-        catId: p.category?._id || p.category,
-        catName: p.category?.name || 'أخرى',
-        price: p.price,
-        rating: 4 + Math.random(),
-        reviews: Math.floor(Math.random() * 100) + 10,
-        emoji: '🌿',
-        color: 'linear-gradient(135deg,#f0fdf4,#dcfce7)',
-        isBestSeller: p.stock < 10 && p.stock > 0
-      })));
+      this.products.set(data);
     });
 
     this.storeService.getCategories().subscribe((res: any) => {
@@ -63,41 +38,31 @@ export class Shop implements OnInit {
     });
   }
 
+
+
   filteredProducts = computed(() => {
-    let list = [...this.products()];
+    const list = this.products();
     const filter = this.activeFilter();
     const price = this.maxPrice;
     return list.filter(p => {
-      const matchesFilter = filter === 'all' || p.catId === filter;
+      const catId = (p.category as any)?._id || p.category;
+      const matchesFilter = filter === 'all' || catId === filter;
       const matchesPrice = price === 0 || p.price <= price;
       return matchesFilter && matchesPrice;
     });
-
-    // Sorting
-    if (sort === 'price-asc') {
-      list.sort((a, b) => a.price - b.price);
-    } else if (sort === 'price-desc') {
-      list.sort((a, b) => b.price - a.price);
-    } else if (sort === 'top-rated') {
-      list.sort((a, b) => b.rating - a.rating);
-    } else {
-      // latest - default (assuming order in list)
-    }
-
-    return list;
   });
+
+
 
   setFilter(cat: string) {
     this.activeFilter.set(cat);
   }
 
-  onSortChange(event: any) {
-    this.sortOption.set(event.target.value);
-  }
+
 
   addToCart(product: Product) {
     if (!this.authService.currentUser()) {
-      this.alertService.show('الرجاء تسجيل الدخول أولاً لإضافة منتجات للسلة', 'info');
+      alert('الرجاء تسجيل الدخول أولاً لإضافة منتجات للسلة');
       this.router.navigate(['/login']);
       return;
     }
@@ -108,18 +73,14 @@ export class Shop implements OnInit {
       next: () => {
         this.storeService.isCartOpen.set(true);
       },
-      error: () => this.alertService.show('عذراً، حدث خطأ أثناء الإضافة للسلة', 'error')
+      error: () => alert('عذراً، حدث خطأ أثناء الإضافة للسلة')
     });
   }
+
+
 
   getStars(rating: number) {
     const r = Math.round(rating);
     return '★'.repeat(r) + '☆'.repeat(5 - r);
-  }
-
-  getImageUrl(path: string) {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    return `http://localhost:3000/${path}`;
   }
 }

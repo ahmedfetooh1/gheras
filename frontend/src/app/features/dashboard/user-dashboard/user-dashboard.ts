@@ -160,10 +160,10 @@ export class UserDashboard implements OnInit {
         if (res.status === 'success') {
           // تحديث بيانات اللوحة بعد السقاية للحصول على التواريخ الجديدة
           this.loadDashboardData();
-          
+
           // إذا كانت نافذة التفاصيل مفتوحة، يتم مراجعة بيانات نفس النبتة لتحديثها
           if (this.showDetailsModal() && this.selectedPlantDetails() && this.selectedPlantDetails()._id === id) {
-             this.openPlantDetail(id);
+            this.openPlantDetail(id);
           }
         }
       },
@@ -228,20 +228,20 @@ export class UserDashboard implements OnInit {
     if (!plantDetails) return null;
     // إذا كان الموعد موجوداً مباشرة من الداتابيز
     if (plantDetails.nextWateringDate) return new Date(plantDetails.nextWateringDate);
-    
+
     // خلاف ذلك نحسبه بناءً على تاريخ آخر سقاية وعدد الأيام (frequency)
     const baseDateString = plantDetails.lastWateredDate || plantDetails.addedAt;
     if (!baseDateString) return null;
 
     const baseDate = new Date(baseDateString);
     const freq = plantDetails.plant?.waterNeeds?.frequency ? Number(plantDetails.plant.waterNeeds.frequency) : 0;
-    
+
     if (freq > 0) {
       const nextDate = new Date(baseDate);
       nextDate.setDate(baseDate.getDate() + freq);
       return nextDate;
     }
-    
+
     return null;
   }
 }

@@ -3,18 +3,60 @@
     <div class="sidebar-logo">لوحة الإدارة</div>
 
     <div class="sidebar-section-title">الرئيسية</div>
-    <a (click)="setView('stats')" [class.active]="activeView === 'stats'" class="sidebar-link"
-      style="cursor: pointer;"><span class="icon"></span> الإحصائيات</a>
+    <a (click)="setView('stats')" [class.active]="activeView === 'stats'" class="sidebar-link" style="cursor: pointer;">
+      <span class="icon">📊</span> الإحصائيات
+    </a>
 
-    <div class="sidebar-section-title">إضافة بيانات للقاعدة</div>
-    <a (click)="setView('add-plant')" [class.active]="activeView === 'add-plant'" class="sidebar-link"
-      style="cursor: pointer;"><span class="icon"></span> إضافة نبات</a>
-    <a (click)="setView('edit-plant')" [class.active]="activeView === 'edit-plant'" class="sidebar-link"
-      style="cursor: pointer;"><span class="icon"></span> تعديل نبات</a>
-    <a (click)="setView('add-disease')" [class.active]="activeView === 'add-disease'" class="sidebar-link"
-      style="cursor: pointer;"><span class="icon"></span> إضافة مرض</a>
-    <a (click)="setView('add-fertilizer')" [class.active]="activeView === 'add-fertilizer'" class="sidebar-link"
-      style="cursor: pointer;"><span class="icon"></span> إضافة سماد</a>
+    <!-- إدارة النباتات -->
+    <div class="sidebar-section-title">إدارة النباتات(الويكي)</div>
+
+    <div class="sidebar-group">
+      <a (click)="toggleSection('plants')" class="sidebar-link has-chevron" style="cursor: pointer;">
+        <span><span class="icon">🌿</span> نباتات</span>
+        <span class="chevron-icon" [class.rotated]="expandedSections['plants']">▶</span>
+      </a>
+      <div class="sidebar-submenu" *ngIf="expandedSections['plants']">
+        <a (click)="setView('add-plant')" [class.active]="activeView === 'add-plant'" class="sidebar-sub-link"
+          style="cursor: pointer;">إضافة</a>
+        <a (click)="setView('edit-plant')" [class.active]="activeView === 'edit-plant'" class="sidebar-sub-link"
+          style="cursor: pointer;">تعديل</a>
+        <a (click)="setView('delete-plant')" [class.active]="activeView === 'delete-plant'" class="sidebar-sub-link"
+          style="cursor: pointer;">مسح</a>
+      </div>
+    </div>
+
+    <div class="sidebar-group">
+      <a (click)="toggleSection('diseases')" class="sidebar-link has-chevron" style="cursor: pointer;">
+        <span><span class="icon">🦠</span> أمراض</span>
+        <span class="chevron-icon" [class.rotated]="expandedSections['diseases']">▶</span>
+      </a>
+      <div class="sidebar-submenu" *ngIf="expandedSections['diseases']">
+        <a (click)="setView('add-disease')" [class.active]="activeView === 'add-disease'" class="sidebar-sub-link"
+          style="cursor: pointer;">إضافة</a>
+        <a (click)="setView('edit-disease')" [class.active]="activeView === 'edit-disease'" class="sidebar-sub-link"
+          style="cursor: pointer;">تعديل</a>
+        <a (click)="setView('delete-disease')" [class.active]="activeView === 'delete-disease'" class="sidebar-sub-link"
+          style="cursor: pointer;">مسح</a>
+      </div>
+    </div>
+
+    <div class="sidebar-group">
+      <a (click)="toggleSection('fertilizers')" class="sidebar-link has-chevron" style="cursor: pointer;">
+        <span><span class="icon">🧪</span> سماد</span>
+        <span class="chevron-icon" [class.rotated]="expandedSections['fertilizers']">▶</span>
+      </a>
+      <div class="sidebar-submenu" *ngIf="expandedSections['fertilizers']">
+        <a (click)="setView('add-fertilizer')" [class.active]="activeView === 'add-fertilizer'" class="sidebar-sub-link"
+          style="cursor: pointer;">إضافة</a>
+        <a (click)="setView('edit-fertilizer')" [class.active]="activeView === 'edit-fertilizer'"
+          class="sidebar-sub-link" style="cursor: pointer;">تعديل</a>
+        <a (click)="setView('delete-fertilizer')" [class.active]="activeView === 'delete-fertilizer'"
+          class="sidebar-sub-link" style="cursor: pointer;">مسح</a>
+      </div>
+    </div>
+
+    <!-- إدارة المنتجات -->
+    <div class="sidebar-section-title">إدارة المنتجات</div>
     <a (click)="setView('add-category')" [class.active]="activeView === 'add-category'" class="sidebar-link"
       style="cursor: pointer;">
       <span class="icon">📁</span> إضافة تصنيف منتج

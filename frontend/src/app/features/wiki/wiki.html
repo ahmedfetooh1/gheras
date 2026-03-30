@@ -1,6 +1,6 @@
 <div class="page-wrapper">
   <div class="wiki-hero">
-    <h1>موسوعة جراس</h1>
+    <h1>موسوعة غِراس</h1>
     <p>دليلك الشامل للنباتات، الأمراض، والأسمدة — ابحث وتعلم</p>
     <div class="search-bar">
       <input type="text" [(ngModel)]="searchQuery" placeholder="ابحث عن نبات، مرض، أو سماد...">
@@ -34,7 +34,7 @@
     <div *ngIf="!loading()" class="grid-auto">
       <div *ngFor="let item of displayedItems" class="wiki-card" (click)="openModal(item)">
         <div class="wiki-card-img">
-          <img *ngIf="item.displayImage" [src]="getImageUrl(item.displayImage)" 
+          <img *ngIf="item.displayImage" [src]="getImageUrl(item.displayImage)"
                [alt]="item.displayName" class="card-main-img">
           <span *ngIf="!item.displayImage">🪴</span>
         </div>
@@ -46,7 +46,7 @@
              </span>
           </div>
           <div class="wiki-card-en">{{ item.displaySub }}</div>
-          
+
           <div class="wiki-card-meta">
             <span class="badge badge-light">🏷️ {{ item.meta.family }}</span>
             <span class="badge badge-light" *ngIf="item.type === 'plant'">💧 {{ item.meta.water }}</span>
@@ -62,7 +62,7 @@
         </div>
       </div>
     </div>
-    
+
     <div *ngIf="totalPages > 1 && !loading() && activeFilter() !== 'all'" class="pagination-wrapper">
       <button class="page-btn text-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">السابق</button>
       <button *ngFor="let page of getPagesArray()" class="page-btn" [class.active]="currentPage() === page" (click)="goToPage(page)">{{ page }}</button>
@@ -79,8 +79,8 @@
 <div class="modal-overlay" *ngIf="selectedPlant()" [class.active]="selectedPlant()" (click)="closeModal()">
   <div class="modal-box" (click)="$event.stopPropagation()">
     <div class="modal-img-wrapper" style="height: 180px;">
-      <img *ngIf="selectedPlant()?.images?.length || selectedPlant()?.image" 
-           [src]="getImageUrl(selectedPlant()?.images?.[0] || selectedPlant()?.image)" 
+      <img *ngIf="selectedPlant()?.images?.length || selectedPlant()?.image"
+           [src]="getImageUrl(selectedPlant()?.images?.[0] || selectedPlant()?.image)"
            [alt]="selectedPlant()?.commonName || selectedPlant()?.name" class="modal-main-img">
       <button (click)="closeModal()"
         style="position:absolute;top:1rem;right:1rem;background:white;border-radius:50%;width:40px;height:40px;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);font-size:1.5rem;color:var(--neutral-600);cursor:pointer;z-index:10;">&times;</button>

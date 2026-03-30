@@ -6,10 +6,12 @@ import { HttpClientModule } from '@angular/common/http';
 import { NavbarComponent } from './core/layout/navbar/navbar';
 import { CartComponent } from './core/layout/cart/cart';
 
+import { GlobalAlertComponent } from './core/layout/alert/alert';
+
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, Footer, CartComponent],
+  imports: [RouterOutlet, NavbarComponent, Footer, CartComponent, GlobalAlertComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

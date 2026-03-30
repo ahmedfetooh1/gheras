@@ -415,14 +415,52 @@ async function paymobReturn(req, res) {
 
     const syncResult = await syncOrderAfterPaymentUpdate(updated, isPaid);
 
-    return res.status(200).json({
-      success: true,
-      paymentUpdated: !!updated,
-      paymentId: updated?._id || null,
-      orderUpdated: syncResult.orderUpdated,
-      orderId: syncResult.orderId,
-      orderStatus: syncResult.orderStatus,
-    });
+    const orderId = syncResult.orderId || merchantOrderId || '---';
+
+    if (isPaid) {
+      return res.send(`
+        <html>
+          <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background: #f0fdf4; direction: rtl;">
+            <div style="max-width: 400px; margin: 40px auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+              <div style="font-size: 60px; margin-bottom: 20px;">✅</div>
+              <h2 style="color: #15803d; margin-bottom: 10px;">تم الدفع بنجاح!</h2>
+              <p style="color: #4b5563; line-height: 1.6;">شكراً لثقتك بنا. تم استلام طلبك وبدأنا في تجهيزه لك.</p>
+              
+              <div style="background: #f8fafc; border: 2px dashed #e2e8f0; padding: 15px; border-radius: 12px; margin: 25px 0;">
+                <span style="color: #64748b; font-size: 14px; display: block; margin-bottom: 5px;">رقم الطلب الخاص بك</span>
+                <span style="color: #0f172a; font-size: 20px; font-weight: 800; letter-spacing: 1px;">#${orderId}</span>
+              </div>
+              
+              <button onclick="window.top.location.href='http://localhost:4200/home'" 
+                      style="background: #15803d; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; font-family: inherit; margin-top: 10px;">
+                العودة للرئيسية
+              </button>
+
+              <p style="font-size: 13px; color: #94a3b8; margin-top: 20px;">يمكنك الآن إغلاق هذه النافذة أو العودة للمتجر.</p>
+            </div>
+          </body>
+        </html>
+      `);
+    } else {
+      return res.send(`
+        <html>
+          <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background: #fef2f2; direction: rtl;">
+            <div style="max-width: 400px; margin: 40px auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+              <div style="font-size: 60px; margin-bottom: 20px;">❌</div>
+              <h2 style="color: #b91c1c; margin-bottom: 10px;">فشل في عملية الدفع</h2>
+              <p style="color: #4b5563; line-height: 1.6;">عذراً، لم نتمكن من إتمام عملية الدفع. يرجى المحاولة مرة أخرى أو اختيار طريقة دفع مختلفة.</p>
+              
+              <button onclick="window.top.location.href='http://localhost:4200/shop'" 
+                      style="background: #334155; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; font-family: inherit; margin-top: 25px;">
+                العودة للمتجر
+              </button>
+
+              <p style="font-size: 13px; color: #94a3b8; margin-top: 20px;">يرجى العودة للعربة والمحاولة مجدداً.</p>
+            </div>
+          </body>
+        </html>
+      `);
+    }
   } catch (error) {
     console.error('Error in Paymob return:', error.message);
     return res.status(500).json({ success: false, error: error.message });

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { StoreService } from '../../core/services/store.service';
 import { AuthService } from '../../core/services/auth.service';
+import { AlertService } from '../../core/services/alert.service';
 
 interface LocalProduct {
   id: string;
@@ -29,17 +30,16 @@ interface LocalProduct {
 })
 export class Shop implements OnInit {
   activeFilter = signal<string>('all');
-  maxPrice: number = 0;
-
+  maxPrice = signal<number>(10000);
+  sortOption = signal<string>('latest');
 
   private storeService = inject(StoreService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private alertService = inject(AlertService);
 
   products = signal<LocalProduct[]>([]);
   categories = signal<any[]>([]);
-
-
 
   ngOnInit() {
     this.storeService.getProducts().subscribe((res: any) => {
@@ -64,30 +64,44 @@ export class Shop implements OnInit {
     });
   }
 
-
-
   filteredProducts = computed(() => {
-    const list = this.products();
+    let list = [...this.products()];
     const filter = this.activeFilter();
-    const price = this.maxPrice;
-    return list.filter(p => {
+    const priceLimit = this.maxPrice();
+    const sort = this.sortOption();
+
+    // Filtering
+    list = list.filter(p => {
       const matchesFilter = filter === 'all' || p.catId === filter;
-      const matchesPrice = price === 0 || p.price <= price;
+      const matchesPrice = p.price <= priceLimit;
       return matchesFilter && matchesPrice;
     });
+
+    // Sorting
+    if (sort === 'price-asc') {
+      list.sort((a, b) => a.price - b.price);
+    } else if (sort === 'price-desc') {
+      list.sort((a, b) => b.price - a.price);
+    } else if (sort === 'top-rated') {
+      list.sort((a, b) => b.rating - a.rating);
+    } else {
+      // latest - default (assuming order in list)
+    }
+
+    return list;
   });
-
-
 
   setFilter(cat: string) {
     this.activeFilter.set(cat);
   }
 
-
+  onSortChange(event: any) {
+    this.sortOption.set(event.target.value);
+  }
 
   addToCart(product: LocalProduct) {
     if (!this.authService.currentUser()) {
-      alert('الرجاء تسجيل الدخول أولاً لإضافة منتجات للسلة');
+      this.alertService.show('الرجاء تسجيل الدخول أولاً لإضافة منتجات للسلة', 'info');
       this.router.navigate(['/login']);
       return;
     }
@@ -96,11 +110,9 @@ export class Shop implements OnInit {
       next: () => {
         this.storeService.isCartOpen.set(true);
       },
-      error: () => alert('عذراً، حدث خطأ أثناء الإضافة للسلة')
+      error: () => this.alertService.show('عذراً، حدث خطأ أثناء الإضافة للسلة', 'error')
     });
   }
-
-
 
   getStars(rating: number) {
     const r = Math.round(rating);

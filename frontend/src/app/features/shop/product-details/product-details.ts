@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { StoreService } from '../../../core/services/store.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
+import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
   selector: 'app-product-details',
@@ -17,6 +18,7 @@ export class ProductDetails implements OnInit {
   private router = inject(Router);
   private storeService = inject(StoreService);
   private authService = inject(AuthService);
+  private alertService = inject(AlertService);
 
   product = signal<any>(null);
   allProducts: any[] = [];
@@ -75,7 +77,7 @@ export class ProductDetails implements OnInit {
       error: (err) => {
         console.error('Error fetching product:', err);
         this.isLoading.set(false);
-        alert('حدث خطأ أثناء تحميل المنتج.');
+        this.alertService.show('حدث خطأ أثناء تحميل المنتج.', 'error');
       }
     });
   }
@@ -112,7 +114,7 @@ export class ProductDetails implements OnInit {
 
   addToCart() {
     if (!this.authService.currentUser()) {
-      alert('الرجاء تسجيل الدخول أولاً لإضافة منتجات للسلة');
+      this.alertService.show('الرجاء تسجيل الدخول أولاً لإضافة منتجات للسلة', 'info');
       this.router.navigate(['/login']);
       return;
     }
@@ -120,10 +122,10 @@ export class ProductDetails implements OnInit {
     if (this.product()) {
       this.storeService.addToCart(this.product().id, this.qty, this.product().price).subscribe({
         next: () => {
-          alert('تمت الإضافة إلى السلة بنجاح! 🛒');
+          this.alertService.show('تمت الإضافة إلى السلة بنجاح! 🛒', 'success');
           this.storeService.isCartOpen.set(true);
         },
-        error: () => alert('عذراً، حدث خطأ أثناء الإضافة للسلة')
+        error: () => this.alertService.show('عذراً، حدث خطأ أثناء الإضافة للسلة', 'error')
       });
     }
   }

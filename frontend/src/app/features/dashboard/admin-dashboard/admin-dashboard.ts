@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { WikiService } from '../../../core/services/wiki.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -17,6 +18,7 @@ export class AdminDashboard implements OnInit {
   private dashboardService = inject(DashboardService);
   private wikiService = inject(WikiService);
   private http = inject(HttpClient);
+  private alertService = inject(AlertService);
   private base = 'http://localhost:3000/api';
   private cdr = inject(ChangeDetectorRef);
 
@@ -192,27 +194,27 @@ export class AdminDashboard implements OnInit {
     if (isUpdate && this.selectedPlantId) {
       this.dashboardService.updatePlantAdmin(this.selectedPlantId, dataToSend).subscribe({
         next: () => {
-          alert('تم تحديث النبات بنجاح ✅');
+          this.alertService.show('تم تحديث النبات بنجاح ✅', 'success');
           this.resetPlantForm();
           this.setView('stats');
           this.loadAllData();
         },
         error: (err) => {
           console.error('Update error:', err);
-          alert('حدث خطأ أثناء التحديث: ' + (err.error?.message || 'هذا الروت غير موجود أو هناك خطأ في البيانات'));
+          this.alertService.show('حدث خطأ أثناء التحديث: ' + (err.error?.message || 'هناك خطأ في البيانات'), 'error');
         }
       });
     } else {
       this.dashboardService.addPlantAdmin(dataToSend).subscribe({
         next: () => {
-          alert('تم إضافة النبات بنجاح ✅');
+          this.alertService.show('تم إضافة النبات بنجاح ✅', 'success');
           this.resetPlantForm();
           this.setView('stats');
           this.loadAllData();
         },
         error: (err) => {
           console.error('Add error:', err);
-          alert('حدث خطأ أثناء الإضافة: ' + (err.error?.message || ''));
+          this.alertService.show('حدث خطأ أثناء الإضافة: ' + (err.error?.message || ''), 'error');
         }
       });
     }
@@ -238,7 +240,7 @@ export class AdminDashboard implements OnInit {
         const p = res.data?.plant || res.plant || res;
 
         if (!p) {
-          alert('بيانات النبات غير موجودة في السيرفر');
+          this.alertService.show('بيانات النبات غير موجودة في السيرفر', 'warning');
           return;
         }
 
@@ -273,7 +275,7 @@ export class AdminDashboard implements OnInit {
       },
       error: (err) => {
         console.error('Error fetching plant details:', err);
-        alert('حدث خطأ أثناء جلب بيانات النبات');
+        this.alertService.show('حدث خطأ أثناء جلب بيانات النبات', 'error');
       }
     });
   }
@@ -325,13 +327,13 @@ export class AdminDashboard implements OnInit {
       });
       formData.append('image', this.diseaseImage);
       this.dashboardService.addDiseaseAdmin(formData).subscribe({
-        next: () => { alert('تم إضافة المرض بنجاح ✅'); this.resetDiseaseForm(); this.setView('stats'); },
-        error: (err) => { console.error(err); alert('حدث خطأ: ' + (err.error?.message || '')); }
+        next: () => { this.alertService.show('تم إضافة المرض بنجاح ✅', 'success'); this.resetDiseaseForm(); this.setView('stats'); },
+        error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
       });
     } else {
       this.http.post(`${this.base}/diseases`, body).subscribe({
-        next: () => { alert('تم إضافة المرض بنجاح ✅'); this.resetDiseaseForm(); this.setView('stats'); },
-        error: (err) => { console.error(err); alert('حدث خطأ: ' + (err.error?.message || '')); }
+        next: () => { this.alertService.show('تم إضافة المرض بنجاح ✅', 'success'); this.resetDiseaseForm(); this.setView('stats'); },
+        error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
       });
     }
   }
@@ -376,13 +378,13 @@ export class AdminDashboard implements OnInit {
       });
       formData.append('image', this.fertilizerImage);
       this.dashboardService.addFertilizerAdmin(formData).subscribe({
-        next: () => { alert('تم إضافة السماد بنجاح ✅'); this.resetFertilizerForm(); this.setView('stats'); },
-        error: (err) => { console.error(err); alert('حدث خطأ: ' + (err.error?.message || '')); }
+        next: () => { this.alertService.show('تم إضافة السماد بنجاح ✅', 'success'); this.resetFertilizerForm(); this.setView('stats'); },
+        error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
       });
     } else {
       this.http.post(`${this.base}/fertilizers`, body).subscribe({
-        next: () => { alert('تم إضافة السماد بنجاح ✅'); this.resetFertilizerForm(); this.setView('stats'); },
-        error: (err) => { console.error(err); alert('حدث خطأ: ' + (err.error?.message || '')); }
+        next: () => { this.alertService.show('تم إضافة السماد بنجاح ✅', 'success'); this.resetFertilizerForm(); this.setView('stats'); },
+        error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
       });
     }
   }
@@ -404,16 +406,25 @@ export class AdminDashboard implements OnInit {
     if (this.productForm.discountPercent) formData.append('discountPercent', this.productForm.discountPercent.toString());
     this.productImages.forEach(file => formData.append('images', file));
     this.dashboardService.addProductAdmin(formData).subscribe({
-      next: () => { alert('تم إضافة المنتج بنجاح ✅'); this.productForm = { name: '', description: '', category: '', price: 0, costPrice: 0, discountPercent: 0, stock: 0 }; this.productImages = []; this.setView('stats'); },
-      error: (err) => { console.error(err); alert('حدث خطأ: ' + (err.error?.message || '')); }
+      next: () => { 
+        this.alertService.show('تم إضافة المنتج بنجاح ✅', 'success'); 
+        this.productForm = { name: '', description: '', category: '', price: 0, costPrice: 0, discountPercent: 0, stock: 0 }; 
+        this.productImages = []; 
+        this.setView('stats'); 
+      },
+      error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
     });
   }
 
   // ==================== SUBMIT CATEGORY ====================
   submitCategory() {
     this.dashboardService.addCategoryAdmin(this.categoryForm).subscribe({
-      next: () => { alert('تم إضافة التصنيف بنجاح ✅'); this.categoryForm = { name: '', slug: '', description: '' }; this.setView('stats'); },
-      error: (err) => { console.error(err); alert('حدث خطأ: ' + (err.error?.message || '')); }
+      next: () => { 
+        this.alertService.show('تم إضافة التصنيف بنجاح ✅', 'success'); 
+        this.categoryForm = { name: '', slug: '', description: '' }; 
+        this.setView('stats'); 
+      },
+      error: (err) => { console.error(err); this.alertService.show('حدث خطأ: ' + (err.error?.message || ''), 'error'); }
     });
   }
 }

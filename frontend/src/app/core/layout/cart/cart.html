@@ -10,55 +10,113 @@
     </div>
 
     <div class="cart-items">
-        @if (storeService.cartItems().length > 0) {
-        <div style="display: flex; justify-content: flex-end; padding-bottom: 1rem;">
-            <button (click)="clearCart()"
-                style="background: none; border: none; color: #dc2626; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">تفريغ
-                العربة</button>
-        </div>
+        <!-- Step 1: Cart Items -->
+        @if (checkoutStep() === 'cart') {
+            @if (storeService.cartItems().length > 0) {
+            <div style="display: flex; justify-content: flex-end; padding-bottom: 1rem;">
+                <button (click)="clearCart()"
+                    style="background: none; border: none; color: #dc2626; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">تفريغ
+                    العربة</button>
+            </div>
+            }
+
+            @for (item of storeService.cartItems(); track item._id) {
+            <div class="cart-item">
+                <div class="cart-item-emoji">
+                    @if (item.product?.images?.[0]) {
+                    <img [src]="getImageUrl(item.product.images[0])"
+                        style="width:100%;height:100%;object-fit:cover;border-radius:4px">
+                    } @else {
+                    🌿
+                    }
+                </div>
+                <div style="flex:1">
+                    <div class="cart-item-name">{{ item.product?.name || 'منتج' }}</div>
+                    <div class="cart-item-price">{{ (item.product?.finalPrice || item.product?.price || item.price || 0) }}
+                        ج.م</div>
+                    <div class="cart-qty">
+                        <button (click)="updateQty(item, -1)" class="qty-btn">−</button>
+                        <span style="font-size:.9rem;font-weight:700">{{ item.quantity }}</span>
+                        <button (click)="updateQty(item, 1)" class="qty-btn">+</button>
+                    </div>
+                </div>
+                <button (click)="removeItem(item)"
+                    style="background:none;border:none;color:var(--neutral-400);cursor:pointer">حذف</button>
+            </div>
+            } @empty {
+            <div style="text-align:center;color:var(--neutral-500);padding-top:2rem">
+                عربة التسوق فارغة حالياً 🛒
+            </div>
+            }
         }
 
-        @for (item of storeService.cartItems(); track item._id) {
-        <div class="cart-item">
-            <div class="cart-item-emoji">
-                @if (item.product?.images?.[0]) {
-                <img [src]="getImageUrl(item.product.images[0])"
-                    style="width:100%;height:100%;object-fit:cover;border-radius:4px">
-                } @else {
-                🌿
-                }
-            </div>
-            <div style="flex:1">
-                <div class="cart-item-name">{{ item.product?.name || 'منتج' }}</div>
-                <div class="cart-item-price">{{ (item.product?.finalPrice || item.product?.price || item.price || 0) }}
-                    ج.م</div>
-                <div class="cart-qty">
-                    <button (click)="updateQty(item, -1)" class="qty-btn">−</button>
-                    <span style="font-size:.9rem;font-weight:700">{{ item.quantity }}</span>
-                    <button (click)="updateQty(item, 1)" class="qty-btn">+</button>
+        <!-- Step 2: Shipping & Payment Info -->
+        @if (checkoutStep() === 'shipping') {
+            <button class="back-btn" (click)="setStep('cart')">← العودة للعربة</button>
+            <div class="checkout-form">
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="text" [value]="phone()" (input)="phone.set($any($event.target).value)" 
+                           placeholder="أدخل رقم الهاتف للوصول">
+                </div>
+                <div class="form-group">
+                    <label>المدينة</label>
+                    <input type="text" [value]="city()" (input)="city.set($any($event.target).value)" 
+                           placeholder="مثال: القاهرة، الجيزة">
+                </div>
+                <div class="form-group">
+                    <label>الشارع / الحي</label>
+                    <input type="text" [value]="street()" (input)="street.set($any($event.target).value)" 
+                           placeholder="مثال: شارع التسعين، المعادي">
+                </div>
+                <div class="form-group">
+                    <label>طريقة الدفع</label>
+                    <div class="payment-options">
+                        <div class="payment-card" [class.active]="paymentMethod() === 'cash'" (click)="paymentMethod.set('cash')">
+                            <span>💵</span>
+                            <div style="font-size:0.8rem; font-weight:700;">كاش</div>
+                        </div>
+                        <div class="payment-card" [class.active]="paymentMethod() === 'card'" (click)="paymentMethod.set('card')">
+                            <span>💳</span>
+                            <div style="font-size:0.8rem; font-weight:700;">فيزا / ميزة</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <button (click)="removeItem(item)"
-                style="background:none;border:none;color:var(--neutral-400);cursor:pointer">حذف</button>
-        </div>
-        } @empty {
-        <div style="text-align:center;color:var(--neutral-500);padding-top:2rem">
-            عربة التسوق فارغة حالياً 🛒
-        </div>
+        }
+
+        <!-- Step 3: Payment Iframe (Paymob) -->
+        @if (checkoutStep() === 'iframe') {
+            <div style="height: 100%; display: flex; flex-direction: column;">
+                <button class="back-btn" (click)="setStep('shipping')">← تعديل البيانات</button>
+                <iframe [src]="iframeUrl()!" class="iframe-container" style="flex:1; border:none;"></iframe>
+                <div style="margin-top:1rem; font-size: 0.8rem; color: var(--neutral-500); text-align: center;">
+                    الرجاء إتمام الدفع لتأكيد طلبك.
+                </div>
+            </div>
         }
     </div>
 
-    <div class="cart-footer">
+    <div class="cart-footer" *ngIf="checkoutStep() !== 'iframe'">
         <div class="cart-total">
             <span>الإجمالي</span>
             <span style="color:var(--green-700)">{{ storeService.cartTotalAmount() }} ج.م</span>
         </div>
-        <button [disabled]="storeService.cartItems().length === 0" class="btn btn-primary btn-block btn-lg"
-            (click)="toggleCart()">
-            إتمام الشراء ←
-        </button>
+        
+        @if (checkoutStep() === 'cart') {
+            <button [disabled]="storeService.cartItems().length === 0" class="btn btn-primary btn-block btn-lg"
+                (click)="proceedToCheckout()">
+                إتمام الشراء ←
+            </button>
+        } @else if (checkoutStep() === 'shipping') {
+            <button [disabled]="orderLoading()" class="btn btn-primary btn-block btn-lg"
+                (click)="placeOrder()">
+                {{ orderLoading() ? 'جاري التحميل...' : 'تأكيد الطلب والدفع' }}
+            </button>
+        }
+
         <div style="text-align:center;font-size:.78rem;color:var(--neutral-400);margin-top:.6rem">
             شحن مجاني للطلبات فوق 200 ج.م
         </div>
     </div>
-</div>
+</div>

@@ -37,6 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
 app.use(passport.initialize()); 
 
 

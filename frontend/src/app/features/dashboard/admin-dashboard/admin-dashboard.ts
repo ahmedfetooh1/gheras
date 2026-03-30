@@ -76,19 +76,22 @@ export class AdminDashboard implements OnInit {
   }
 
   loadAllData() {
-    this.wikiService.getPlants().subscribe({
-      next: (plants) => {
-        console.log('🌱 All Plants fetched:', plants);
-        this.allPlants = plants || [];
+    this.wikiService.getPlants(1, 1000).subscribe({
+      next: (res) => {
+        this.allPlants = res.data?.plants || [];
       },
       error: (err) => { console.error('Error fetching plants:', err); }
     });
-    this.wikiService.getDiseases().subscribe({
-      next: (diseases) => { this.allDiseases = diseases || []; },
+    this.wikiService.getDiseases(1, 1000).subscribe({
+      next: (res) => {
+        this.allDiseases = res.data?.diseases || [];
+      },
       error: (err) => { console.error('Error fetching diseases:', err); }
     });
-    this.wikiService.getFertilizers().subscribe({
-      next: (fertilizers) => { this.allFertilizers = fertilizers || []; },
+    this.wikiService.getFertilizers(1, 1000).subscribe({
+      next: (res) => {
+        this.allFertilizers = res.data?.fertilizers || [];
+      },
       error: (err) => { console.error('Error fetching fertilizers:', err); }
     });
     this.http.get<any>(`${this.base}/category`).subscribe({
@@ -229,11 +232,10 @@ export class AdminDashboard implements OnInit {
 
     this.wikiService.getPlantById(id).subscribe({
       next: (res: any) => {
-
         // ❗ تجاهل أي response قديم
         if (this.lastSelectedPlantId !== id) return;
 
-        const p = res;
+        const p = res.data?.plant || res.plant || res;
 
         if (!p) {
           alert('بيانات النبات غير موجودة في السيرفر');

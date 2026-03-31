@@ -1,8 +1,7 @@
-import { Component, signal, CUSTOM_ELEMENTS_SCHEMA, OnInit, inject, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
+import { Component, signal, OnInit, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WikiService } from '../../core/services/wiki.service';
-import { Plant, Disease, Fertilizer } from '../../core/models/interfaces';
 
 @Component({
   selector: 'app-wiki',
@@ -10,121 +9,285 @@ import { Plant, Disease, Fertilizer } from '../../core/models/interfaces';
   imports: [CommonModule, FormsModule],
   templateUrl: './wiki.html',
   styleUrl: './wiki.css',
-  encapsulation: ViewEncapsulation.None
 })
 export class Wiki implements OnInit {
   private wikiService = inject(WikiService);
-  private cdr = inject(ChangeDetectorRef);
 
+  // Raw data from API
+  plants = signal<any[]>([]);
+  diseases = signal<any[]>([]);
+  fertilizers = signal<any[]>([]);
+
+  loading = signal<boolean>(true);
   searchQuery = '';
-  activeTab = signal<'plants' | 'diseases' | 'fertilizers'>('plants');
+  activeFilter = signal<string>('all'); // all, plants, diseases, fertilizers
+  subActiveFilter = signal<string>('all');
+  selectedPlant = signal<any | null>(null);
 
-  plants = signal<Plant[]>([]);
-  diseases = signal<Disease[]>([]);
-  fertilizers = signal<Fertilizer[]>([]);
+  // Pagination
+  currentPage = signal<number>(1);
+  pageSize = 18;
+  totalPages = 1;
+  totalItems = 0;
 
-  currentPage = signal(1);
-  totalPages = signal(1);
+  categories = [
+    { label: 'الكل', value: 'all' },
+    { label: 'نباتات', value: 'plants' },
+    { label: 'أمراض', value: 'diseases' },
+    { label: 'أسمدة', value: 'fertilizers' }
+  ];
 
-  // Detail View State & History
-  selectedItem = signal<any>(null);
-  itemType = signal<'plant' | 'disease' | 'fertilizer' | null>(null);
-  navigationHistory: any[] = [];
+  subCategories = computed(() => {
+    const filter = this.activeFilter();
+    if (filter === 'all') return [];
+    if (filter === 'plants') {
+      const families = ['all', ...new Set(this.plants().map(p => p.family).filter(Boolean))];
+      return families;
+    }
+    if (filter === 'fertilizers') {
+      const types = ['all', ...new Set(this.fertilizers().map(f => f.type).filter(Boolean))];
+      return types;
+    }
+    return [];
+  });
 
   ngOnInit() {
-    this.goToPage(1);
+    this.loadData();
+  }
+
+  loadData() {
+    this.loading.set(true);
+    const filter = this.activeFilter();
+    const page = this.currentPage();
+    const limit = this.pageSize;
+
+    // Reset data
+    if (filter === 'plants') {
+        this.diseases.set([]);
+        this.fertilizers.set([]);
+    } else if (filter === 'diseases') {
+        this.plants.set([]);
+        this.fertilizers.set([]);
+    } else if (filter === 'fertilizers') {
+        this.plants.set([]);
+        this.diseases.set([]);
+    }
+
+    if (filter === 'all') {
+      const subLimit = Math.floor(limit / 3); // 6 each
+      import('rxjs').then(({ forkJoin }) => {
+        forkJoin({
+          plants: this.wikiService.getPlants(page, subLimit),
+          diseases: this.wikiService.getDiseases(page, subLimit),
+          fertilizers: this.wikiService.getFertilizers(page, subLimit)
+        }).subscribe(results => {
+          this.plants.set(results.plants.data.plants || []);
+          this.diseases.set(results.diseases.data.diseases || []);
+          this.fertilizers.set(results.fertilizers.data.fertilizers || []);
+          
+          this.totalPages = Math.max(
+            results.plants.totalPages || 1,
+            results.diseases.totalPages || 1,
+            results.fertilizers.totalPages || 1
+          );
+          this.loading.set(false);
+        });
+      });
+    } else {
+      if (filter === 'plants') {
+        this.wikiService.getPlants(page, limit).subscribe(res => {
+          this.plants.set(res.data.plants || []);
+          this.totalPages = res.totalPages || 1;
+          this.totalItems = res.total || 0;
+          this.loading.set(false);
+        });
+      } else if (filter === 'diseases') {
+        this.wikiService.getDiseases(page, limit).subscribe(res => {
+          this.diseases.set(res.data.diseases || []);
+          this.totalPages = res.totalPages || 1;
+          this.totalItems = res.total || 0;
+          this.loading.set(false);
+        });
+      } else if (filter === 'fertilizers') {
+        this.wikiService.getFertilizers(page, limit).subscribe(res => {
+          this.fertilizers.set(res.data.fertilizers || []);
+          this.totalPages = res.totalPages || 1;
+          this.totalItems = res.total || 0;
+          this.loading.set(false);
+        });
+      }
+    }
+  }
+
+
+  get displayedItems() {
+    let combined: any[] = [];
+    const filter = this.activeFilter();
+    const subFilter = this.subActiveFilter();
+
+    const safeParse = (val: any) => {
+      if (!val) return null;
+      if (typeof val === 'object') return val;
+      try { return JSON.parse(val); } catch { return null; }
+    };
+
+    if (filter === 'all' || filter === 'plants') {
+      let currentPlants = this.plants();
+      if (filter === 'plants' && subFilter !== 'all') {
+        currentPlants = currentPlants.filter(p => p.family === subFilter);
+      }
+      combined = [...combined, ...currentPlants.map(p => {
+        const water = safeParse(p.waterNeeds);
+        const temp = safeParse(p.temperatureRange);
+        return {
+          ...p,
+          type: 'plant',
+          displayName: p.commonName || 'نبتة جديدة',
+          displaySub: p.scientificName || 'Phaseolus',
+          displayImage: p.images?.[0],
+          meta: {
+              family: p.family || 'نبات',
+              water: water?.level || 'متوسط',
+              frequency: water?.frequency ? `كل ${water.frequency} أيام` : 'بانتظام',
+              temp: temp ? `${temp.min || '-'}-${temp.max || '-'}°` : '-',
+              sun: p.sunlightHours || '-'
+          }
+        };
+      })];
+    }
+
+    if (filter === 'all' || filter === 'diseases') {
+      combined = [...combined, ...this.diseases().map(d => ({
+        ...d,
+        type: 'disease',
+        displayName: d.name || 'مرض',
+        displaySub: d.scientificName || 'مرض نباتي',
+        displayImage: d.image,
+        meta: {
+            family: 'مرض نباتي',
+            water: 'علاجي',
+            frequency: 'فوري',
+        }
+      }))];
+    }
+
+    if (filter === 'all' || filter === 'fertilizers') {
+      let currentFert = this.fertilizers();
+      if (filter === 'fertilizers' && subFilter !== 'all') {
+        currentFert = currentFert.filter(f => f.type === subFilter);
+      }
+      combined = [...combined, ...currentFert.map(f => ({
+        ...f,
+        type: 'fertilizer',
+        displayName: f.name || 'سماد',
+        displaySub: f.type || 'سماد',
+        displayImage: f.image,
+        meta: {
+            family: 'سماد عضوي',
+            water: 'تغذية',
+            frequency: 'موسمي',
+        }
+      }))];
+    }
+
+    // Client-side search
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      combined = combined.filter(item => 
+        item.displayName?.toLowerCase().includes(q) || 
+        item.displaySub?.toLowerCase().includes(q)
+      );
+    }
+
+    return combined;
+  }
+
+  setFilter(cat: string) {
+    this.activeFilter.set(cat);
+    this.subActiveFilter.set('all');
+    this.currentPage.set(1);
+    this.loadData();
+  }
+
+  setSubFilter(sub: string) {
+    this.subActiveFilter.set(sub);
   }
 
   goToPage(page: number) {
-    if (page < 1 || (this.totalPages() > 0 && page > this.totalPages())) return;
-    
+    if (page < 1 || (this.totalPages > 0 && page > this.totalPages)) return;
     this.currentPage.set(page);
+    this.loadData();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  getPagesArray(): number[] {
+    const total = this.totalPages;
+    if (total <= 1) return [];
     
-    if (this.activeTab() === 'plants') {
-      this.wikiService.getPlants(page).subscribe(res => {
-        this.plants.set(res.data?.plants || []);
-        this.totalPages.set(res.totalPages || 1);
-      });
-    } else if (this.activeTab() === 'diseases') {
-      this.wikiService.getDiseases(page).subscribe(res => {
-        this.diseases.set(res.data?.diseases || []);
-        this.totalPages.set(res.totalPages || 1);
-      });
-    } else {
-      this.wikiService.getFertilizers(page).subscribe(res => {
-        this.fertilizers.set(res.data?.fertilizers || []);
-        this.totalPages.set(res.totalPages || 1);
-      });
-    }
-  }
-
-  get filteredPlants() {
-    return this.plants().filter(p => p.commonName.toLowerCase().includes(this.searchQuery.toLowerCase()) || (p.scientificName?.toLowerCase().includes(this.searchQuery.toLowerCase())));
-  }
-
-  get filteredDiseases() {
-    return this.diseases().filter(d => d.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
-  }
-
-  get filteredFertilizers() {
-    return this.fertilizers().filter(f => f.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
-  }
-
-  setTab(tab: 'plants' | 'diseases' | 'fertilizers') {
-    this.activeTab.set(tab);
-    this.goToPage(1);
-  }
-
-  // Interconnected Linking Logic
-  openItem(id: string, type: 'plant' | 'disease' | 'fertilizer', fromLink: boolean = false) {
-    // If navigating from inside another item, save current to history
-    if (fromLink && this.selectedItem()) {
-      this.navigationHistory.push({
-        item: this.selectedItem(),
-        type: this.itemType()
-      });
-    } else if (!fromLink) {
-      this.navigationHistory = []; // Reset history if we started from the main grid
-    }
-
-    this.itemType.set(type);
+    // Limit visible pages to 5
+    const current = this.currentPage();
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, start + 4);
     
-    if (type === 'plant') {
-      this.wikiService.getPlantById(id).subscribe(res => this.selectedItem.set(res));
-    } else if (type === 'disease') {
-      this.wikiService.getDiseaseById(id).subscribe(res => this.selectedItem.set(res));
-    } else if (type === 'fertilizer') {
-      this.wikiService.getFertilizerById(id).subscribe(res => this.selectedItem.set(res));
+    if (end - start < 4) {
+      start = Math.max(1, end - 4);
     }
+    
+    const pages = [];
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
-  goBack() {
-    if (this.navigationHistory.length > 0) {
-      const last = this.navigationHistory.pop();
-      this.selectedItem.set(last.item);
-      this.itemType.set(last.type);
-      this.cdr.detectChanges();
+  safeParse(val: any) {
+    if (!val) return null;
+    if (typeof val === 'object') return val;
+    try { return JSON.parse(val); } catch { return null; }
+  }
+
+  openModal(item: any) {
+    if (item.type === 'plant') {
+      this.wikiService.getPlantById(item._id).subscribe(res => {
+        const p = res;
+        this.selectedPlant.set({ 
+          ...p, 
+          type: 'plant',
+          name: p.commonName || 'نبتة جديدة',
+          scientificName: p.scientificName || 'Phaseolus',
+          waterData: this.safeParse(p.waterNeeds),
+          tempData: this.safeParse(p.temperatureRange),
+          phData: this.safeParse(p.soilPH)
+        });
+      });
+    } else if (item.type === 'disease') {
+      this.wikiService.getDiseaseById(item._id).subscribe(res => {
+         const d = res;
+         this.selectedPlant.set({ 
+           ...d, 
+           type: 'disease',
+           name: d.name || 'مرض',
+           scientificName: d.scientificName || 'مرض نباتي'
+         });
+      });
+    } else if (item.type === 'fertilizer') {
+      this.wikiService.getFertilizerById(item._id).subscribe(res => {
+        const f = res;
+        this.selectedPlant.set({ 
+          ...f, 
+          type: 'fertilizer',
+          name: f.name || 'سماد',
+          scientificName: f.type || 'سماد عضوي'
+        });
+      });
     }
   }
 
   closeModal() {
-    this.selectedItem.set(null);
-    this.itemType.set(null);
-    this.navigationHistory = [];
+    this.selectedPlant.set(null);
   }
 
-  // Logic to find plants related to a specific disease or fertilizer
-  getRelatedPlants(itemId: string, type: 'disease' | 'fertilizer'): Plant[] {
-    return this.plants().filter(p => {
-      const field = type === 'disease' ? p.diseases : p.fertilizers;
-      return field?.some(ref => {
-        const refId = typeof ref === 'string' ? ref : (ref._id || ref.id);
-        return refId === itemId;
-      });
-    });
-  }
-
-  getId(item: any): string {
-    return item?._id || item?.id || '';
+  getImageUrl(path: string) {
+    return this.wikiService.getImageUrl(path);
   }
 }

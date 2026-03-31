@@ -54,7 +54,7 @@
             <span style="color:var(--green-700)">{{ storeService.cartTotalAmount() }} ج.م</span>
         </div>
         <button [disabled]="storeService.cartItems().length === 0" class="btn btn-primary btn-block btn-lg"
-            (click)="toggleCart()">
+            (click)="proceedToCheckout()">
             إتمام الشراء ←
         </button>
         <div style="text-align:center;font-size:.78rem;color:var(--neutral-400);margin-top:.6rem">

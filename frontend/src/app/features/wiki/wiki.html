@@ -1,208 +1,231 @@
 <div class="page-wrapper">
   <div class="wiki-hero">
-    <h1>الموسوعة الزراعية الشاملة</h1>
-    <p>كل ما تحتاجه عن النباتات، الأمراض، والأسمدة في مكان واحد</p>
+    <h1>موسوعة جراس</h1>
+    <p>دليلك الشامل للنباتات، الأمراض، والأسمدة — ابحث وتعلم</p>
     <div class="search-bar">
-      <input type="text" [(ngModel)]="searchQuery" placeholder="ابحث عن نبتة، مرض، أو سماد...">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="ابحث عن نبات، مرض، أو سماد...">
       <span class="search-icon"></span>
     </div>
   </div>
 
-  <div class="wiki-tabs">
-    <button class="wiki-filter" [class.active]="activeTab() === 'plants'" (click)="setTab('plants')">النباتات</button>
-    <button class="wiki-filter" [class.active]="activeTab() === 'diseases'"
-      (click)="setTab('diseases')">الأمراض</button>
-    <button class="wiki-filter" [class.active]="activeTab() === 'fertilizers'"
-      (click)="setTab('fertilizers')">الأسمدة</button>
+  <div class="wiki-tabs-container">
+    <div class="wiki-tabs main-tabs">
+      <button *ngFor="let cat of categories" class="wiki-filter"
+        [class.active]="activeFilter() === cat.value"
+        (click)="setFilter(cat.value)">
+        {{ cat.label }}
+      </button>
+    </div>
+
+    <div class="wiki-tabs sub-tabs" *ngIf="subCategories().length > 1">
+      <button *ngFor="let sub of subCategories()" class="wiki-filter sub-filter"
+        [class.active]="subActiveFilter() === sub"
+        (click)="setSubFilter(sub)">
+        {{ sub === 'all' ? 'الكل' : sub }}
+      </button>
+    </div>
   </div>
 
   <div class="container section-sm">
-    <div class="grid-auto">
-
-      <!-- Plants -->
-      <ng-container *ngIf="activeTab() === 'plants'">
-        <div *ngFor="let plant of filteredPlants" class="wiki-card" (click)="openItem(getId(plant), 'plant')">
-          <div class="wiki-card-img">
-            <img [src]="plant.images?.[0] || 'assets/images/default.png'">
-          </div>
-          <div class="wiki-card-body">
-            <h3 class="wiki-card-name">{{ plant.commonName }}</h3>
-            <span class="badge badge-water">{{ plant.scientificName }}</span>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Diseases -->
-      <ng-container *ngIf="activeTab() === 'diseases'">
-        <div *ngFor="let disease of filteredDiseases" class="wiki-card" (click)="openItem(getId(disease), 'disease')">
-          <div class="wiki-card-img disease-bg">
-            <span class="emoji-placeholder">🦠</span>
-          </div>
-          <div class="wiki-card-body">
-            <h3 class="wiki-card-name">{{ disease.name }}</h3>
-            <span class="badge badge-error">مرض زراعي</span>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Fertilizers -->
-      <ng-container *ngIf="activeTab() === 'fertilizers'">
-        <div *ngFor="let fert of filteredFertilizers" class="wiki-card" (click)="openItem(getId(fert), 'fertilizer')">
-          <div class="wiki-card-img fert-bg">
-            <span class="emoji-placeholder">🧪</span>
-          </div>
-          <div class="wiki-card-body">
-            <h3 class="wiki-card-name">{{ fert.name }}</h3>
-            <span class="badge badge-green">{{ fert.type }}</span>
-          </div>
-        </div>
-      </ng-container>
-
+    <div *ngIf="loading()" style="text-align:center;padding:4rem;color:var(--neutral-500)">
+      جاري تحميل الموسوعة...
     </div>
 
-    <!-- Pagination -->
-    <div class="pagination-container" *ngIf="totalPages() > 1">
-      <button class="pagination-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">السابق</button>
-      <span class="page-info">صفحة {{ currentPage() }} من {{ totalPages() }}</span>
-      <button class="pagination-btn" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)">التالي</button>
+    <div *ngIf="!loading()" class="grid-auto">
+      <div *ngFor="let item of displayedItems" class="wiki-card" (click)="openModal(item)">
+        <div class="wiki-card-img">
+          <img *ngIf="item.displayImage" [src]="getImageUrl(item.displayImage)" 
+               [alt]="item.displayName" class="card-main-img">
+          <span *ngIf="!item.displayImage">🪴</span>
+        </div>
+        <div class="wiki-card-body">
+          <div class="wiki-card-name" style="display:flex;justify-content:space-between;align-items:center;">
+             {{ item.displayName }}
+             <span class="badge" [class.badge-green]="item.type === 'plant'" [class.badge-earth]="item.type === 'disease'" [class.badge-secondary]="item.type === 'fertilizer'">
+                {{ item.type === 'plant' ? 'نبات' : item.type === 'disease' ? 'مرض' : 'سماد' }}
+             </span>
+          </div>
+          <div class="wiki-card-en">{{ item.displaySub }}</div>
+          
+          <div class="wiki-card-meta">
+            <span class="badge badge-light">🏷️ {{ item.meta.family }}</span>
+            <span class="badge badge-light" *ngIf="item.type === 'plant'">💧 {{ item.meta.water }}</span>
+            <span class="badge badge-light" *ngIf="item.type === 'plant'">📅 {{ item.meta.frequency }}</span>
+          </div>
+        </div>
+        <div class="wiki-card-footer">
+           <div style="font-size:0.75rem;color:var(--neutral-500);display:flex;gap:0.5rem;align-items:center;">
+              <span *ngIf="item.type === 'plant'">🌡️ {{ item.meta.temp }}</span>
+              <span *ngIf="item.type === 'plant'">☀️ {{ item.meta.sun }} س</span>
+           </div>
+           <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.75rem;">تـفاصيل</button>
+        </div>
+      </div>
+    </div>
+    
+    <div *ngIf="totalPages > 1 && !loading()" class="pagination-wrapper">
+      <button class="page-btn text-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">السابق</button>
+      
+      <button *ngIf="getPagesArray()[0] > 1" class="page-btn" (click)="goToPage(1)">1</button>
+      <span *ngIf="getPagesArray()[0] > 2" class="page-ellipsis">...</span>
+
+      <button *ngFor="let page of getPagesArray()" class="page-btn" [class.active]="currentPage() === page" (click)="goToPage(page)">{{ page }}</button>
+      
+      <span *ngIf="getPagesArray()[getPagesArray().length-1] < totalPages - 1" class="page-ellipsis">...</span>
+      <button *ngIf="getPagesArray()[getPagesArray().length-1] < totalPages" class="page-btn" (click)="goToPage(totalPages)">{{ totalPages }}</button>
+
+      <button class="page-btn text-btn" [disabled]="currentPage() === totalPages" (click)="goToPage(currentPage() + 1)">التالية</button>
     </div>
 
-    <div
-      *ngIf="(activeTab() === 'plants' && filteredPlants.length === 0) || (activeTab() === 'diseases' && filteredDiseases.length === 0) || (activeTab() === 'fertilizers' && filteredFertilizers.length === 0)"
-      style="text-align:center;padding:4rem;color:var(--neutral-500)">
-      🌵 لا يوجد نتائج لهذا البحث... جرب شيئاً آخر.
+    <div *ngIf="!loading() && displayedItems.length === 0" style="text-align:center;padding:4rem;color:var(--neutral-500)">
+      🌵 لا يوجد نتائج... جرب تصنيفاً آخر.
     </div>
   </div>
+</div>
 
-  <!-- Detailed Modal -->
-  <div class="modal-overlay" [class.active]="selectedItem()" (click)="closeModal()">
-    <div class="modal-box mt-5" (click)="$event.stopPropagation()" *ngIf="selectedItem()">
-      <button class="close-modal-floating" (click)="closeModal()">×</button>
-      <button class="back-modal-floating" *ngIf="navigationHistory.length > 0" (click)="goBack()">←</button>
-      
-      <div class="modal-header-img" *ngIf="itemType() === 'plant'">
-        <img [src]="selectedItem().images?.[0] || 'assets/images/default.png'">
-      </div>
-      <div class="modal-header-banner" [class.disease]="itemType()==='disease'" [class.fert]="itemType()==='fertilizer'">
-         <span class="banner-emoji">{{ itemType() === 'disease' ? '🦠' : (itemType() === 'fertilizer' ? '🧪' : '🌿') }}</span>
-      </div>
-
-      <div class="modal-content">
-        <div class="detail-header">
-          <h2 class="detail-title">{{ itemType() === 'plant' ? selectedItem().commonName : selectedItem().name }}</h2>
-          <span class="detail-subtitle" *ngIf="selectedItem().scientificName">{{ selectedItem().scientificName }}</span>
+<!-- ── Detail Modal ── -->
+<div class="modal-overlay" *ngIf="selectedPlant()" [class.active]="selectedPlant()" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-img-wrapper" style="height: 180px;">
+      <img *ngIf="selectedPlant()?.images?.length || selectedPlant()?.image" 
+           [src]="getImageUrl(selectedPlant()?.images?.[0] || selectedPlant()?.image)" 
+           [alt]="selectedPlant()?.commonName || selectedPlant()?.name" class="modal-main-img">
+      <button (click)="closeModal()"
+        style="position:absolute;top:1rem;right:1rem;background:white;border-radius:50%;width:40px;height:40px;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);font-size:1.5rem;color:var(--neutral-600);cursor:pointer;z-index:10;">&times;</button>
+      <span *ngIf="!selectedPlant()?.images?.length && !selectedPlant()?.image">🪴</span>
+    </div>
+    <div style="padding:1.2rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid var(--neutral-100);padding-bottom:.5rem;">
+        <div>
+          <h2 style="font-family:var(--font-display);font-size:1.3rem;color:var(--green-900);margin:0;">{{ selectedPlant()?.commonName || selectedPlant()?.name }}</h2>
+          <p style="font-style:italic;color:var(--neutral-500);font-family:var(--font-display);font-size:.75rem;margin-top:.1rem;">{{ selectedPlant()?.scientificName || selectedPlant()?.type }}</p>
         </div>
-
-        <!-- Plant Specific Details -->
-        <ng-container *ngIf="itemType() === 'plant'">
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-icon">📋</span>
-              <div class="info-text"><span class="label">الفصيلة</span><span class="val">{{ selectedItem().family || 'غير محدد' }}</span></div>
-            </div>
-            <div class="info-item">
-              <span class="info-icon">☀️</span>
-              <div class="info-text"><span class="label">ساعات الشمس</span><span class="val">{{ selectedItem().sunlightHours }} ساعة</span></div>
-            </div>
-            <div class="info-item">
-              <span class="info-icon">💧</span>
-              <div class="info-text"><span class="label">الري</span><span class="val">{{ selectedItem().waterNeeds?.level }} ({{ selectedItem().waterNeeds?.frequency }} أيام)</span></div>
-            </div>
-            <div class="info-item">
-              <span class="info-icon">🧪</span>
-              <div class="info-text"><span class="label">تربة pH</span><span class="val">{{ selectedItem().soilPH?.min }} - {{ selectedItem().soilPH?.max }}</span></div>
-            </div>
-          </div>
-
-          <div class="detail-section">
-            <h4 class="section-title">وصف النبات</h4>
-            <p class="section-text">{{ selectedItem().description }}</p>
-          </div>
-
-          <!-- Relational Links -->
-          <div class="detail-links" *ngIf="selectedItem().diseases?.length">
-            <h4 class="section-title">أمراض قد تصيبها</h4>
-            <div class="link-btns">
-              <button *ngFor="let dis of selectedItem().diseases" class="link-btn disease" (click)="openItem(dis._id || dis, 'disease', true)">
-                🦠 {{ dis.name || 'عرض المرض' }}
-              </button>
-            </div>
-          </div>
-
-          <div class="detail-links" *ngIf="selectedItem().fertilizers?.length">
-            <h4 class="section-title">أسمدة موصى بها</h4>
-            <div class="link-btns">
-              <button *ngFor="let fert of selectedItem().fertilizers" class="link-btn fert" (click)="openItem(fert._id || fert, 'fertilizer', true)">
-                🧪 {{ fert.name || 'عرض السماد' }}
-              </button>
-            </div>
-          </div>
-        </ng-container>
-
-        <!-- Disease Specific Details -->
-        <ng-container *ngIf="itemType() === 'disease'">
-          <div class="info-grid single">
-            <div class="info-item">
-              <span class="info-icon">🔍</span>
-              <div class="info-text"><span class="label">نوع الممرض</span><span class="val">{{ selectedItem().pathogenType }}</span></div>
-            </div>
-          </div>
-
-          <div class="detail-section">
-            <h4 class="section-title">الأعراض</h4>
-            <ul class="detail-list">
-              <li *ngFor="let sym of selectedItem().symptoms">{{ sym }}</li>
-            </ul>
-          </div>
-
-          <div class="detail-section">
-            <h4 class="section-title">العلاج والوقاية</h4>
-            <p class="section-text"><strong>الوقاية:</strong> {{ selectedItem().prevention?.join(', ') || 'غير محدد' }}</p>
-            <p class="section-text"><strong>العلاج:</strong> {{ selectedItem().treatment?.join(', ') || 'غير محدد' }}</p>
-          </div>
-
-          <div class="detail-links" *ngIf="getRelatedPlants(getId(selectedItem()), 'disease').length">
-            <h4 class="section-title">نباتات معرضة لهذا المرض</h4>
-            <div class="link-btns">
-              <button *ngFor="let p of getRelatedPlants(getId(selectedItem()), 'disease')" class="link-btn plant" (click)="openItem(getId(p), 'plant', true)">
-                🌿 {{ p.commonName }}
-              </button>
-            </div>
-          </div>
-        </ng-container>
-
-        <!-- Fertilizer Specific Details -->
-        <ng-container *ngIf="itemType() === 'fertilizer'">
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-icon">🏷️</span>
-              <div class="info-text"><span class="label">النوع</span><span class="val">{{ selectedItem().type }}</span></div>
-            </div>
-            <div class="info-item">
-              <span class="info-icon">⚙️</span>
-              <div class="info-text"><span class="label">الطريقة</span><span class="val">{{ selectedItem().applicationMethod }}</span></div>
-            </div>
-          </div>
-
-          <div class="detail-section">
-            <h4 class="section-title">المكونات والفوائد</h4>
-            <div class="comp-list">
-              <span *ngFor="let c of selectedItem().composition" class="comp-tag">{{ c.element }}: {{ c.percentage }}%</span>
-            </div>
-            <p class="section-text" style="margin-top:1rem">{{ selectedItem().benefits?.join(' • ') }}</p>
-          </div>
-
-          <div class="detail-links" *ngIf="getRelatedPlants(getId(selectedItem()), 'fertilizer').length">
-             <h4 class="section-title">مناسب للنباتات التالية</h4>
-             <div class="link-btns">
-               <button *ngFor="let p of getRelatedPlants(getId(selectedItem()), 'fertilizer')" class="link-btn plant" (click)="openItem(getId(p), 'plant', true)">
-                 🌿 {{ p.commonName }}
-               </button>
-             </div>
-          </div>
-        </ng-container>
-
+        <span class="badge" [class.badge-green]="selectedPlant()?.type === 'plant'" [class.badge-earth]="selectedPlant()?.type === 'disease'" [class.badge-secondary]="selectedPlant()?.type === 'fertilizer'" style="font-size:0.75rem;padding:.3rem .7rem;">
+          {{ selectedPlant()?.type === 'plant' ? '🌿 نبات' : selectedPlant()?.type === 'disease' ? '🦠 مرض' : '🧪 سماد' }}
+        </span>
       </div>
+
+      <!-- PLANT DETAILS GRID -->
+      <div *ngIf="selectedPlant()?.type === 'plant'" style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1.2rem;">
+        <div style="background:var(--neutral-50);padding:0.6rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:0.6rem;">
+          <span style="font-size:1.2rem">💧</span>
+          <div>
+            <div style="font-size:.65rem;color:var(--neutral-500);font-weight:700;">الري</div>
+            <div style="font-weight:700;color:var(--green-800);font-size:0.8rem;">{{ selectedPlant()?.waterData?.level || 'متوسط' }} (كل {{ selectedPlant()?.waterData?.frequency || '3' }} أيام)</div>
+          </div>
+        </div>
+        <div style="background:var(--neutral-50);padding:0.6rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:0.6rem;">
+          <span style="font-size:1.2rem">🌡️</span>
+          <div>
+            <div style="font-size:.65rem;color:var(--neutral-500);font-weight:700;">الحرارة</div>
+            <div style="font-weight:700;color:var(--green-800);font-size:0.8rem;">{{ selectedPlant()?.tempData?.min || '18' }}–{{ selectedPlant()?.tempData?.max || '30' }}° م</div>
+          </div>
+        </div>
+        <div style="background:var(--neutral-50);padding:0.6rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:0.6rem;">
+          <span style="font-size:1.2rem">🧪</span>
+          <div>
+            <div style="font-size:.65rem;color:var(--neutral-500);font-weight:700;">PH</div>
+            <div style="font-weight:700;color:var(--green-800);font-size:0.8rem;">{{ selectedPlant()?.phData?.min || '6' }}–{{ selectedPlant()?.phData?.max || '7' }} PH</div>
+          </div>
+        </div>
+        <div style="background:var(--neutral-50);padding:0.6rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:0.6rem;">
+          <span style="font-size:1.2rem">📅</span>
+          <div>
+            <div style="font-size:.65rem;color:var(--neutral-500);font-weight:700;">الموسم</div>
+            <div style="font-weight:700;color:var(--green-800);font-size:0.8rem;">{{ selectedPlant()?.growingSeason || 'الربيع' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="selectedPlant()?.family" style="margin-bottom:1rem;">
+          <span class="badge badge-light" style="font-size:0.8rem">🏷️ الفصيلة: {{ selectedPlant()?.family }}</span>
+      </div>
+
+      <!-- DISEASE DETAILS -->
+      <div *ngIf="selectedPlant()?.type === 'disease'" style="display:flex;flex-direction:column;gap:1rem;">
+         <div *ngIf="selectedPlant()?.symptoms?.length" style="background:var(--neutral-50);padding:1rem;border-radius:var(--radius-md);">
+            <div style="font-weight:700;color:var(--earth-700);font-size:0.9rem;margin-bottom:0.5rem;">🚨 الأعراض:</div>
+            <ul style="margin:0;padding-right:1.2rem;font-size:0.85rem;line-height:1.6;">
+               <li *ngFor="let s of selectedPlant()?.symptoms">{{ s }}</li>
+            </ul>
+         </div>
+         <div *ngIf="selectedPlant()?.treatment?.length" style="background:var(--green-50);padding:1rem;border-radius:var(--radius-md);">
+            <div style="font-weight:700;color:var(--green-800);font-size:0.9rem;margin-bottom:0.5rem;">💊 العلاج:</div>
+            <ul style="margin:0;padding-right:1.2rem;font-size:0.85rem;line-height:1.6;">
+               <li *ngFor="let t of selectedPlant()?.treatment">{{ t }}</li>
+            </ul>
+         </div>
+      </div>
+
+      <!-- FERTILIZER DETAILS -->
+      <div *ngIf="selectedPlant()?.type === 'fertilizer'" style="display:flex;flex-direction:column;gap:1rem;">
+         <!-- Application Grid -->
+         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+            <div style="background:var(--neutral-50);padding:0.6rem;border-radius:var(--radius-md);">
+               <div style="font-size:.65rem;color:var(--neutral-500);font-weight:700;">طريقة الاستخدام</div>
+               <div style="font-weight:700;color:var(--green-800);font-size:0.8rem;">{{ selectedPlant()?.applicationMethod || 'غير محدد' }}</div>
+            </div>
+            <div style="background:var(--neutral-50);padding:0.6rem;border-radius:var(--radius-md);">
+               <div style="font-size:.65rem;color:var(--neutral-500);font-weight:700;">الكمية الموصى بها</div>
+               <div style="font-weight:700;color:var(--green-800);font-size:0.8rem;">{{ selectedPlant()?.applicationRate || 'غير محدد' }}</div>
+            </div>
+         </div>
+
+         <!-- Composition -->
+         <div *ngIf="selectedPlant()?.composition?.length" style="background:var(--neutral-50);padding:1rem;border-radius:var(--radius-md);">
+            <div style="font-weight:700;color:var(--green-900);font-size:0.9rem;margin-bottom:0.5rem;">🧪 التركيبة:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+               <span *ngFor="let c of selectedPlant()?.composition" class="badge badge-light" style="font-size:0.75rem;">
+                  {{ c.element }}: {{ c.percentage }}%
+               </span>
+            </div>
+         </div>
+
+         <!-- Benefits -->
+         <div *ngIf="selectedPlant()?.benefits?.length" style="background:var(--green-50);padding:1rem;border-radius:var(--radius-md);">
+            <div style="font-weight:700;color:var(--green-800);font-size:0.9rem;margin-bottom:0.5rem;">✨ الفوائد:</div>
+            <ul style="margin:0;padding-right:1.2rem;font-size:0.85rem;line-height:1.6;">
+               <li *ngFor="let b of selectedPlant()?.benefits">{{ b }}</li>
+            </ul>
+         </div>
+
+         <!-- Suitable Plants -->
+         <div *ngIf="selectedPlant()?.suitablePlants?.length">
+            <h4 style="font-size:0.9rem;color:var(--green-900);margin-bottom:0.6rem;">🌿 نباتات مناسبة لهذا السماد</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+               <span *ngFor="let sp of selectedPlant()?.suitablePlants" class="badge badge-green" style="font-size:0.75rem;">
+                  {{ sp.commonName || sp.name }}
+               </span>
+            </div>
+         </div>
+      </div>
+
+      <div style="line-height:1.6;color:var(--neutral-700);margin-bottom:1.5rem;margin-top:1.2rem;">
+        <h3 style="margin-bottom:.5rem;color:var(--green-900);font-size:1.1rem;">حول هذا القسم</h3>
+        <p style="font-size:0.85rem;">{{ selectedPlant()?.description || 'لا يوجد وصف مطور متاح حالياً.' }}</p>
+      </div>
+
+      <!-- PLANT SPECIFIC: Related Diseases and Fertilizers -->
+      <div *ngIf="selectedPlant()?.type === 'plant'" style="display:flex;flex-direction:column;gap:1.2rem;border-top:1px solid var(--neutral-100);padding-top:1.2rem;margin-bottom:1.5rem;">
+         <div *ngIf="selectedPlant()?.diseases?.length">
+            <h4 style="font-size:0.9rem;color:var(--green-900);margin-bottom:0.6rem;">🦠 الأمراض الشائعة لهذا النبات</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+               <span *ngFor="let d of selectedPlant()?.diseases" class="badge badge-earth" style="font-size:0.75rem;cursor:pointer;" (click)="openModal({_id: d._id, type: 'disease'})">
+                  {{ d.name }}
+               </span>
+            </div>
+         </div>
+         <div *ngIf="selectedPlant()?.fertilizers?.length">
+            <h4 style="font-size:0.9rem;color:var(--green-900);margin-bottom:0.6rem;">🧪 الأسمدة الموصى بها</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+               <span *ngFor="let f of selectedPlant()?.fertilizers" class="badge badge-secondary" style="font-size:0.75rem;cursor:pointer;" (click)="openModal({_id: f._id, type: 'fertilizer'})">
+                  {{ f.name }}
+               </span>
+            </div>
+         </div>
+      </div>
+
+      <button class="btn btn-primary btn-block" style="margin-top:1rem;padding:0.75rem" (click)="closeModal()">حسـناً، فهمت</button>
     </div>
   </div>
 </div>

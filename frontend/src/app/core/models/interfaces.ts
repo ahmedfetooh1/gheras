@@ -55,8 +55,10 @@ export interface Disease {
   _id: string;
   id?: string;
   name: string;
+  scientificName?: string;
   symptoms: string;
   treatment: string;
+  image?: string;
 }
 
 export interface Fertilizer {
@@ -65,6 +67,7 @@ export interface Fertilizer {
   name: string;
   type: string;
   usageInstructions: string;
+  image?: string;
 }
 
 // export interface Product {
@@ -125,18 +128,19 @@ export interface Order {
 
 export interface Post {
   _id?: string;
-  user: User | string;
+  author: User | string;
   title: string;
   content: string;
   comments?: Comment[];
+  status?: string;
   createdAt?: string;
 }
 
 export interface Comment {
   _id?: string;
-  user: User | string;
+  author: User | string;
   post: string;
-  content: string;
+  text: string;
   createdAt?: string;
 }
 

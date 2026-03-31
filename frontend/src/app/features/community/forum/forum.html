@@ -1,143 +1,220 @@
 <div class="page-wrapper">
+  <!-- Hero Header -->
   <div style="background:linear-gradient(135deg,var(--green-800),var(--green-600));padding:2.5rem 2rem;color:white;text-align:center">
     <h1 style="font-family:var(--font-display);font-size:2rem;margin-bottom:.4rem">مجتمع نبتتي</h1>
     <p style="opacity:.8;margin-bottom:1.5rem">اسأل وجاوب وتعلم من مجتمع المزارعين</p>
-    <button onclick="document.getElementById('new-post-modal').classList.add('open')" class="btn btn-primary">اكتب بوست جديد</button>
+    <button (click)="openNewPost()" class="btn btn-primary">اكتب بوست جديد</button>
   </div>
 
   <div class="container section-sm">
-    <div style="display:grid;grid-template-columns:1fr 280px;gap:2rem">
-      <div>
-        <!-- Filters -->
-        <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
-          <button class="wiki-filter active" style="padding:.4rem 1rem;border-radius:99px;border:1.5px solid var(--neutral-200);background:var(--green-600);color:white;font-family:var(--font-body);font-size:.875rem;font-weight:600;cursor:pointer">الكل</button>
-          <button class="wiki-filter" style="padding:.4rem 1rem;border-radius:99px;border:1.5px solid var(--neutral-200);background:white;font-family:var(--font-body);font-size:.875rem;font-weight:600;cursor:pointer;transition:all .25s" onmouseover="this.style.background='var(--green-600)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='inherit'">أمراض وآفات</button>
-          <button class="wiki-filter" style="padding:.4rem 1rem;border-radius:99px;border:1.5px solid var(--neutral-200);background:white;font-family:var(--font-body);font-size:.875rem;font-weight:600;cursor:pointer;transition:all .25s" onmouseover="this.style.background='var(--green-600)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='inherit'">نصائح زراعة</button>
-          <button class="wiki-filter" style="padding:.4rem 1rem;border-radius:99px;border:1.5px solid var(--neutral-200);background:white;font-family:var(--font-body);font-size:.875rem;font-weight:600;cursor:pointer;transition:all .25s" onmouseover="this.style.background='var(--green-600)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='inherit'">عام</button>
-        </div>
+    <div class="forum-layout">
+      <!-- Posts Column -->
+      <div class="posts-column">
 
-        <!-- Posts -->
-        <div style="display:flex;flex-direction:column;gap:1rem">
-          <div class="card">
-            <div class="card-body">
-              <div style="display:flex;gap:1rem">
-                <div style="width:44px;height:44px;border-radius:50%;background:var(--green-500);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0">م</div>
-                <div style="flex:1">
-                  <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem">
-                    <strong>محمد أحمد</strong>
-                    <span class="badge badge-earth">أمراض وآفات</span>
-                    <span style="font-size:.75rem;color:var(--neutral-400);margin-right:auto">منذ 2 ساعة</span>
-                  </div>
-                  <div style="font-weight:700;color:var(--green-900);margin-bottom:.4rem">نبتتي الأوراق بتصفر من تحت — إيه السبب؟</div>
-                  <img src="" alt="" style="width:100%;max-width:300px;height:150px;object-fit:cover;border-radius:var(--radius-md);background:var(--green-50);display:flex;align-items:center;justify-content:center;margin-bottom:.5rem" onerror="this.style.display='none'">
-                  <div style="color:var(--neutral-600);font-size:.9rem;margin-bottom:.75rem">عندي نبتة طماطم من 3 شهور، الأوراق السفلية بتصفر وبتوقع. الجو القاهرة حالياً 30 درجة وبسقيها كل يوم...</div>
-                  <div style="display:flex;gap:1rem;font-size:.85rem;color:var(--neutral-500)">
-                    <button style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:.3rem;font-family:var(--font-body);color:var(--neutral-500)">إعجاب 12</button>
-                    <button style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:.3rem;font-family:var(--font-body);color:var(--green-600);font-weight:600">تعليق 8</button>
-                  </div>
-                  <!-- Comments -->
-                  <div style="margin-top:.75rem;border-top:1px solid var(--neutral-100);padding-top:.75rem">
-                    <div style="display:flex;gap:.6rem;margin-bottom:.6rem">
-                      <div style="width:30px;height:30px;border-radius:50%;background:var(--amber-400);display:flex;align-items:center;justify-content:center;color:white;font-size:.75rem;flex-shrink:0">ن</div>
-                      <div style="background:var(--neutral-50);border-radius:var(--radius-md);padding:.5rem .75rem;flex:1;font-size:.85rem">
-                        <strong>نور علي</strong>: غالباً نقص نيتروجين أو الري الزيادة. جرب تقلل الري وأضف سماد NPK
-                      </div>
-                    </div>
-                    <div style="display:flex;gap:.6rem">
-                      <div style="width:30px;height:30px;border-radius:50%;background:var(--green-600);display:flex;align-items:center;justify-content:center;color:white;font-size:.75rem;flex-shrink:0">خ</div>
-                      <div style="background:var(--neutral-50);border-radius:var(--radius-md);padding:.5rem .75rem;flex:1;font-size:.85rem">
-                        <strong>خالد</strong>: عندي نفس المشكلة، السماد العضوي ساعدني كتير!
-                      </div>
+        <!-- Loading Skeleton -->
+        @if (loading()) {
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            @for (i of [1,2,3]; track i) {
+              <div class="card">
+                <div class="card-body">
+                  <div style="display:flex;gap:1rem;align-items:flex-start">
+                    <div class="skeleton-avatar"></div>
+                    <div style="flex:1">
+                      <div class="skeleton-line" style="width:40%;height:14px;margin-bottom:.5rem"></div>
+                      <div class="skeleton-line" style="width:80%;height:18px;margin-bottom:.5rem"></div>
+                      <div class="skeleton-line" style="width:100%;height:12px;margin-bottom:.25rem"></div>
+                      <div class="skeleton-line" style="width:70%;height:12px"></div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            }
           </div>
+        }
 
-          <div class="card">
+        <!-- Error -->
+        @if (error() && !loading()) {
+          <div class="card" style="text-align:center;padding:2rem">
+            <div style="font-size:2rem;margin-bottom:.5rem">⚠️</div>
+            <p style="color:var(--neutral-500)">{{ error() }}</p>
+            <button class="btn btn-primary" style="margin-top:1rem" (click)="loadPosts()">إعادة المحاولة</button>
+          </div>
+        }
+
+        <!-- Empty -->
+        @if (!loading() && !error() && posts().length === 0) {
+          <div class="card" style="text-align:center;padding:3rem">
+            <div style="font-size:2.5rem;margin-bottom:.75rem">🌿</div>
+            <p style="color:var(--neutral-500);margin-bottom:1rem">لا توجد بوستات حتى الآن</p>
+            <button class="btn btn-primary" (click)="openNewPost()">كن أول من يكتب!</button>
+          </div>
+        }
+
+        <!-- Posts List -->
+        @for (post of posts(); track post._id) {
+          <div class="card forum-post-card">
             <div class="card-body">
               <div style="display:flex;gap:1rem">
-                <div style="width:44px;height:44px;border-radius:50%;background:var(--green-700);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0">س</div>
-                <div style="flex:1">
-                  <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem">
-                    <strong>سارة حسين</strong>
-                    <span class="badge badge-green">نصائح</span>
-                    <span style="font-size:.75rem;color:var(--neutral-400);margin-right:auto">منذ 5 ساعات</span>
+
+                <!-- Avatar -->
+                <div class="post-avatar">{{ getAuthorInitial(post.author) }}</div>
+
+                <div style="flex:1;min-width:0">
+                  <!-- Meta -->
+                  <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;flex-wrap:wrap">
+                    <strong style="font-size:.9rem">{{ getAuthorName(post.author) }}</strong>
+                    <span style="font-size:.75rem;color:var(--neutral-400);margin-right:auto">
+                      {{ post.createdAt | date:'d MMM y' }}
+                    </span>
                   </div>
-                  <div style="font-weight:700;color:var(--green-900);margin-bottom:.4rem">أفضل طريقة لزراعة الكاكتوس في الشقة</div>
-                  <div style="color:var(--neutral-600);font-size:.9rem;margin-bottom:.75rem">بعد تجربة سنتين، اكتشفت إن سر الكاكتوس الصحي هو التربة الصح والري القليل جداً. هشارككم كل اللي تعلمته...</div>
+
+                  <!-- Title -->
+                  <div style="font-weight:700;color:var(--green-900);margin-bottom:.5rem;font-size:1rem;font-family:var(--font-display)">
+                    {{ post.title }}
+                  </div>
+
+                  <!-- Content preview -->
+                  <div style="color:var(--neutral-600);font-size:.9rem;margin-bottom:.875rem;line-height:1.65">
+                    {{ post.content.length > 220 ? (post.content.slice(0, 220) + '...') : post.content }}
+                  </div>
+
+                  <!-- Actions -->
                   <div style="display:flex;gap:1rem;font-size:.85rem">
-                    <button style="background:none;border:none;cursor:pointer;font-family:var(--font-body);color:var(--neutral-500)">إعجاب 34</button>
-                    <button style="background:none;border:none;cursor:pointer;font-family:var(--font-body);color:var(--green-600);font-weight:600">تعليق 15</button>
+                    <button
+                      class="forum-action-btn"
+                      [class.active]="isCommentsOpen(post._id!)"
+                      (click)="toggleComments(post._id!)">
+                      <span class="comment-icon">💬</span>
+                      <span>{{ getCommentCount(post) }} تعليق</span>
+                      <span class="toggle-arrow" [class.rotated]="isCommentsOpen(post._id!)">▾</span>
+                    </button>
                   </div>
+
+                  <!-- Comments Section -->
+                  @if (isCommentsOpen(post._id!)) {
+                    <div class="comments-section">
+
+                      @if (isCommentsLoading(post._id!)) {
+                        <div style="display:flex;align-items:center;gap:.5rem;padding:.75rem 0;color:var(--neutral-400);font-size:.85rem">
+                          <div class="comments-loader"><span></span><span></span><span></span></div>
+                          جاري التحميل...
+                        </div>
+                      }
+
+                      @if (!isCommentsLoading(post._id!) && getComments(post._id!).length === 0) {
+                        <div style="padding:.75rem 0;color:var(--neutral-400);font-size:.85rem;text-align:center">
+                          لا توجد تعليقات بعد
+                        </div>
+                      }
+
+                      @for (comment of getComments(post._id!); track comment._id) {
+                        <div class="comment-item">
+                          <div class="comment-avatar">{{ getAuthorInitial(comment.author) }}</div>
+                          <div class="comment-bubble">
+                            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem">
+                              <strong style="font-size:.82rem;color:var(--green-900)">{{ getAuthorName(comment.author) }}</strong>
+                              @if (comment.createdAt) {
+                                <span style="font-size:.72rem;color:var(--neutral-400);margin-right:auto">
+                                  {{ comment.createdAt | date:'d MMM' }}
+                                </span>
+                              }
+                            </div>
+                            <p style="margin:0;font-size:.85rem;color:var(--neutral-700);line-height:1.55">{{ comment.text }}</p>
+                          </div>
+                        </div>
+                      }
+
+                      <!-- ✅ Add Comment Box -->
+                      @if (!isCommentsLoading(post._id!)) {
+                        <div style="display:flex;gap:.6rem;margin-top:.75rem;align-items:flex-end;border-top:1px solid var(--neutral-100);padding-top:.75rem">
+                          <textarea
+                            class="input-field"
+                            rows="2"
+                            placeholder="اكتب تعليقك..."
+                            [(ngModel)]="newCommentText[post._id!]"
+                            style="flex:1;resize:none;font-size:.85rem;padding:.5rem .75rem;border-radius:10px">
+                          </textarea>
+                          <button
+                            class="btn btn-primary"
+                            style="padding:.5rem 1rem;font-size:.85rem;border-radius:10px;white-space:nowrap"
+                            [disabled]="!newCommentText[post._id!]?.trim() || isSubmittingComment(post._id!)"
+                            (click)="submitComment(post._id!)">
+                            {{ isSubmittingComment(post._id!) ? '...' : 'إرسال' }}
+                          </button>
+                        </div>
+                      }
+
+                    </div>
+                  }
+
                 </div>
               </div>
             </div>
           </div>
+        }
 
-          <div class="card">
-            <div class="card-body">
-              <div style="display:flex;gap:1rem">
-                <div style="width:44px;height:44px;border-radius:50%;background:var(--earth-400);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0">ر</div>
-                <div style="flex:1">
-                  <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem">
-                    <strong>رامي الشيخ</strong>
-                    <span class="badge badge-earth">عام</span>
-                    <span style="font-size:.75rem;color:var(--neutral-400);margin-right:auto">أمس</span>
-                  </div>
-                  <div style="font-weight:700;color:var(--green-900);margin-bottom:.4rem">سماد طبيعي من بقايا المطبخ — تجربتي الرائعة!</div>
-                  <div style="color:var(--neutral-600);font-size:.9rem;margin-bottom:.75rem">بدأت أعمل كومبوست من قشر البيض وبقايا الخضروات، النتيجة كانت أحسن من أي سماد اشتريته من المحل!</div>
-                  <div style="display:flex;gap:1rem;font-size:.85rem">
-                    <button style="background:none;border:none;cursor:pointer;font-family:var(--font-body);color:var(--neutral-500)">إعجاب 56</button>
-                    <button style="background:none;border:none;cursor:pointer;font-family:var(--font-body);color:var(--green-600);font-weight:600">تعليق 22</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Sidebar -->
-      <div>
-        <div class="card" style="margin-bottom:1rem"><div class="card-body">
-          <div style="font-weight:700;margin-bottom:.75rem;color:var(--green-900)">أكثر البوستات تفاعلاً</div>
-          <div style="font-size:.85rem;display:flex;flex-direction:column;gap:.6rem">
-            <a href="#" style="color:var(--neutral-700)">أفضل طريقة لزراعة الكاكتوس في الشقة</a>
-            <a href="#" style="color:var(--neutral-700)">سماد طبيعي من بقايا المطبخ</a>
-            <a href="#" style="color:var(--neutral-700)">كيف أحمي نباتاتي من الحرارة الصيف؟</a>
+      <div class="forum-sidebar">
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-body">
+            <div style="font-weight:700;margin-bottom:.75rem;color:var(--green-900)">إحصائيات المنتدى</div>
+            <div style="font-size:.88rem;display:flex;flex-direction:column;gap:.4rem">
+              <div style="display:flex;justify-content:space-between">
+                <span style="color:var(--neutral-500)">إجمالي البوستات</span>
+                <strong>{{ posts().length }}</strong>
+              </div>
+            </div>
           </div>
-        </div></div>
-        <div class="card"><div class="card-body">
-          <div style="font-weight:700;margin-bottom:.75rem;color:var(--green-900)">إحصائيات المنتدى</div>
-          <div style="font-size:.88rem;display:flex;flex-direction:column;gap:.4rem">
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--neutral-500)">إجمالي البوستات</span><strong>1,240</strong></div>
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--neutral-500)">التعليقات</span><strong>8,900</strong></div>
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--neutral-500)">الأعضاء النشطين</span><strong>3,400</strong></div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div style="font-weight:700;margin-bottom:.75rem;color:var(--green-900)">شارك معنا</div>
+            <p style="font-size:.85rem;color:var(--neutral-500);margin-bottom:1rem">لديك سؤال أو تجربة؟ شاركها مع المجتمع!</p>
+            <button class="btn btn-primary btn-block" (click)="openNewPost()">اكتب بوست →</button>
           </div>
-        </div></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- New Post Modal -->
-<div class="add-plant-modal" id="new-post-modal">
-  <div class="modal-box">
-    <div style="padding:1.5rem;border-bottom:1px solid var(--neutral-100);display:flex;align-items:center;justify-content:space-between">
-      <div style="font-weight:700;font-size:1.1rem">بوست جديد</div>
-      <button onclick="document.getElementById('new-post-modal').classList.remove('open')" style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
-    </div>
-    <div style="padding:1.5rem">
-      <div class="input-group"><label>عنوان البوست</label><input type="text" class="input-field" placeholder="اكتب عنوان واضح..."></div>
-      <div class="input-group"><label>الكاتيجوري</label>
-        <select class="input-field"><option>أمراض وآفات</option><option>نصائح زراعة</option><option>عام</option></select>
+@if (showNewPostModal()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div style="padding:1.5rem;border-bottom:1px solid var(--neutral-100);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700;font-size:1.1rem">بوست جديد</div>
+        <button (click)="closeModal()" style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
       </div>
-      <div class="input-group"><label>المحتوى</label><textarea class="input-field" rows="5" placeholder="شارك تجربتك أو سؤالك..."></textarea></div>
-      <div class="input-group"><label>صورة (اختياري)</label><input type="file" class="input-field" accept="image/*"></div>
-      <div class="alert alert-info" style="margin-bottom:1rem;font-size:.82rem">البوست هيتراجع من فريقنا قبل النشر</div>
-      <button onclick="document.getElementById('new-post-modal').classList.remove('open')" class="btn btn-primary btn-block">نشر البوست →</button>
+      <div style="padding:1.5rem">
+
+        @if (submitSuccess()) {
+          <div class="alert alert-success" style="text-align:center;padding:2rem">
+            <div style="font-size:2rem;margin-bottom:.5rem">✅</div>
+            <strong>تم إرسال بوستك!</strong>
+            <p style="margin:.4rem 0 0;font-size:.85rem;color:var(--neutral-500)">سيظهر بعد مراجعة الإدارة</p>
+          </div>
+        } @else {
+          <div class="input-group">
+            <label>عنوان البوست</label>
+            <input type="text" class="input-field" placeholder="اكتب عنوان واضح..." [(ngModel)]="newPostTitle">
+          </div>
+          <div class="input-group">
+            <label>المحتوى</label>
+            <textarea class="input-field" rows="5" placeholder="شارك تجربتك أو سؤالك..." [(ngModel)]="newPostContent"></textarea>
+          </div>
+          <div class="alert alert-info" style="margin-bottom:1rem;font-size:.82rem">البوست هيتراجع من فريقنا قبل النشر</div>
+          <button
+            class="btn btn-primary btn-block"
+            [disabled]="submitting() || !newPostTitle.trim() || !newPostContent.trim()"
+            (click)="submitPost()">
+            {{ submitting() ? 'جاري الإرسال...' : 'نشر البوست →' }}
+          </button>
+        }
+
+      </div>
     </div>
   </div>
-</div>
+}

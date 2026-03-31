@@ -20,10 +20,10 @@
       </div>
       <div class="shop-sidebar-card">
         <div class="shop-sidebar-title">السعر</div>
-        <input type="range" min="0" max="10000" [(ngModel)]="maxPrice" style="width:100%">
+        <input type="range" min="0" max="10000" [value]="maxPrice()" (input)="maxPrice.set(+$any($event.target).value)" style="width:100%">
         <div style="font-size:.82rem;color:var(--neutral-500);margin-top:.4rem">
-          @if (maxPrice > 0) {
-          <span>حتى <span id="price-val">{{ maxPrice }}</span> ج.م</span>
+          @if (maxPrice() < 10000) {
+          <span>حتى <span id="price-val">{{ maxPrice() }}</span> ج.م</span>
           } @else {
           <span>الكل</span>
           }
@@ -44,47 +44,40 @@
         <div style="font-size:.9rem;color:var(--neutral-500)">عرض <strong>{{ filteredProducts().length }}</strong> من
           <strong>{{ products().length }}</strong> منتج
         </div>
-        <select class="input-field" style="width:auto;padding:.4rem .8rem;font-size:.85rem">
-          <option>الأحدث أولاً</option>
-          <option>السعر: من الأقل للأعلى</option>
-          <option>السعر: من الأعلى للأقل</option>
-          <option>الأعلى تقييماً</option>
+        <select class="input-field" style="width:auto;padding:.4rem .8rem;font-size:.85rem" (change)="onSortChange($event)">
+          <option value="latest">الأحدث أولاً</option>
+          <option value="price-asc">السعر: من الأقل للأعلى</option>
+          <option value="price-desc">السعر: من الأعلى للأقل</option>
+          <option value="top-rated">الأعلى تقييماً</option>
         </select>
       </div>
 
       <div class="grid-auto">
-        @for (product of filteredProducts(); track product._id) {
+        @for (product of filteredProducts(); track product.id) {
         <div class="product-card">
-          <div class="product-img" [routerLink]="['/shop/product', product._id]"
-            style="cursor: pointer; overflow: hidden; background: linear-gradient(135deg,#f0fdf4,#dcfce7);">
-            @if (product.stock < 10 && product.stock> 0) {
-              <div class="product-badge"><span class="badge badge-amber">الأكثر مبيعاً</span></div>
-              }
-              <div style="height:100%;width:100%;display:flex;align-items:center;justify-content:center;">
-                @if (product.images && product.images.length > 0) {
-                <img [src]="'http://localhost:3000/' + product.images[0]"
-                  style="width:100%;height:100%;object-fit:cover;">
-                } @else {
-                <div style="font-size:4rem">🌿</div>
-                }
-              </div>
+          <div class="product-img" [style.background]="product.color" [routerLink]="['/shop/product', product.id]"
+            style="cursor: pointer;">
+            @if (product.isBestSeller) {
+            <div class="product-badge"><span class="badge badge-amber">الأكثر مبيعاً</span></div>
+            }
+            @if (product.image) {
+              <img [src]="getImageUrl(product.image)" style="width:100%;height:100%;object-fit:cover;">
+            } @else {
+              <div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem">{{
+                product.emoji }}</div>
+            }
           </div>
-          <div class="product-body" [routerLink]="['/shop/product', product._id]" style="cursor: pointer;">
+          <div class="product-body" [routerLink]="['/shop/product', product.id]" style="cursor: pointer;">
             <div class="product-name">{{ product.name }}</div>
-            <div style="margin-bottom: 0.4rem;"><span class="badge badge-green">{{ product.category.name || 'أخرى'
-                }}</span></div>
-            <div class="product-desc">{{ product.description }}</div>
-            <div class="stars">{{ getStars(4.5) }} <span style="color:var(--neutral-400)">(30)</span></div>
+            <div style="margin-bottom: 0.4rem;"><span class="badge badge-green">{{ product.catName }}</span></div>
+            <div class="product-desc">{{ product.desc }}</div>
+            <div class="stars">{{ getStars(product.rating) }} <span style="color:var(--neutral-400)">({{ product.reviews
+                }})</span></div>
             <div style="margin-top:.5rem">
-              @if (product.discountPercent > 0) {
-              <span class="product-old-price"
-                style="text-decoration: line-through; color: var(--neutral-400); margin-left: 0.5rem; font-size: 0.85rem">{{
-                product.price }} ج.م</span>
-              <span class="product-price" style="font-weight: bold; font-size: 1.1rem; color: var(--green-600)">{{
-                product.finalPrice }} ج.م</span>
-              } @else {
-              <span class="product-price">{{ product.price }} ج.م</span>
+              @if (product.oldPrice) {
+              <span class="product-old-price">{{ product.oldPrice }}</span>
               }
+              <span class="product-price">{{ product.price }} ج.م</span>
             </div>
           </div>
           <div class="product-footer">

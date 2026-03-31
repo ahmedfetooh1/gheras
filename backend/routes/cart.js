@@ -17,7 +17,7 @@ router.use(authentication);
 router.get("/", getCart);
 router.post("/", addToCart);
 router.put("/:itemId", updateCartItem);
-router.delete("/:itemId", removeCartItem);
+router.delete("/:productId", removeCartItem);
 router.delete("/", clearCart);
 
 module.exports = router;

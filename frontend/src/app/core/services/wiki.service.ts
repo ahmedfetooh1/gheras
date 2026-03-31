@@ -61,5 +61,11 @@ export class WikiService {
       );
   }
 
+  getImageUrl(path: string): string {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    return `http://localhost:3000/${path}`;
+  }
+
 
 }

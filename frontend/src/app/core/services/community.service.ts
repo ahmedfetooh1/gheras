@@ -19,11 +19,11 @@ export class CommunityService {
   }
 
   getComments(postId: string): Observable<Comment[]> {
-    return this.http.get<Comment[]>(`${this.baseUrl}/comments?post=${postId}`);
+    return this.http.get<Comment[]>(`${this.baseUrl}/comments/post/${postId}`);
   }
 
-  addComment(comment: Partial<Comment>): Observable<Comment> {
-    return this.http.post<Comment>(`${this.baseUrl}/comments`, comment);
+  addComment(postId: string, text: string, authorId: string): Observable<Comment> {
+    return this.http.post<Comment>(`${this.baseUrl}/comments`, { text, author: authorId, post: postId });
   }
 
   getBlogs(): Observable<Blog[]> {

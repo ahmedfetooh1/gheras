@@ -8,6 +8,8 @@ import { VerifyEmailComponent } from './features/auth/verify-email/verify-email'
 import { ForgotPassword } from './features/auth/forgot-password/forgot-password';
 import { Wiki } from './features/wiki/wiki';
 import { Shop } from './features/shop/shop';
+import { Checkout } from './features/shop/checkout/checkout';
+import { PaymentComponent } from './features/shop/payment/payment';
 import { Forum } from './features/community/forum/forum';
 import { Blog } from './features/community/blog/blog';
 import { BlogDetailComponent } from './core/components/blog-detail/blog-detail';
@@ -26,6 +28,8 @@ export const routes: Routes = [
   { path: 'wiki', component: Wiki },
   { path: 'shop', component: Shop },
   { path: 'shop/product/:id', component: ProductDetails },
+  { path: 'shop/checkout', component: Checkout, canActivate: [authGuard] },
+  { path: 'shop/checkout/payment/:orderId', component: PaymentComponent, canActivate: [authGuard] },
   { path: 'forum', component: Forum },
 
   // مسارات البلوجات

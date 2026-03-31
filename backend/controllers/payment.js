@@ -98,11 +98,30 @@ async function createPayment(req, res) {
     const paymobOrderId = await createOrder(authToken, amount, order._id);
     const paymentKey = await createPaymentKey(authToken, paymobOrderId, amount, integrationId);
 
-    // حدّث الـ Payment الموجود بدل ما تنشئ واحد جديد
-    await Payment.findByIdAndUpdate(order.payment, {
-      paymobOrderId,
-      method,
-    });
+    // لو مفيش payment موجود، أنشئ واحد جديد
+    let paymentId = order.payment;
+    if (!paymentId) {
+      const newPayment = new Payment({
+        user: order.user,
+        method,
+        amountCents: amount * 100,
+        currency: 'EGP',
+        paymobOrderId,
+        status: 'pending'
+      });
+      await newPayment.save();
+      paymentId = newPayment._id;
+      
+      // ربط الـ Payment بالـ Order
+      order.payment = paymentId;
+      await order.save();
+    } else {
+      // حدّث الـ Payment الموجود
+      await Payment.findByIdAndUpdate(order.payment, {
+        paymobOrderId,
+        method,
+      });
+    }
 
     const iframeUrl = `https://accept.paymob.com/api/acceptance/iframes/${iframeId}?payment_token=${paymentKey}`;
 
@@ -394,16 +413,9 @@ async function paymobReturn(req, res) {
     }
 
     if (!payment) {
-      return res.status(404).json({
-        success: false,
-        error:
-          'Payment record not found. Point Paymob redirect URL to this route on your API host, or rely on webhook with matching obj.order.id.',
-        hint: {
-          order_id: paymobOrderId || null,
-          merchant_order_id: merchantOrderId || null,
-          id: paymobTransactionId || null,
-        },
-      });
+      // If payment not found, still redirect to frontend with error
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
+      return res.redirect(`${frontendUrl}/shop/checkout/payment?success=false&error=Payment not found`);
     }
 
     const updated = await applyPaymentResult(payment, {
@@ -415,17 +427,16 @@ async function paymobReturn(req, res) {
 
     const syncResult = await syncOrderAfterPaymentUpdate(updated, isPaid);
 
-    return res.status(200).json({
-      success: true,
-      paymentUpdated: !!updated,
-      paymentId: updated?._id || null,
-      orderUpdated: syncResult.orderUpdated,
-      orderId: syncResult.orderId,
-      orderStatus: syncResult.orderStatus,
-    });
+    // Redirect to frontend with payment result
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
+    const redirectUrl = `${frontendUrl}/shop/checkout/payment/${syncResult.orderId}?success=${isPaid}&orderStatus=${syncResult.orderStatus}`;
+    
+    return res.redirect(redirectUrl);
   } catch (error) {
     console.error('Error in Paymob return:', error.message);
-    return res.status(500).json({ success: false, error: error.message });
+    // On error, redirect to frontend with failure
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
+    return res.redirect(`${frontendUrl}/shop/checkout/payment?success=false&error=${encodeURIComponent(error.message)}`);
   }
 }
 

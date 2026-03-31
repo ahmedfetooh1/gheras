@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StoreService } from '../../services/store.service';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 @Component({
     selector: 'app-cart',
@@ -12,9 +12,15 @@ import { RouterModule } from '@angular/router';
 })
 export class CartComponent {
     public storeService = inject(StoreService);
+    private router = inject(Router);
 
     toggleCart() {
         this.storeService.toggleCart();
+    }
+
+    proceedToCheckout() {
+        this.storeService.toggleCart();
+        this.router.navigate(['/shop/checkout']);
     }
 
     updateQty(item: any, delta: number) {

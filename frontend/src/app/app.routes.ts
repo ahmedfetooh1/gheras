@@ -10,6 +10,7 @@ import { Wiki } from './features/wiki/wiki';
 import { Shop } from './features/shop/shop';
 import { Forum } from './features/community/forum/forum';
 import { Blog } from './features/community/blog/blog';
+import { BlogDetailComponent } from './core/components/blog-detail/blog-detail';
 import { ProductDetails } from './features/shop/product-details/product-details';
 import { UserDashboard } from './features/dashboard/user-dashboard/user-dashboard';
 import { AdminDashboard } from './features/dashboard/admin-dashboard/admin-dashboard';

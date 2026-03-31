@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const util = require('util')
 
+async function authentication(req, res, next) {
     // Support both standard "Authorization: Bearer <token>" and legacy "token: <token>" header
     let token = req.headers['authorization']?.split(' ')[1] || req.headers['token'];
 

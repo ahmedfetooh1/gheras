@@ -155,7 +155,7 @@
 
 <!-- Plant Detail Sheet (inline panel) -->
 @if (showDetailsModal()) {
-<div id="plant-detail" style="position:fixed;inset:0;z-index:1500;">
+<div id="plant-detail" style="position:fixed;inset:0;z-index:99999 !important;">
   <div style="position:absolute;inset:0;background:rgba(0,0,0,.4)" (click)="closePlantDetail()"></div>
   <div
     style="position:absolute;left:0;top:0;bottom:0;width:480px;background:white;overflow-y:auto;box-shadow:var(--shadow-xl)">

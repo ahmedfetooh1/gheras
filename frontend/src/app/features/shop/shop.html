@@ -1,0 +1,97 @@
+<div class="page-wrapper">
+  <div class="shop-hero">
+    <h1>المتجر الزراعي</h1>
+    <p>كل اللي نباتاتك محتاجاه — توصيل لحد بيتك</p>
+  </div>
+
+  <div class="shop-layout">
+    <!-- Sidebar -->
+    <div class="shop-sidebar">
+      <div class="shop-sidebar-card">
+        <div class="shop-sidebar-title">الأقسام</div>
+        <div class="cat-item" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">
+          الكل
+        </div>
+        @for (cat of categories(); track cat._id) {
+        <div class="cat-item" [class.active]="activeFilter() === cat._id" (click)="setFilter(cat._id)">
+          {{ cat.name }}
+        </div>
+        }
+      </div>
+      <div class="shop-sidebar-card">
+        <div class="shop-sidebar-title">السعر</div>
+        <input type="range" min="0" max="10000" [value]="maxPrice()" (input)="maxPrice.set(+$any($event.target).value)" style="width:100%">
+        <div style="font-size:.82rem;color:var(--neutral-500);margin-top:.4rem">
+          @if (maxPrice() < 10000) {
+          <span>حتى <span id="price-val">{{ maxPrice() }}</span> ج.م</span>
+          } @else {
+          <span>الكل</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div>
+      <div class="notif-bar">
+        <strong>توصية ذكية:</strong> نبتتك "الطماطم" محتاجة سماد NPK — متوفر في المتجر بـ 65 ج.م
+        <button (click)="addToCart(products()[0])"
+          style="background:none;border:none;color:var(--green-100);margin-right:auto;font-size:.82rem;cursor:pointer;font-weight:700">اشتري
+          دلوقتي ←</button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div style="font-size:.9rem;color:var(--neutral-500)">عرض <strong>{{ filteredProducts().length }}</strong> من
+          <strong>{{ products().length }}</strong> منتج
+        </div>
+        <select class="input-field" style="width:auto;padding:.4rem .8rem;font-size:.85rem" (change)="onSortChange($event)">
+          <option value="latest">الأحدث أولاً</option>
+          <option value="price-asc">السعر: من الأقل للأعلى</option>
+          <option value="price-desc">السعر: من الأعلى للأقل</option>
+          <option value="top-rated">الأعلى تقييماً</option>
+        </select>
+      </div>
+
+      <div class="grid-auto">
+        @for (product of filteredProducts(); track product.id) {
+        <div class="product-card">
+          <div class="product-img" [style.background]="product.color" [routerLink]="['/shop/product', product.id]"
+            style="cursor: pointer;">
+            @if (product.isBestSeller) {
+            <div class="product-badge"><span class="badge badge-amber">الأكثر مبيعاً</span></div>
+            }
+            @if (product.image) {
+              <img [src]="getImageUrl(product.image)" style="width:100%;height:100%;object-fit:cover;">
+            } @else {
+              <div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem">{{
+                product.emoji }}</div>
+            }
+          </div>
+          <div class="product-body" [routerLink]="['/shop/product', product.id]" style="cursor: pointer;">
+            <div class="product-name">{{ product.name }}</div>
+            <div style="margin-bottom: 0.4rem;"><span class="badge badge-green">{{ product.catName }}</span></div>
+            <div class="product-desc">{{ product.desc }}</div>
+            <div class="stars">{{ getStars(product.rating) }} <span style="color:var(--neutral-400)">({{ product.reviews
+                }})</span></div>
+            <div style="margin-top:.5rem">
+              @if (product.oldPrice) {
+              <span class="product-old-price">{{ product.oldPrice }}</span>
+              }
+              <span class="product-price">{{ product.price }} ج.م</span>
+            </div>
+          </div>
+          <div class="product-footer">
+            <button class="btn btn-primary btn-sm" style="flex:1"
+              (click)="$event.stopPropagation(); addToCart(product)">أضف للعربية</button>
+            <button class="btn btn-secondary btn-sm">❤</button>
+          </div>
+        </div>
+        } @empty {
+        <div style="text-align:center;padding:4rem;color:var(--neutral-500);grid-column: 1 / -1">
+          🌵 لا توجد منتجات تطابق هذا البحث حالياً.
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

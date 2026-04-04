@@ -1,0 +1,112 @@
+@if (!isLoading() && product()) {
+<div class="page-wrapper">
+    <div class="breadcrumb gap-2">
+        <a routerLink="/shop">المتجر</a> > <span>{{ product().name }}</span>
+    </div>
+
+    <div class="product-header">
+        <div class="product-main-view" [style.background]="!product().imageUrl ? product().color : 'transparent'">
+            @if (product().isBestSeller) {
+            <div class="product-badge"><span class="badge badge-amber">الأكثر مبيعاً</span>
+            </div>
+            }
+            @if (product().imageUrl) {
+            <img [src]="getImageUrl(product().imageUrl)" [alt]="product().name"
+                style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-xl);">
+            } @else {
+            <div class="product-emoji">{{ product().emoji }}</div>
+            }
+        </div>
+
+        <div class="product-info-sec">
+            <h1 class="p-title">{{ product().name }}</h1>
+            <div class="p-meta">
+                <div class="stars">{{ getStars(product().rating) }} <span class="muted">({{ product().reviews }}
+                        تقييم)</span></div>
+                <span class="p-cat badge badge-green">{{ product().cat }}</span>
+            </div>
+
+            <div class="p-price-row">
+                @if (product().oldPrice) {
+                <span class="old-price">{{ product().oldPrice }} ج.م</span>
+                }
+                <span class="price">{{ product().price }} ج.م</span>
+            </div>
+
+            <p class="p-desc">{{ product().desc }}</p>
+
+            <div class="add-to-cart-sec">
+                <div class="qty-selector">
+                    <button (click)="qty = qty > 1 ? qty - 1 : 1">−</button>
+                    <span>{{ qty }}</span>
+                    <button (click)="qty = qty + 1">+</button>
+                </div>
+                <button class="btn btn-primary" style="flex:1" (click)="addToCart()">إضافة للعربه 🛒</button>
+            </div>
+
+            <div class="p-nav">
+                @if (prevProductId) {
+                <a [routerLink]="['/shop/product', prevProductId]" class="btn btn-secondary btn-sm">المنتج السابق</a>
+                } @else {
+                <span class="btn btn-secondary btn-sm disabled">المنتج السابق</span>
+                }
+
+                @if (nextProductId) {
+                <a [routerLink]="['/shop/product', nextProductId]" class="btn btn-secondary btn-sm">المنتج التالي</a>
+                } @else {
+                <span class="btn btn-secondary btn-sm disabled">المنتج التالي</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="related-products">
+        <h2 style="margin-bottom: 1.5rem">منتجات مشابهة</h2>
+        <div class="grid-auto">
+            @for (p of relatedProducts; track p.id) {
+            <div class="product-card">
+                <div class="product-img" [style.background]="!p.imageUrl ? p.color : 'transparent'" [routerLink]="['/shop/product', p.id]"
+                    style="cursor: pointer;">
+                    @if (p.isBestSeller) {
+                    <div class="product-badge"><span class="badge badge-amber">الأكثر مبيعاً</span></div>
+                    }
+                    @if (p.imageUrl) {
+                    <img [src]="getImageUrl(p.imageUrl)" [alt]="p.name"
+                        style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                    } @else {
+                    <div class="emoji-small">{{ p.emoji }}</div>
+                    }
+                </div>
+                <div class="product-body" [routerLink]="['/shop/product', p.id]" style="cursor: pointer;">
+                    <div class="product-name">{{ p.name }}</div>
+                    <div class="product-desc">{{ p.desc }}</div>
+                    <div class="stars">{{ getStars(p.rating) }} <span class="muted">({{ p.reviews }})</span></div>
+                    <div style="margin-top:.5rem">
+                        @if (p.oldPrice) {
+                        <span class="product-old-price">{{ p.oldPrice }}</span>
+                        }
+                        <span class="product-price">{{ p.price }} ج.م</span>
+                    </div>
+                </div>
+                <div class="product-footer">
+                    <button class="btn btn-primary btn-sm" style="flex:1"
+                        (click)="product.set(p); qty = 1; addToCart()">أضف للعربية</button>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+}
+
+@if (isLoading()) {
+<div style="text-align:center;padding:4rem;color:var(--neutral-500)">
+    جاري التحميل...
+</div>
+}
+
+@if (!isLoading() && !product()) {
+<div style="text-align:center;padding:4rem;color:var(--neutral-500)">
+    لم يتم العثور على المنتج.
+</div>
+}

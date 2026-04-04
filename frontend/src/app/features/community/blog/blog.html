@@ -1,0 +1,33 @@
+<div class="blog-container">
+  <div class="header-section">
+    <h1 class="page-title">أحدث المقالات</h1>
+    <p class="page-subtitle">استكشف عالم الزراعة والنباتات مع نصائحنا الأسبوعية</p>
+  </div>
+  
+  <div class="grid-3" *ngIf="blogs && blogs.length > 0">
+    <a class="card" *ngFor="let blog of blogs" [routerLink]="['/blog', blog.slug]" style="text-decoration: none; color: inherit;">
+      <div class="card-image-wrapper">
+        <img [src]="blog.image" [alt]="blog.title" class="card-image">
+        <span class="badge">{{ blog.category }}</span>
+      </div>
+      <div class="card-body">
+        <h3 class="card-title">{{ blog.title }}</h3>
+        <p class="card-excerpt">{{ blog.content | slice:0:100 }}...</p>
+        <div class="card-footer">
+          <div class="author-info" *ngIf="blog.author">
+            <div class="author-avatar">
+              <span style="font-size: 0.8rem; font-weight: bold;">{{ blog.author.email.charAt(0).toUpperCase() }}</span>
+            </div>
+            <span>{{ blog.author.email.split('@')[0] }}</span>
+          </div>
+          <span class="date">{{ blog.createdAt | date:'mediumDate' }}</span>
+        </div>
+      </div>
+    </a>
+  </div>
+  
+  <div *ngIf="!blogs || blogs.length === 0" class="loading-state">
+    <div class="spinner"></div>
+    <p>جاري تحميل المقالات...</p>
+  </div>
+</div>

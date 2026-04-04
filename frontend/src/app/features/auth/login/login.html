@@ -1,0 +1,97 @@
+<div class="auth-page">
+  <div class="auth-visual">
+    <div style="font-size:4rem;margin-bottom:1.5rem">🌿</div>
+    <div
+      style="font-family:var(--font-display);font-size:1.8rem;font-weight:700;margin-bottom:.75rem;text-align:center">
+      أهلاً بك مجدداً</div>
+    <div style="opacity:.8;text-align:center;max-width:300px;line-height:1.7">نباتاتك تنتظرك! سجّل دخولك واطّلع على
+      حالتها اليوم</div>
+    <div style="margin-top:2.5rem;display:flex;flex-direction:column;gap:.75rem;width:100%;max-width:280px">
+      <div
+        style="background:rgba(255,255,255,.1);border-radius:var(--radius-md);padding:.85rem 1rem;display:flex;align-items:center;gap:.75rem;font-size:.9rem">
+        <span>💧</span> نبتة الطماطم تحتاج ري اليوم
+      </div>
+      <div
+        style="background:rgba(255,255,255,.1);border-radius:var(--radius-md);padding:.85rem 1rem;display:flex;align-items:center;gap:.75rem;font-size:.9rem">
+        <span>☀️</span> تحذير: الجو حار على الورد
+      </div>
+      <div
+        style="background:rgba(255,255,255,.1);border-radius:var(--radius-md);padding:.85rem 1rem;display:flex;align-items:center;gap:.75rem;font-size:.9rem">
+        <span>💬</span> رد جديد على بوستك في المنتدى
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-form-side mt-5">
+    <div class="auth-box">
+      <div class="auth-logo">
+        <img src="logo.png" alt="غراس" height="42">
+        غِراس
+      </div>
+      <div class="auth-title">تسجيل الدخول</div>
+      <div class="auth-sub">أدخل بياناتك للدخول على حسابك</div>
+
+      <div *ngIf="status === 'error'" class="alert alert-danger px-3 py-2 mb-3 small d-flex align-items-center">
+        <span class="ms-2">⚠️</span> {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="input-group">
+          <label>البريد الإلكتروني</label>
+          <input type="email" class="input-field" [(ngModel)]="credentials.email" name="email"
+            placeholder="example@email.com" [disabled]="status === 'loading'">
+        </div>
+        <div class="input-group">
+          <label>كلمة المرور</label>
+          <input type="password" class="input-field" [(ngModel)]="credentials.password" name="password"
+            placeholder="••••••••" [disabled]="status === 'loading'">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+          <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer">
+            <input type="checkbox"> تذكرني
+          </label>
+          <a routerLink="/forgot-password" style="font-size:.85rem;color:var(--green-600);font-weight:600">نسيت كلمة
+            المرور؟</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" [disabled]="status === 'loading'">
+          <span *ngIf="status === 'loading'" class="spinner-border spinner-border-sm me-2"></span>
+          تسجيل الدخول
+        </button>
+      </form>
+
+      <div class="divider">أو</div>
+
+      <a href="http://localhost:3000/api/users/auth/google" class="btn-google" id="google-login-btn">
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#EA4335"
+            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+          <path fill="#4285F4"
+            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+          <path fill="#FBBC05"
+            d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.01 24.01 0 0 0 0 21.56l7.98-6.19z" />
+          <path fill="#34A853"
+            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+        </svg>
+        تسجيل الدخول بحساب Google
+      </a>
+
+      <div style="text-align:center;font-size:.9rem;color:var(--neutral-500)">
+        ليس لديك حساب؟ <a routerLink="/register" style="color:var(--green-600);font-weight:700">سجّل مجاناً</a>
+      </div>
+
+      <!-- <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--neutral-200)">
+        <div style="font-size:.75rem;color:var(--neutral-400);margin-bottom:.6rem;text-align:center;font-weight:700">جرب
+          كـ:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+          <a routerLink="/dashboard" class="btn btn-secondary btn-sm"
+            style="justify-content:center;font-size:.78rem">مستخدم عادي</a>
+          <a routerLink="/dashboard/premium" class="btn btn-sm"
+            style="background:var(--amber-100);color:var(--amber-800);border:1px solid var(--amber-300);border-radius:99px;font-size:.78rem;display:flex;align-items:center;justify-content:center">بريميوم</a>
+          <a routerLink="/dashboard/admin" class="btn btn-sm"
+            style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:99px;font-size:.78rem;display:flex;align-items:center;justify-content:center">أدمن</a>
+        </div>
+      </div> -->
+    </div>
+  </div>
+</div>

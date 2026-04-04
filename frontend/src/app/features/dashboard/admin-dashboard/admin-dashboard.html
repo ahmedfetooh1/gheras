@@ -1,0 +1,1307 @@
+<div class="sidebar-layout page-wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-logo">لوحة الإدارة</div>
+
+    <div class="sidebar-section-title">الرئيسية</div>
+    <a (click)="setView('stats')" [class.active]="activeView === 'stats'" class="sidebar-link" style="cursor: pointer;">
+      <span class="icon">📊</span> الإحصائيات
+    </a>
+
+    <!-- إدارة النباتات -->
+    <div class="sidebar-section-title">إدارة النباتات(الويكي)</div>
+
+    <div class="sidebar-group">
+      <a (click)="toggleSection('plants')" class="sidebar-link has-chevron" style="cursor: pointer;">
+        <span><span class="icon">🌿</span> نباتات</span>
+        <span class="chevron-icon" [class.rotated]="expandedSections['plants']">▶</span>
+      </a>
+      <div class="sidebar-submenu" *ngIf="expandedSections['plants']">
+        <a (click)="setView('add-plant')" [class.active]="activeView === 'add-plant'" class="sidebar-sub-link"
+          style="cursor: pointer;">إضافة</a>
+        <a (click)="setView('edit-plant')" [class.active]="activeView === 'edit-plant'" class="sidebar-sub-link"
+          style="cursor: pointer;">تعديل</a>
+        <a (click)="setView('delete-plant')" [class.active]="activeView === 'delete-plant'" class="sidebar-sub-link"
+          style="cursor: pointer;">مسح</a>
+      </div>
+    </div>
+
+    <div class="sidebar-group">
+      <a (click)="toggleSection('diseases')" class="sidebar-link has-chevron" style="cursor: pointer;">
+        <span><span class="icon">🦠</span> أمراض</span>
+        <span class="chevron-icon" [class.rotated]="expandedSections['diseases']">▶</span>
+      </a>
+      <div class="sidebar-submenu" *ngIf="expandedSections['diseases']">
+        <a (click)="setView('add-disease')" [class.active]="activeView === 'add-disease'" class="sidebar-sub-link"
+          style="cursor: pointer;">إضافة</a>
+        <a (click)="setView('edit-disease')" [class.active]="activeView === 'edit-disease'" class="sidebar-sub-link"
+          style="cursor: pointer;">تعديل</a>
+        <a (click)="setView('delete-disease')" [class.active]="activeView === 'delete-disease'" class="sidebar-sub-link"
+          style="cursor: pointer;">مسح</a>
+      </div>
+    </div>
+
+    <div class="sidebar-group">
+      <a (click)="toggleSection('fertilizers')" class="sidebar-link has-chevron" style="cursor: pointer;">
+        <span><span class="icon">🧪</span> سماد</span>
+        <span class="chevron-icon" [class.rotated]="expandedSections['fertilizers']">▶</span>
+      </a>
+      <div class="sidebar-submenu" *ngIf="expandedSections['fertilizers']">
+        <a (click)="setView('add-fertilizer')" [class.active]="activeView === 'add-fertilizer'" class="sidebar-sub-link"
+          style="cursor: pointer;">إضافة</a>
+        <a (click)="setView('edit-fertilizer')" [class.active]="activeView === 'edit-fertilizer'"
+          class="sidebar-sub-link" style="cursor: pointer;">تعديل</a>
+        <a (click)="setView('delete-fertilizer')" [class.active]="activeView === 'delete-fertilizer'"
+          class="sidebar-sub-link" style="cursor: pointer;">مسح</a>
+      </div>
+    </div>
+
+    <!-- إدارة المنتجات -->
+    <div class="sidebar-section-title">إدارة المنتجات</div>
+    <a (click)="setView('add-category')" [class.active]="activeView === 'add-category'" class="sidebar-link"
+      style="cursor: pointer;">
+      <span class="icon">📁</span> إضافة تصنيف منتج
+    </a>
+    <a (click)="setView('add-product')" [class.active]="activeView === 'add-product'" class="sidebar-link"
+      style="cursor: pointer;">
+      <span class="icon">🛍️</span> إضافة منتج
+    </a>
+    <a (click)="setView('edit-product')" [class.active]="activeView === 'edit-product'" class="sidebar-link"
+      style="cursor: pointer;">
+      <span class="icon">✏️</span> تعديل منتج
+    </a>
+    <a (click)="setView('delete-product')" [class.active]="activeView === 'delete-product'" class="sidebar-link"
+      style="cursor: pointer;">
+      <span class="icon">🗑️</span> حذف منتج
+    </a>
+
+    <!-- إدارة المحتوى -->
+    <div class="sidebar-section-title">إدارة المحتوى</div>
+    <a (click)="setView('forum-moderation')" [class.active]="activeView === 'forum-moderation'" class="sidebar-link" style="cursor: pointer;">
+      <span class="icon">💬</span> إدارة المنتدى
+    </a>
+    <a (click)="setView('blog')" [class.active]="activeView === 'blog'" class="sidebar-link" style="cursor: pointer;">
+      <span class="icon">📝</span> المدونة</a>
+  </aside>
+
+  <main class="main-content">
+    <ng-container *ngIf="activeView === 'stats'">
+      <div style="margin-bottom:1.5rem">
+        <div class="page-title">لوحة الإدارة</div>
+        <div class="page-subtitle">{{ currentDate | date:'fullDate':'':'ar-EG' }}</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:2rem">
+        <div class="stat-card" (click)="setView('users')" style="cursor: pointer; transition: transform 0.2s;">
+          <div class="stat-icon" style="background:#f0fdf4">👥</div>
+          <div class="stat-value">{{ allUsers.length || 0 }}</div>
+          <div class="stat-label">إجمالي المستخدمين</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fffbeb">⭐</div>
+          <div class="stat-value">{{ premiumCount }}</div>
+          <div class="stat-label">مشتركو البريميوم</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#f0fdf4">🌱</div>
+          <div class="stat-value">{{ adminStats?.catalog?.plants || 0 }}</div>
+          <div class="stat-label">نباتات مضافة</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fef9c3">✅</div>
+          <div class="stat-value">{{ adminStats?.sales?.deliveredOrders || 0 }}</div>
+          <div class="stat-label">طلبات مكتملة</div>
+        </div>
+        <div class="stat-card" (click)="setView('forum-moderation')" style="cursor: pointer; transition: transform 0.2s; border: 2px solid var(--amber-200);">
+          <div class="stat-icon" style="background:#fff7ed">💬</div>
+          <div class="stat-value" style="color:var(--amber-600)">{{ pendingPosts.length || 0 }}</div>
+          <div class="stat-label">بوستات للنشر</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#eff6ff">💰</div>
+          <div class="stat-value">{{ adminStats?.financials?.totalRevenueEGP || 0 }}</div>
+          <div class="stat-label">إجمالي المبيعات (ج.م)</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:2rem">
+        <!-- Growth chart -->
+        <div class="card">
+          <div class="card-body">
+            <div style="font-weight:700;margin-bottom:1rem;color:var(--green-900)">نمو المستخدمين (آخر 7 أيام)</div>
+            <div class="mini-chart">
+              <div class="bar" style="height:40%"></div>
+              <div class="bar" style="height:55%"></div>
+              <div class="bar" style="height:45%"></div>
+              <div class="bar" style="height:70%"></div>
+              <div class="bar" style="height:60%"></div>
+              <div class="bar" style="height:85%"></div>
+              <div class="bar" style="height:100%;background:var(--green-600);opacity:1"></div>
+            </div>
+            <div
+              style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--neutral-400);margin-top:.3rem">
+              <span>السبت</span><span>الأحد</span><span>الاثنين</span><span>الثلاثاء</span><span>الأربعاء</span><span>الخميس</span><span>الجمعة</span>
+            </div>
+            <div style="margin-top:1rem;display:flex;gap:1rem">
+              <div>
+                <div style="font-size:1.3rem;font-weight:800;color:var(--green-700)">{{ adminStats?.sales?.soldProducts
+                  || 0 }}</div>
+                <div style="font-size:.78rem;color:var(--neutral-500)">إجمالي المنتجات المباعة</div>
+              </div>
+              <div>
+                <div style="font-size:1.3rem;font-weight:800;color:var(--amber-500)">{{
+                  adminStats?.financials?.netProfit || 0 }}</div>
+                <div style="font-size:.78rem;color:var(--neutral-500)">صافي الأرباح (Net Profit)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Catalog details -->
+        <div class="card">
+          <div class="card-body">
+            <div style="font-weight:700;margin-bottom:1rem;color:var(--green-900)">تفاصيل الموسوعة والمتجر</div>
+            <div style="display:flex;flex-direction:column;gap:.6rem">
+              <div style="display:flex;align-items:center;gap:.75rem">
+                <span class="fs-4">🛍️</span>
+                <div style="flex:1">
+                  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem">
+                    <span>عدد المنتجات بالمتجر</span><span style="font-weight:700">{{ adminStats?.catalog?.products || 0
+                      }}</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:.75rem">
+                <span class="fs-4">🦠</span>
+                <div style="flex:1">
+                  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem">
+                    <span>عدد الأمراض المسجلة</span><span style="font-weight:700">{{ adminStats?.catalog?.diseases || 0
+                      }}</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:.75rem">
+                <span class="fs-4">💊</span>
+                <div style="flex:1">
+                  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem">
+                    <span>عدد الأسمدة المسجلة</span><span style="font-weight:700">{{ adminStats?.catalog?.fertilizers ||
+                      0 }}</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:.75rem">
+                <span class="fs-4">📁</span>
+                <div style="flex:1">
+                  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem">
+                    <span>التصنيفات المتاحة</span><span style="font-weight:700">{{ adminStats?.catalog?.categories || 0
+                      }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forum Moderation Summary -->
+      <div class="page-title" style="font-size:1.05rem;margin-bottom:1rem">بوستات المنتدى — تنتظر الموافقة ({{ pendingPosts.length }})</div>
+      <div class="table-wrap" style="margin-bottom:2rem">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>المستخدم</th>
+              <th>العنوان</th>
+              <th>التاريخ</th>
+              <th>الإجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let post of pendingPosts | slice:0:5">
+              <td>{{ getAuthorName(post.author) }}</td>
+              <td>{{ post.title }}</td>
+              <td>{{ post.createdAt | date:'short':'':'ar-EG' }}</td>
+              <td>
+                <div style="display:flex;gap:.4rem">
+                  <button class="btn btn-primary btn-sm" style="background:var(--green-500)" (click)="approveForumPost(post._id || post.id)">قبول</button>
+                  <button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5" (click)="rejectForumPost(post._id || post.id)">رفض</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="pendingPosts.length === 0">
+              <td colspan="4" style="text-align:center;padding:2rem;color:var(--neutral-400)">لا توجد بوستات تنتظر الموافقة</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="pendingPosts.length > 5" style="text-align:center;margin-top:1rem">
+          <button class="btn btn-ghost btn-sm" (click)="setView('forum-moderation')">عرض الكل</button>
+        </div>
+      </div>
+
+      <!-- Orders -->
+      <div class="page-title" style="font-size:1.05rem;margin-bottom:1rem">الطلبات الجديدة (4)</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>العميل</th>
+              <th>المنتجات</th>
+              <th>الإجمالي</th>
+              <th>طريقة الدفع</th>
+              <th>الحالة</th>
+              <th>تعديل</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:700;color:var(--green-700)">#1042</td>
+              <td>منى عبد الله</td>
+              <td>سماد NPK × 2 ، تربة × 1</td>
+              <td style="font-weight:700">170 ج.م</td>
+              <td><span class="badge badge-green">Paymob</span></td>
+              <td><span class="badge badge-amber">معلق</span></td>
+              <td><select class="input-field" style="padding:.3rem .5rem;width:120px;font-size:.8rem">
+                  <option>معلق</option>
+                  <option>مؤكد</option>
+                  <option>تم الشحن</option>
+                  <option>مُستلم</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;color:var(--green-700)">#1043</td>
+              <td>أحمد مصطفى</td>
+              <td>بذور طماطم × 3</td>
+              <td style="font-weight:700">75 ج.م</td>
+              <td><span class="badge badge-earth">كاش</span></td>
+              <td><span class="badge badge-amber">معلق</span></td>
+              <td><select class="input-field" style="padding:.3rem .5rem;width:120px;font-size:.8rem">
+                  <option>معلق</option>
+                  <option>مؤكد</option>
+                  <option>تم الشحن</option>
+                  <option>مُستلم</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;color:var(--green-700)">#1041</td>
+              <td>رانيا حسن</td>
+              <td>بخاخ × 1 ، مبيد × 1</td>
+              <td style="font-weight:700">100 ج.م</td>
+              <td><span class="badge badge-green">Paymob</span></td>
+              <td><span class="badge badge-green">مؤكد</span></td>
+              <td><select class="input-field" style="padding:.3rem .5rem;width:120px;font-size:.8rem">
+                  <option>مؤكد</option>
+                  <option>تم الشحن</option>
+                  <option>مُستلم</option>
+                </select></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <!-- Forms -->
+    <div *ngIf="activeView === 'add-plant'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إضافة نبات جديد</h2>
+        <form (ngSubmit)="submitPlant()">
+
+          <!-- الأسماء -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الاسم الشائع *</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.commonName" name="commonName" required
+              placeholder="مثال: الريحان">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الاسم العلمي *</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.scientificName" name="scientificName"
+              required placeholder="مثال: Ocimum basilicum">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">العائلة النباتية</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.family" name="family"
+              placeholder="مثال: الشفويات">
+          </div>
+
+          <!-- الوصف -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الوصف</label>
+            <textarea class="form-control" [(ngModel)]="plantForm.description" name="description" rows="3"
+              placeholder="وصف مختصر للنبات..."></textarea>
+          </div>
+
+          <!-- موسم النمو -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">موسم النمو</label>
+            <select class="form-control" [(ngModel)]="plantForm.growingSeason" name="growingSeason">
+              <option value="">-- اختر الموسم --</option>
+              <option value="الربيع">الربيع</option>
+              <option value="الصيف">الصيف</option>
+              <option value="الخريف">الخريف</option>
+              <option value="الشتاء">الشتاء</option>
+              <option value="طوال العام">طوال العام</option>
+            </select>
+          </div>
+
+          <!-- درجة الحرارة -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">درجة الحرارة الدنيا (°م)</label>
+              <input type="number" class="form-control" [(ngModel)]="plantForm.temperatureMin" name="temperatureMin"
+                placeholder="مثال: 15">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">درجة الحرارة القصوى (°م)</label>
+              <input type="number" class="form-control" [(ngModel)]="plantForm.temperatureMax" name="temperatureMax"
+                placeholder="مثال: 35">
+            </div>
+          </div>
+
+          <!-- ساعات الشمس -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">ساعات الشمس في اليوم</label>
+            <input type="number" class="form-control" [(ngModel)]="plantForm.sunlightHours" name="sunlightHours"
+              placeholder="مثال: 8">
+          </div>
+
+          <!-- درجة حموضة التربة -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">حموضة التربة pH (أدنى)</label>
+              <input type="number" step="0.1" class="form-control" [(ngModel)]="plantForm.soilPHMin" name="soilPHMin"
+                placeholder="مثال: 5.5">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">حموضة التربة pH (أعلى)</label>
+              <input type="number" step="0.1" class="form-control" [(ngModel)]="plantForm.soilPHMax" name="soilPHMax"
+                placeholder="مثال: 7.0">
+            </div>
+          </div>
+
+          <!-- احتياجات الري -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">مستوى الري</label>
+              <select class="form-control" [(ngModel)]="plantForm.waterLevel" name="waterLevel">
+                <option value="">-- اختر مستوى الري --</option>
+                <option value="منخفض">منخفض</option>
+                <option value="متوسط">متوسط</option>
+                <option value="عالي">عالي</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">تكرار الري (مرة/أسبوع)</label>
+              <input type="number" class="form-control" [(ngModel)]="plantForm.waterFrequency" name="waterFrequency"
+                placeholder="مثال: 3">
+            </div>
+          </div>
+
+          <!-- القيمة الغذائية -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">القيمة الغذائية</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.nutritionalValue" name="nutritionalValue"
+              placeholder="مثال: غني بالفيتامين C">
+          </div>
+
+          <!-- ربط الأمراض الموجودة -->
+          <div class="mb-3" *ngIf="allDiseases.length > 0">
+            <label class="form-label fw-bold text-secondary">الأمراض المرتبطة (اختر من الموجود)</label>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem">
+              <span *ngFor="let d of allDiseases" (click)="toggleDisease(d._id)"
+                [style.background]="isSelectedDisease(d._id) ? 'var(--green-600)' : '#e5e7eb'"
+                [style.color]="isSelectedDisease(d._id) ? '#fff' : '#374151'"
+                style="padding:.3rem .8rem;border-radius:999px;cursor:pointer;font-size:.85rem;transition:all .2s">
+                {{ d.name }}
+              </span>
+            </div>
+          </div>
+
+          <!-- ربط الأسمدة الموجودة -->
+          <div class="mb-4" *ngIf="allFertilizers.length > 0">
+            <label class="form-label fw-bold text-secondary">الأسمدة المرتبطة (اختر من الموجود)</label>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem">
+              <span *ngFor="let f of allFertilizers" (click)="toggleFertilizer(f._id)"
+                [style.background]="isSelectedFertilizer(f._id) ? 'var(--green-600)' : '#e5e7eb'"
+                [style.color]="isSelectedFertilizer(f._id) ? '#fff' : '#374151'"
+                style="padding:.3rem .8rem;border-radius:999px;cursor:pointer;font-size:.85rem;transition:all .2s">
+                {{ f.name }}
+              </span>
+            </div>
+          </div>
+
+          <!-- خيارات حجم الأصيص -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">خيارات حجم الأصيص</label>
+            <div *ngFor="let pot of plantForm.potSizeOptions; let i = index"
+              class="row mb-2 align-items-end p-2 border rounded">
+              <div class="col-md-3">
+                <label class="small text-muted">نوع النبات</label>
+                <input type="text" class="form-control" [(ngModel)]="pot.plantType" name="potType{{i}}"
+                  placeholder="مثال: شتلة">
+              </div>
+              <div class="col-md-3">
+                <label class="small text-muted">الحد الأدنى</label>
+                <input type="number" class="form-control" [(ngModel)]="pot.min" name="potMin{{i}}">
+              </div>
+              <div class="col-md-3">
+                <label class="small text-muted">الحد الأقصى</label>
+                <input type="number" class="form-control" [(ngModel)]="pot.max" name="potMax{{i}}">
+              </div>
+              <div class="col-md-2">
+                <label class="small text-muted">الوحدة</label>
+                <input type="text" class="form-control" [(ngModel)]="pot.unit" name="potUnit{{i}}">
+              </div>
+              <div class="col-md-1">
+                <button type="button" class="btn btn-danger btn-sm" (click)="removePotSize(i)">×</button>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline-success btn-sm mt-2" (click)="addPotSize()">+ إضافة خيار
+              حجم</button>
+          </div>
+
+          <!-- مراحل النمو -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">مراحل النمو</label>
+            <div *ngFor="let stage of plantForm.growthStages; let i = index" class="p-2 border rounded mb-2">
+              <div class="row">
+                <div class="col-md-6 mb-2">
+                  <label class="small text-muted">اسم المرحلة *</label>
+                  <input type="text" class="form-control" [(ngModel)]="stage.name" name="stageName{{i}}" required>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label class="small text-muted">المدة (بالأيام) *</label>
+                  <input type="number" class="form-control" [(ngModel)]="stage.durationInDays" name="stageDuration{{i}}"
+                    required>
+                </div>
+                <div class="col-12 mb-2">
+                  <label class="small text-muted">الوصف</label>
+                  <input type="text" class="form-control" [(ngModel)]="stage.description" name="stageDesc{{i}}">
+                </div>
+              </div>
+              <button type="button" class="btn btn-danger btn-sm" (click)="removeGrowthStage(i)">حذف المرحلة</button>
+            </div>
+            <button type="button" class="btn btn-outline-success btn-sm mt-2" (click)="addGrowthStage()">+ إضافة مرحلة
+              نمو</button>
+          </div>
+
+          <!-- الصور -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">صور النبات (يمكنك اختيار أكثر من صورة)</label>
+            <input type="file" multiple (change)="onFileChange($event, 'plant')" class="form-control">
+          </div>
+
+          <button type="submit" class="btn btn-success w-100 fw-bold">حفظ النبات</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- تعديل نبات -->
+    <div *ngIf="activeView === 'edit-plant'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">تعديل نبات موجود</h2>
+
+        <!-- اختيار النبات -->
+        <div class="mb-5 p-3 bg-light rounded">
+          <label class="form-label fw-bold">اختر النبات المراد تعديله:</label>
+          <select [(ngModel)]="selectedPlantId" (ngModelChange)="onPlantSelect($event)">
+            <option value="">-- اختر نباتاً --</option>
+            <option *ngFor="let p of allPlants" [value]="p._id || p.id">
+              {{ p.commonName || p.name || 'نبات غير معروف' }}
+              ({{ p.scientificName || 'بدون اسم علمي' }})
+            </option>
+          </select>
+        </div>
+
+        <form *ngIf="selectedPlantId" (ngSubmit)="submitPlant(true)">
+          <!-- نفس الحقول كالإضافة -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الاسم الشائع *</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.commonName" name="editCommonName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الاسم العلمي *</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.scientificName" name="editScientificName"
+              required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">العائلة النباتية</label>
+            <input type="text" class="form-control" [(ngModel)]="plantForm.family" name="editFamily">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الوصف</label>
+            <textarea class="form-control" [(ngModel)]="plantForm.description" name="editDescription"
+              rows="3"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">موسم النمو</label>
+            <select class="form-control" [(ngModel)]="plantForm.growingSeason" name="editGrowingSeason">
+              <option value="">-- اختر الموسم --</option>
+              <option value="الربيع">الربيع</option>
+              <option value="الصيف">الصيف</option>
+              <option value="الخريف">الخريف</option>
+              <option value="الشتاء">الشتاء</option>
+              <option value="طوال العام">طوال العام</option>
+            </select>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">درجة الحرارة الدنيا (°م)</label>
+              <input type="number" class="form-control" [(ngModel)]="plantForm.temperatureMin" name="editTempMin">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">درجة الحرارة القصوى (°م)</label>
+              <input type="number" class="form-control" [(ngModel)]="plantForm.temperatureMax" name="editTempMax">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">ساعات الشمس في اليوم</label>
+            <input type="number" class="form-control" [(ngModel)]="plantForm.sunlightHours" name="editSunlight">
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">حموضة التربة pH (أدنى)</label>
+              <input type="number" step="0.1" class="form-control" [(ngModel)]="plantForm.soilPHMin" name="editPHMin">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">حموضة التربة pH (أعلى)</label>
+              <input type="number" step="0.1" class="form-control" [(ngModel)]="plantForm.soilPHMax" name="editPHMax">
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">مستوى الري</label>
+              <select class="form-control" [(ngModel)]="plantForm.waterLevel" name="editWaterLevel">
+                <option value="منخفض">منخفض</option>
+                <option value="متوسط">متوسط</option>
+                <option value="عالي">عالي</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-secondary">تكرار الري (مرة/أسبوع)</label>
+              <input type="number" class="form-control" [(ngModel)]="plantForm.waterFrequency" name="editWaterFreq">
+            </div>
+          </div>
+
+          <div class="mb-3" *ngIf="allDiseases.length > 0">
+            <label class="form-label fw-bold text-secondary">الأمراض المرتبطة</label>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem">
+              <span *ngFor="let d of allDiseases" (click)="toggleDisease(d._id)"
+                [style.background]="isSelectedDisease(d._id) ? 'var(--green-600)' : '#e5e7eb'"
+                [style.color]="isSelectedDisease(d._id) ? '#fff' : '#374151'"
+                style="padding:.3rem .8rem;border-radius:999px;cursor:pointer;font-size:.85rem;transition:all .2s">
+                {{ d.name }}
+              </span>
+            </div>
+          </div>
+
+          <div class="mb-4" *ngIf="allFertilizers.length > 0">
+            <label class="form-label fw-bold text-secondary">الأسمدة المرتبطة</label>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem">
+              <span *ngFor="let f of allFertilizers" (click)="toggleFertilizer(f._id)"
+                [style.background]="isSelectedFertilizer(f._id) ? 'var(--green-600)' : '#e5e7eb'"
+                [style.color]="isSelectedFertilizer(f._id) ? '#fff' : '#374151'"
+                style="padding:.3rem .8rem;border-radius:999px;cursor:pointer;font-size:.85rem;transition:all .2s">
+                {{ f.name }}
+              </span>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">خيارات حجم الأصيص</label>
+            <div *ngFor="let pot of plantForm.potSizeOptions; let i = index"
+              class="row mb-2 align-items-end p-2 border rounded">
+              <div class="col-md-3">
+                <input type="text" class="form-control" [(ngModel)]="pot.plantType" name="editPotType{{i}}">
+              </div>
+              <div class="col-md-3">
+                <input type="number" class="form-control" [(ngModel)]="pot.min" name="editPotMin{{i}}">
+              </div>
+              <div class="col-md-3">
+                <input type="number" class="form-control" [(ngModel)]="pot.max" name="editPotMax{{i}}">
+              </div>
+              <div class="col-md-2">
+                <input type="text" class="form-control" [(ngModel)]="pot.unit" name="editPotUnit{{i}}">
+              </div>
+              <div class="col-md-1">
+                <button type="button" class="btn btn-danger btn-sm" (click)="removePotSize(i)">×</button>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline-success btn-sm mt-2" (click)="addPotSize()">+ إضافة خيار
+              حجم</button>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">مراحل النمو</label>
+            <div *ngFor="let stage of plantForm.growthStages; let i = index" class="p-2 border rounded mb-2">
+              <div class="row">
+                <div class="col-md-6 mb-2"><input type="text" class="form-control" [(ngModel)]="stage.name"
+                    name="editStageName{{i}}"></div>
+                <div class="col-md-6 mb-2"><input type="number" class="form-control" [(ngModel)]="stage.durationInDays"
+                    name="editStageDur{{i}}"></div>
+                <div class="col-12"><input type="text" class="form-control" [(ngModel)]="stage.description"
+                    name="editStageDesc{{i}}"></div>
+              </div>
+              <button type="button" class="btn btn-danger btn-sm mt-2" (click)="removeGrowthStage(i)">حذف
+                المرحلة</button>
+            </div>
+            <button type="button" class="btn btn-outline-success btn-sm mt-2" (click)="addGrowthStage()">+ إضافة مرحلة
+              نمو</button>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">إضافة صور جديدة</label>
+            <input type="file" multiple (change)="onFileChange($event, 'plant')" class="form-control">
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 fw-bold">تحديث بيانات النبات</button>
+        </form>
+      </div>
+    </div>
+
+
+    <div *ngIf="activeView === 'add-disease'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إضافة مرض جديد</h2>
+        <form (ngSubmit)="submitDisease()">
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم المرض *</label>
+            <input type="text" class="form-control" [(ngModel)]="diseaseForm.name" name="diseaseName" required
+              placeholder="مثال: المن">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الاسم العلمي</label>
+            <input type="text" class="form-control" [(ngModel)]="diseaseForm.scientificName"
+              name="diseaseScientificName" placeholder="مثال: Aphididae">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">نوع الممرض</label>
+            <select class="form-control" [(ngModel)]="diseaseForm.pathogenType" name="pathogenType">
+              <option value="">-- اختر نوع الممرض --</option>
+              <option value="فطري">فطري</option>
+              <option value="بكتيري">بكتيري</option>
+              <option value="فيروسي">فيروسي</option>
+              <option value="حشري">حشري</option>
+              <option value="بيئي">بيئي</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الظروف المواتية للانتشار</label>
+            <input type="text" class="form-control" [(ngModel)]="diseaseForm.favorableConditions"
+              name="favorableConditions" placeholder="مثال: الرطوبة العالية">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الأعراض (كل سطر = عرض واحد)</label>
+            <textarea class="form-control" [(ngModel)]="diseaseForm.symptomsText" name="symptomsText" rows="4"
+              placeholder="تجمع حشرات صغيرة خلف الأوراق&#10;تجعد الأوراق وخروج مادة عسلية"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الوقاية (كل سطر = خطوة وقاية)</label>
+            <textarea class="form-control" [(ngModel)]="diseaseForm.preventionText" name="preventionText" rows="3"
+              placeholder="تهوية جيدة&#10;تجنب الإفراط في الري"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">طرق العلاج (كل سطر = خطوة علاج)</label>
+            <textarea class="form-control" [(ngModel)]="diseaseForm.treatmentText" name="treatmentText" rows="4"
+              placeholder="الخطوة 1 - غسيل النبات بضغط ماء قوي&#10;الخطوة 2 - رش صابون زراعي"></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">صورة المرض</label>
+            <input type="file" (change)="onFileChange($event, 'disease')" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-success w-100 fw-bold">حفظ المرض</button>
+        </form>
+      </div>
+    </div>
+
+    <div *ngIf="activeView === 'add-fertilizer'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إضافة سماد جديد</h2>
+        <form (ngSubmit)="submitFertilizer()">
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم السماد *</label>
+            <input type="text" class="form-control" [(ngModel)]="fertilizerForm.name" name="fertName" required
+              placeholder="مثال: يوريا 46%">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">نوع السماد</label>
+            <select class="form-control" [(ngModel)]="fertilizerForm.type" name="fertType">
+              <option value="">-- اختر النوع --</option>
+              <option value="كيميائي">كيميائي</option>
+              <option value="عضوي">عضوي</option>
+              <option value="كيميائي / محب">كيميائي / محب</option>
+              <option value="بيولوجي">بيولوجي</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">التركيبة (كل سطر: اسم العنصر:النسبة%)</label>
+            <textarea class="form-control" [(ngModel)]="fertilizerForm.compositionText" name="compositionText" rows="3"
+              placeholder="نيتروجين (N):46&#10;فوسفور (P):10"></textarea>
+            <small class="text-muted">اكتب اسم العنصر ثم نقطتين ثم النسبة، مثال: نيتروجين (N):46</small>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الفوائد (كل سطر = فائدة)</label>
+            <textarea class="form-control" [(ngModel)]="fertilizerForm.benefitsText" name="benefitsText" rows="3"
+              placeholder="دفع النمو الخضري السريع&#10;زيادة اخضرار الأوراق"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">طريقة التطبيق</label>
+            <input type="text" class="form-control" [(ngModel)]="fertilizerForm.applicationMethod"
+              name="applicationMethod" placeholder="مثال: نثر على التربة قبل الري مباشرة">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">معدل التطبيق</label>
+            <input type="text" class="form-control" [(ngModel)]="fertilizerForm.applicationRate" name="applicationRate"
+              placeholder="مثال: 1 كجم لكل 100 متر مربع">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">صورة السماد</label>
+            <input type="file" (change)="onFileChange($event, 'fertilizer')" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-success w-100 fw-bold">حفظ السماد</button>
+        </form>
+      </div>
+    </div>
+
+    <div *ngIf="activeView === 'add-category'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إضافة تصنيف متجر جديد</h2>
+        <form (ngSubmit)="submitCategory()">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم التصنيف *</label>
+            <input type="text" class="form-control" [(ngModel)]="categoryForm.name" name="catName" required
+              placeholder="مثال: Tools">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary"> (Slug) *</label>
+            <input type="text" class="form-control" [(ngModel)]="categoryForm.slug" name="catSlug" required
+              placeholder="مثال: tools (إنجليزي بدون مسافات)">
+            <small class="text-muted">استخدم الأحرف الصغيرة والشرطة (-) بدون مسافات. مثال: hand-tools</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">وصف التصنيف</label>
+            <textarea class="form-control" [(ngModel)]="categoryForm.description" name="catDescription" rows="2"
+              placeholder="وصف مختصر للتصنيف..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-success w-100 fw-bold">حفظ التصنيف</button>
+        </form>
+      </div>
+    </div>
+
+    <div *ngIf="activeView === 'add-product'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إضافة منتج متجر جديد</h2>
+        <form (ngSubmit)="submitProduct()">
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم المنتج *</label>
+            <input type="text" class="form-control" [(ngModel)]="productForm.name" name="prodName" required
+              placeholder="مثال: Professional Pruning Shears">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">وصف المنتج</label>
+            <textarea class="form-control" [(ngModel)]="productForm.description" name="prodDescription" rows="3"
+              placeholder="وصف مفصل للمنتج..."></textarea>
+          </div>
+
+          <!-- التصنيف -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">تصنيف المنتج</label>
+            <select class="form-control" [(ngModel)]="productForm.category" name="prodCategory">
+              <option value="">-- اختر تصنيف --</option>
+              <option *ngFor="let cat of allCategories" [value]="cat._id">{{ cat.name }}</option>
+            </select>
+          </div>
+
+          <!-- الأسعار -->
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-secondary">سعر البيع *</label>
+              <input type="number" class="form-control" [(ngModel)]="productForm.price" name="prodPrice" required
+                placeholder="350">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-secondary">سعر التكلفة *</label>
+              <input type="number" class="form-control" [(ngModel)]="productForm.costPrice" name="prodCostPrice"
+                required placeholder="200">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-secondary">نسبة الخصم (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="productForm.discountPercent" name="prodDiscount"
+                min="0" max="100" placeholder="5">
+              <small class="text-muted">السعر النهائي يحتسب تلقائياً</small>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الكمية المتوفرة (المخزون) *</label>
+            <input type="number" class="form-control" [(ngModel)]="productForm.stock" name="prodStock" required
+              placeholder="25">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">صور المنتج</label>
+            <input type="file" multiple (change)="onFileChange($event, 'product')" class="form-control">
+          </div>
+
+          <button type="submit" class="btn btn-success w-100 fw-bold">حفظ المنتج</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- New View Placeholders -->
+    <div *ngIf="activeView === 'delete-plant'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-danger fw-bold">مسح نبات من قاعدة البيانات</h2>
+
+        <div class="p-4 bg-light rounded border border-danger-subtle">
+          <label class="form-label fw-bold mb-3 d-block">اختر النبات المراد حذفه نهائياً:</label>
+
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <select [(ngModel)]="plantToDeleteId" class="form-control" style="flex:1;">
+              <option value="">-- اختر نباتاً من القائمة --</option>
+              <option *ngFor="let p of allPlants" [value]="p._id || p.id">
+                {{ p.commonName || p.name || 'بدون اسم' }} ({{ p.scientificName || 'بدون اسم علمي' }})
+              </option>
+            </select>
+
+            <button (click)="deletePlant()" class="btn btn-danger"
+              style="background:#dc3545; color:white; border:none; padding:0.65rem 1.5rem;">
+              🗑️ مسح الآن
+            </button>
+          </div>
+
+          <div *ngIf="plantToDeleteId" class="mt-4 p-3 bg-white rounded border-start border-danger border-4">
+            <p class="text-danger fw-bold mb-1" style="font-size:0.9rem">⚠️ تحذير نهائي:</p>
+            <p class="text-secondary mb-0" style="font-size:0.85rem">حذف النبات سيؤدي لإزالته تماماً من الويكي ومن جميع
+              حسابات المستخدمين المرتبطة به. هذا الإجراء غير قابل للتراجع.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeView === 'delete-disease'" class="card p-4 text-center">
+      <h2 class="text-danger fw-bold">حذف مرض</h2>
+      <p class="text-secondary">هذه الخاصية ستكون متاحة قريباً.</p>
+    </div>
+
+    <div *ngIf="activeView === 'delete-fertilizer'" class="card p-4 text-center">
+      <h2 class="text-danger fw-bold">حذف سماد</h2>
+      <p class="text-secondary">هذه الخاصية ستكون متاحة قريباً.</p>
+    </div>
+
+    <div *ngIf="activeView === 'products'" class="card p-4 text-center">
+      <h2 class="text-success fw-bold">إدارة المنتجات</h2>
+      <p class="text-secondary">جاري تحميل قائمة المنتجات...</p>
+    </div>
+
+    <div *ngIf="activeView === 'forum'" class="card p-4 text-center">
+      <h2 class="text-success fw-bold">إدارة المنتدى</h2>
+      <p class="text-secondary">هنا يمكنك مراجعة وحذف بوستات المنتدى.</p>
+    </div>
+
+    <div *ngIf="activeView === 'blog'" class="card p-4 text-center">
+      <h2 class="text-success fw-bold">إدارة المدونة</h2>
+      <p class="text-secondary">هنا يمكنك كتابة مقالات جديدة للمدونة.</p>
+    </div>
+
+    <!-- تعديل مرض -->
+    <div *ngIf="activeView === 'edit-disease'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">تعديل مرض موجود</h2>
+
+        <!-- اختيار المرض -->
+        <div class="mb-5 p-3 bg-light rounded">
+          <label class="form-label fw-bold">اختر المرض المراد تعديله:</label>
+          <select [(ngModel)]="selectedDiseaseId" (ngModelChange)="onDiseaseSelect($event)" class="form-control">
+            <option value="">-- اختر مرضاً --</option>
+            <option *ngFor="let d of allDiseases" [value]="d._id || d.id">
+              {{ d.name }} ({{ d.scientificName || 'بدون اسم علمي' }})
+            </option>
+          </select>
+        </div>
+
+        <form *ngIf="selectedDiseaseId" (ngSubmit)="submitDisease(true)">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم المرض *</label>
+            <input type="text" class="form-control" [(ngModel)]="diseaseForm.name" name="editDiseaseName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الاسم العلمي</label>
+            <input type="text" class="form-control" [(ngModel)]="diseaseForm.scientificName"
+              name="editDiseaseScientificName">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">نوع الممرض</label>
+            <select class="form-control" [(ngModel)]="diseaseForm.pathogenType" name="editPathogenType">
+              <option value="">-- اختر نوع الممرض --</option>
+              <option value="فطري">فطري</option>
+              <option value="بكتيري">بكتيري</option>
+              <option value="فيروسي">فيروسي</option>
+              <option value="حشري">حشري</option>
+              <option value="بيئي">بيئي</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الظروف المواتية للانتشار</label>
+            <input type="text" class="form-control" [(ngModel)]="diseaseForm.favorableConditions"
+              name="editFavorableConditions">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الأعراض (كل سطر = عرض واحد)</label>
+            <textarea class="form-control" [(ngModel)]="diseaseForm.symptomsText" name="editSymptomsText"
+              rows="4"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الوقاية (كل سطر = خطوة وقاية)</label>
+            <textarea class="form-control" [(ngModel)]="diseaseForm.preventionText" name="editPreventionText"
+              rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">طرق العلاج (كل سطر = خطوة علاج)</label>
+            <textarea class="form-control" [(ngModel)]="diseaseForm.treatmentText" name="editTreatmentText"
+              rows="4"></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">تحديث الصورة</label>
+            <input type="file" (change)="onFileChange($event, 'disease')" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary w-100 fw-bold">تحديث بيانات المرض</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- مسح مرض -->
+    <div *ngIf="activeView === 'delete-disease'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-danger fw-bold">مسح مرض من قاعدة البيانات</h2>
+
+        <div class="p-4 bg-light rounded border border-danger-subtle">
+          <label class="form-label fw-bold mb-3 d-block">اختر المرض المراد حذفه نهائياً:</label>
+
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <select [(ngModel)]="diseaseToDeleteId" class="form-control" style="flex:1;">
+              <option value="">-- اختر مرضاً من القائمة --</option>
+              <option *ngFor="let d of allDiseases" [value]="d._id || d.id">
+                {{ d.name }}
+              </option>
+            </select>
+
+            <button (click)="deleteDisease()" class="btn btn-danger"
+              style="background:#dc3545; color:white; border:none; padding:0.65rem 1.5rem;">
+              🗑️ مسح الآن
+            </button>
+          </div>
+
+          <div *ngIf="diseaseToDeleteId" class="mt-4 p-3 bg-white rounded border-start border-danger border-4">
+            <p class="text-danger fw-bold mb-1" style="font-size:0.9rem">⚠️ تحذير نهائي:</p>
+            <p class="text-secondary mb-0" style="font-size:0.85rem">حذف المرض سيؤدي لإزالته تماماً من الموسوعة وتنبيهات
+              المستخدمين المرتبطة به. هذا الإجراء غير قابل للتراجع.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- تعديل سماد -->
+    <div *ngIf="activeView === 'edit-fertilizer'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">تعديل سماد موجود</h2>
+
+        <div class="mb-5 p-3 bg-light rounded">
+          <label class="form-label fw-bold">اختر السماد المراد تعديله:</label>
+          <select [(ngModel)]="selectedFertilizerId" (ngModelChange)="onFertilizerSelect($event)" class="form-control">
+            <option value="">-- اختر سماداً --</option>
+            <option *ngFor="let f of allFertilizers" [value]="f._id || f.id">
+              {{ f.name }} ({{ f.type || 'بدون نوع' }})
+            </option>
+          </select>
+        </div>
+
+        <form *ngIf="selectedFertilizerId" (ngSubmit)="submitFertilizer(true)">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم السماد *</label>
+            <input type="text" class="form-control" [(ngModel)]="fertilizerForm.name" name="editFertName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">نوع السماد</label>
+            <select class="form-control" [(ngModel)]="fertilizerForm.type" name="editFertType">
+              <option value="كيميائي">كيميائي</option>
+              <option value="عضوي">عضوي</option>
+              <option value="كيميائي / محب">كيميائي / محب</option>
+              <option value="بيولوجي">بيولوجي</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">التركيبة (كل سطر: اسم العنصر:النسبة%)</label>
+            <textarea class="form-control" [(ngModel)]="fertilizerForm.compositionText" name="editCompositionText"
+              rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الفوائد (كل سطر = فائدة)</label>
+            <textarea class="form-control" [(ngModel)]="fertilizerForm.benefitsText" name="editBenefitsText"
+              rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">طريقة التطبيق</label>
+            <input type="text" class="form-control" [(ngModel)]="fertilizerForm.applicationMethod" name="editAppMethod">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">معدل التطبيق</label>
+            <input type="text" class="form-control" [(ngModel)]="fertilizerForm.applicationRate" name="editAppRate">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">تحديث الصورة</label>
+            <input type="file" (change)="onFileChange($event, 'fertilizer')" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary w-100 fw-bold">تحديث بيانات السماد</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- مسح سماد -->
+    <div *ngIf="activeView === 'delete-fertilizer'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-danger fw-bold">مسح سماد من قاعدة البيانات</h2>
+        <div class="p-4 bg-light rounded border border-danger-subtle">
+          <label class="form-label fw-bold mb-3 d-block">اختر السماد المراد حذفه نهائياً:</label>
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <select [(ngModel)]="fertilizerToDeleteId" class="form-control" style="flex:1;">
+              <option value="">-- اختر سماداً من القائمة --</option>
+              <option *ngFor="let f of allFertilizers" [value]="f._id || f.id">
+                {{ f.name }}
+              </option>
+            </select>
+            <button (click)="deleteFertilizer()" class="btn btn-danger"
+              style="background:#dc3545; color:white; border:none; padding:0.65rem 1.5rem;">
+              🗑️ مسح الآن
+            </button>
+          </div>
+          <div *ngIf="fertilizerToDeleteId" class="mt-4 p-3 bg-white rounded border-start border-danger border-4">
+            <p class="text-danger fw-bold mb-1" style="font-size:0.9rem">⚠️ تحذير نهائي:</p>
+            <p class="text-secondary mb-0" style="font-size:0.85rem">حذف السماد سيؤدي لإزالته تماماً من الموسوعة. هذا
+              الإجراء غير قابل للتراجع.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- تعديل منتج -->
+    <div *ngIf="activeView === 'edit-product'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">تعديل منتج موجود</h2>
+
+        <div class="mb-5 p-3 bg-light rounded">
+          <label class="form-label fw-bold">اختر المنتج المراد تعديله:</label>
+          <select [(ngModel)]="selectedProductId" (ngModelChange)="onProductSelect($event)" class="form-control">
+            <option value="">-- اختر منتجاً --</option>
+            <option *ngFor="let p of allProducts" [value]="p._id || p.id">
+              {{ p.name }} ({{ p.price }} ج.م)
+            </option>
+          </select>
+        </div>
+
+        <form *ngIf="selectedProductId" (ngSubmit)="submitProduct(true)">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">اسم المنتج *</label>
+            <input type="text" class="form-control" [(ngModel)]="productForm.name" name="editProdName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الوصف</label>
+            <textarea class="form-control" [(ngModel)]="productForm.description" name="editProdDesc"
+              rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">التصنيف</label>
+            <select class="form-control" [(ngModel)]="productForm.category" name="editProdCat">
+              <option value="">-- اختر تصنيفاً --</option>
+              <option *ngFor="let cat of allCategories" [value]="cat._id || cat.id">{{ cat.name }}</option>
+            </select>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-secondary">سعر البيع *</label>
+              <input type="number" class="form-control" [(ngModel)]="productForm.price" name="editProdPrice" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-secondary">سعر التكلفة</label>
+              <input type="number" class="form-control" [(ngModel)]="productForm.costPrice" name="editProdCost">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-secondary">نسبة الخصم (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="productForm.discountPercent"
+                name="editProdDiscount">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary">الكمية المتوفرة (Stock) *</label>
+            <input type="number" class="form-control" [(ngModel)]="productForm.stock" name="editProdStock" required>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">إضافة صور جديدة</label>
+            <input type="file" multiple (change)="onFileChange($event, 'product')" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary w-100 fw-bold">تحديث بيانات المنتج</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- حذف منتج -->
+    <div *ngIf="activeView === 'delete-product'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-danger fw-bold">مسح منتج من المتجر</h2>
+        <div class="p-4 bg-light rounded border border-danger-subtle">
+          <label class="form-label fw-bold mb-3 d-block">اختر المنتج المراد حذفه نهائياً:</label>
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <select [(ngModel)]="productToDeleteId" class="form-control" style="flex:1;">
+              <option value="">-- اختر منتجاً من القائمة --</option>
+              <option *ngFor="let p of allProducts" [value]="p._id || p.id">
+                {{ p.name }}
+              </option>
+            </select>
+            <button (click)="deleteProduct()" class="btn btn-danger"
+              style="background:#dc3545; color:white; border:none; padding:0.65rem 1.5rem;">
+              🗑️ مسح الآن
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- إدارة المستخدمين -->
+    <div *ngIf="activeView === 'users'" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="mb-4 text-success fw-bold">إدارة شؤون المستخدمين</h2>
+
+        <!-- قسم المشرفين -->
+        <h5 class="text-primary fw-bold mb-3"><span class="icon">🛡️</span> طاقم الإدارة (Admins)</h5>
+        <div class="table-wrap mb-5">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>الاسم</th>
+                <th>الإيميل</th>
+                <th>اسم المستخدم</th>
+                <th>الدور</th>
+                <th>تاريخ الانضمام</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let admin of adminUsers" class="bg-primary-subtle">
+                <td class="fw-bold">{{ admin.firstName }} {{ admin.lastName }}</td>
+                <td>{{ admin.email }}</td>
+                <td>@{{ admin.username }}</td>
+                <td><span class="badge bg-primary">مدير (Admin)</span></td>
+                <td>{{ admin.createdAt | date:'shortDate' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- قسم المستخدمين العاديين -->
+        <h5 class="text-success fw-bold mb-3"><span class="icon">👥</span> المستخدمين (Users)</h5>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>الاسم</th>
+                <th>الإيميل</th>
+                <th>الحالة</th>
+                <th>تاريخ التسجيل</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of regularUsers">
+                <td class="fw-bold">{{ user.firstName }} {{ user.lastName }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <span *ngIf="user.isVerified" class="badge bg-success">محقق</span>
+                  <span *ngIf="!user.isVerified" class="badge bg-warning text-dark">غير محقق</span>
+                  <span *ngIf="user.premium" class="badge bg-primary ms-1">Premium ⭐</span>
+                </td>
+                <td>{{ user.createdAt | date:'shortDate' }}</td>
+                <td>
+                  <button (click)="deleteUser(user._id || user.id, user.firstName + ' ' + user.lastName)"
+                    class="btn btn-sm btn-outline-danger">
+                    🗑️ حذف
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="regularUsers.length === 0">
+                <td colspan="5" class="text-center p-4">لا يوجد مستخدمين حالياً</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Forum Moderation Detailed View -->
+    <div *ngIf="activeView === 'forum-moderation'">
+      <div class="page-title">إدارة بوستات المنتدى</div>
+      <div class="page-subtitle">مراجعة والتحكم في المحتوى المنشور من قبل المستخدمين</div>
+
+      <div class="card" style="margin-top:1.5rem">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>المستخدم</th>
+                <th>العنوان</th>
+                <th>المحتوى</th>
+                <th>التاريخ</th>
+                <th>الإجراء</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let post of pendingPosts">
+                <td style="font-weight:700">{{ getAuthorName(post.author) }}</td>
+                <td>{{ post.title }}</td>
+                <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ post.content }}</td>
+                <td>{{ post.createdAt | date:'medium':'':'ar-EG' }}</td>
+                <td>
+                  <div style="display:flex;gap:.4rem">
+                    <button class="btn btn-primary btn-sm" style="background:var(--green-500)" (click)="approveForumPost(post._id || post.id)">قبول</button>
+                    <button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5" (click)="rejectForumPost(post._id || post.id)">رفض</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="pendingPosts.length === 0">
+                <td colspan="5" style="text-align:center;padding:3rem;color:var(--neutral-400)">
+                  <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
+                  لا توجد بوستات تنتظر المراجعة حالياً
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Custom Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showConfirmModal" (click)="closeConfirmDialog()">
+  <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 400px; text-align: center; padding: 2rem 1.5rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem; color: var(--amber-500);">⚠️</div>
+    <h3 style="font-weight: 700; color: var(--green-900); margin-bottom: 0.5rem; font-family: var(--font-display);">{{ confirmTitle }}</h3>
+    <p style="color: var(--neutral-500); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">{{ confirmMessage }}</p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+      <button class="btn btn-ghost" (click)="closeConfirmDialog()" style="flex: 1;">إلغاء</button>
+      <button class="btn" [ngClass]="confirmButtonClass" (click)="executeConfirmDialog()" style="flex: 1; padding: 0.5rem;">{{ confirmButtonText }}</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,252 @@
+/* User Dashboard Specific Styles */
+
+/* Grid Layouts */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+/* Plant Card */
+.plant-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(34, 135, 79, .1);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.plant-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.plant-card-img {
+  height: 180px;
+  background: var(--green-50);
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-pattern {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 30%, rgba(34, 135, 79, .12), transparent 60%);
+  opacity: 0.5;
+}
+
+.plant-card-body {
+  padding: 1.25rem;
+  flex: 1;
+}
+
+.plant-card-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--green-900);
+  margin-bottom: 0.25rem;
+}
+
+.plant-card-sub {
+  font-size: .82rem;
+  color: var(--neutral-500);
+}
+
+/* Health Dot */
+.health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.health-good { background: #22c55e; }
+.health-warn { background: #f59e0b; }
+.health-bad { background: #ef4444; }
+
+/* Progress Bar */
+.progress-bar {
+  background: var(--neutral-100);
+  border-radius: 99px;
+  height: 8px;
+  overflow: hidden;
+  margin-top: .5rem;
+  border: 1px solid var(--neutral-200);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--green-400), var(--green-600));
+  transition: width .6s ease;
+}
+
+/* Tabs for Detail Modal */
+.tabs-wrapper {
+  margin-top: 1rem;
+}
+
+.timeline {
+  margin-top: 1.5rem;
+  position: relative;
+  padding-right: 1.5rem;
+  border-right: 2px solid var(--neutral-100);
+}
+
+.tl-item {
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.tl-dot {
+  position: absolute;
+  right: -23px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--neutral-300);
+  border: 2px solid white;
+}
+
+.tl-dot.done {
+  background: var(--green-500);
+}
+
+.tl-dot.current {
+  background: var(--amber-400);
+  box-shadow: 0 0 0 4px var(--amber-100);
+}
+
+/* Modal Boxes */
+.modal-box {
+  background: white;
+  border-radius: var(--radius-xl);
+  max-width: 500px;
+  width: 90%;
+  margin: 10vh auto;
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  position: relative;
+}
+
+.add-plant-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  z-index: 99999 !important;
+  backdrop-filter: blur(4px);
+}
+
+.add-plant-modal.open {
+  display: block;
+}
+
+/* Badge Overrides for Card */
+.plant-card .badge {
+  box-shadow: var(--shadow-sm);
+  font-size: 0.7rem;
+}
+
+/* Notifications Dropdown */
+.notif-dropdown {
+  position: absolute;
+  top: 120%;
+  left: 0;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  width: 320px;
+  z-index: 200;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--neutral-100);
+}
+
+.notif-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--neutral-100);
+  font-weight: 700;
+  background: var(--neutral-50);
+  color: var(--neutral-700);
+}
+
+.notif-list-item {
+  padding: 1rem;
+  border-bottom: 1px solid var(--neutral-50);
+  font-size: .88rem;
+  display: flex;
+  gap: .75rem;
+  align-items: flex-start;
+  transition: background .2s ease;
+}
+
+.notif-list-item:hover {
+  background: var(--green-50);
+}
+
+/* Upgrade Banner */
+.upgrade-banner {
+  background: linear-gradient(135deg, var(--green-800), var(--green-600));
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  color: white;
+  margin-top: 2rem;
+  box-shadow: 0 10px 30px rgba(10, 61, 42, 0.2);
+}
+
+.upgrade-banner img {
+  width: 80px;
+  height: 80px;
+}
+
+.upgrade-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: .3rem;
+}
+
+.upgrade-text {
+  opacity: .8;
+  font-size: .88rem;
+}
+
+/* Responsive Overrides within Component */
+@media (max-width: 992px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .sidebar {
+    display: none; /* Handled by global responsive styles now */
+  }
+}
+
+@media (max-width: 600px) {
+  .grid-3, .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .plant-card-img {
+    height: 150px;
+  }
+  
+  .upgrade-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+}

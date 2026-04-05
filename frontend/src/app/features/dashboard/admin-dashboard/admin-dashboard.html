@@ -1101,6 +1101,40 @@
             <label class="form-label fw-bold text-secondary">تحديث الصورة</label>
             <input type="file" (change)="onFileChange($event, 'fertilizer')" class="form-control">
           </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">
+              <span class="me-2">🌿</span> النباتات المناسبة لهذا السماد:
+            </label>
+
+            <div class="p-3 border rounded bg-light"
+              style="max-height: 250px; overflow-y: auto; background-color: #fdfdfd !important;">
+              <div class="row g-2">
+                @for (plant of allPlants; track (plant._id || plant.id)) {
+                <div class="col-md-4 col-sm-6">
+                  <div (click)="toggleSelectedFertilizerPlant(plant._id || plant.id)"
+                    [class.selected-card]="isPlantSelectedForFertilizer(plant._id || plant.id)"
+                    class="p-2 rounded text-center border shadow-sm plant-selector-item"
+                    style="cursor: pointer; transition: all 0.2s ease; background: white;">
+
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                      <span *ngIf="isPlantSelectedForFertilizer(plant._id || plant.id)" class="text-success">✅</span>
+                      <span
+                        [style.font-weight]="isPlantSelectedForFertilizer(plant._id || plant.id) ? 'bold' : 'normal'">
+                        {{ plant.commonName }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                } @empty {
+                <div class="col-12 text-center py-3 text-muted">
+                  <p>لا توجد نباتات متاحة حالياً</p>
+                </div>
+                }
+              </div>
+            </div>
+            <small class="text-muted mt-2 d-block">اضغط على اسم النبات لتحديده أو إلغاء تحديده</small>
+          </div>
           <button type="submit" class="btn btn-primary w-100 fw-bold">تحديث بيانات السماد</button>
         </form>
       </div>

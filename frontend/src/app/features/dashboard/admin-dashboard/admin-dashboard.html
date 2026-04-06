@@ -76,7 +76,8 @@
 
     <!-- إدارة المحتوى -->
     <div class="sidebar-section-title">إدارة المحتوى</div>
-    <a (click)="setView('forum-moderation')" [class.active]="activeView === 'forum-moderation'" class="sidebar-link" style="cursor: pointer;">
+    <a (click)="setView('forum-moderation')" [class.active]="activeView === 'forum-moderation'" class="sidebar-link"
+      style="cursor: pointer;">
       <span class="icon">💬</span> إدارة المنتدى
     </a>
     <a (click)="setView('blog')" [class.active]="activeView === 'blog'" class="sidebar-link" style="cursor: pointer;">
@@ -112,7 +113,8 @@
           <div class="stat-value">{{ adminStats?.sales?.deliveredOrders || 0 }}</div>
           <div class="stat-label">طلبات مكتملة</div>
         </div>
-        <div class="stat-card" (click)="setView('forum-moderation')" style="cursor: pointer; transition: transform 0.2s; border: 2px solid var(--amber-200);">
+        <div class="stat-card" (click)="setView('forum-moderation')"
+          style="cursor: pointer; transition: transform 0.2s; border: 2px solid var(--amber-200);">
           <div class="stat-icon" style="background:#fff7ed">💬</div>
           <div class="stat-value" style="color:var(--amber-600)">{{ pendingPosts.length || 0 }}</div>
           <div class="stat-label">بوستات للنشر</div>
@@ -204,7 +206,8 @@
       </div>
 
       <!-- Forum Moderation Summary -->
-      <div class="page-title" style="font-size:1.05rem;margin-bottom:1rem">بوستات المنتدى — تنتظر الموافقة ({{ pendingPosts.length }})</div>
+      <div class="page-title" style="font-size:1.05rem;margin-bottom:1rem">بوستات المنتدى — تنتظر الموافقة ({{
+        pendingPosts.length }})</div>
       <div class="table-wrap" style="margin-bottom:2rem">
         <table class="data-table">
           <thead>
@@ -222,13 +225,16 @@
               <td>{{ post.createdAt | date:'short':'':'ar-EG' }}</td>
               <td>
                 <div style="display:flex;gap:.4rem">
-                  <button class="btn btn-primary btn-sm" style="background:var(--green-500)" (click)="approveForumPost(post._id || post.id)">قبول</button>
-                  <button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5" (click)="rejectForumPost(post._id || post.id)">رفض</button>
+                  <button class="btn btn-primary btn-sm" style="background:var(--green-500)"
+                    (click)="approveForumPost(post._id || post.id)">قبول</button>
+                  <button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5"
+                    (click)="rejectForumPost(post._id || post.id)">رفض</button>
                 </div>
               </td>
             </tr>
             <tr *ngIf="pendingPosts.length === 0">
-              <td colspan="4" style="text-align:center;padding:2rem;color:var(--neutral-400)">لا توجد بوستات تنتظر الموافقة</td>
+              <td colspan="4" style="text-align:center;padding:2rem;color:var(--neutral-400)">لا توجد بوستات تنتظر
+                الموافقة</td>
             </tr>
           </tbody>
         </table>
@@ -892,15 +898,7 @@
       </div>
     </div>
 
-    <div *ngIf="activeView === 'delete-disease'" class="card p-4 text-center">
-      <h2 class="text-danger fw-bold">حذف مرض</h2>
-      <p class="text-secondary">هذه الخاصية ستكون متاحة قريباً.</p>
-    </div>
 
-    <div *ngIf="activeView === 'delete-fertilizer'" class="card p-4 text-center">
-      <h2 class="text-danger fw-bold">حذف سماد</h2>
-      <p class="text-secondary">هذه الخاصية ستكون متاحة قريباً.</p>
-    </div>
 
     <div *ngIf="activeView === 'products'" class="card p-4 text-center">
       <h2 class="text-success fw-bold">إدارة المنتجات</h2>
@@ -918,31 +916,61 @@
     </div>
 
     <!-- تعديل مرض -->
-    <div *ngIf="activeView === 'edit-disease'" class="card shadow-sm border-0">
+    @if (activeView === 'edit-disease') {
+    <div class="card shadow-sm border-0">
       <div class="card-body p-4">
         <h2 class="mb-4 text-success fw-bold">تعديل مرض موجود</h2>
 
-        <!-- اختيار المرض -->
         <div class="mb-5 p-3 bg-light rounded">
           <label class="form-label fw-bold">اختر المرض المراد تعديله:</label>
           <select [(ngModel)]="selectedDiseaseId" (ngModelChange)="onDiseaseSelect($event)" class="form-control">
             <option value="">-- اختر مرضاً --</option>
-            <option *ngFor="let d of allDiseases" [value]="d._id || d.id">
+            @for (d of allDiseases; track d._id || d.id) {
+            <option [value]="d._id || d.id">
               {{ d.name }} ({{ d.scientificName || 'بدون اسم علمي' }})
             </option>
+            }
           </select>
         </div>
 
-        <form *ngIf="selectedDiseaseId" (ngSubmit)="submitDisease(true)">
+        @if (selectedDiseaseId) {
+        <form (ngSubmit)="submitDisease(true)">
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary">اسم المرض *</label>
             <input type="text" class="form-control" [(ngModel)]="diseaseForm.name" name="editDiseaseName" required>
           </div>
+
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary">الاسم العلمي</label>
             <input type="text" class="form-control" [(ngModel)]="diseaseForm.scientificName"
               name="editDiseaseScientificName">
           </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary">🌿 النباتات المعرضة للإصابة:</label>
+            <div class="p-3 border rounded bg-white" style="max-height: 200px; overflow-y: auto;">
+              <div class="row g-2">
+                @for (plant of allPlants; track plant._id || plant.id) {
+                <div class="col-md-4">
+                  <div (click)="toggleAffectedPlant(plant._id || plant.id)" [style.cursor]="'pointer'"
+                    [style.background]="isSelectedAffectedPlant(plant._id || plant.id) ? 'var(--green-100)' : '#f8f9fa'"
+                    [style.border]="isSelectedAffectedPlant(plant._id || plant.id) ? '1px solid var(--green-500)' : '1px solid #dee2e6'"
+                    class="p-2 rounded text-center transition-all shadow-sm">
+                    <span [style.color]="isSelectedAffectedPlant(plant._id || plant.id) ? 'var(--green-800)' : '#333'"
+                      style="font-size: 0.85rem;">
+                      {{ isSelectedAffectedPlant(plant._id || plant.id) ? '✅ ' : '' }}
+                      {{ plant.commonName }}
+                    </span>
+                  </div>
+                </div>
+                } @empty {
+                <p class="text-muted text-center w-100">لا توجد نباتات مسجلة حالياً</p>
+                }
+              </div>
+            </div>
+            <small class="text-muted">اضغط على اسم النبات لاختياره أو إلغاء اختياره</small>
+          </div>
+
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary">نوع الممرض</label>
             <select class="form-control" [(ngModel)]="diseaseForm.pathogenType" name="editPathogenType">
@@ -954,6 +982,7 @@
               <option value="بيئي">بيئي</option>
             </select>
           </div>
+
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary">الظروف المواتية للانتشار</label>
             <input type="text" class="form-control" [(ngModel)]="diseaseForm.favorableConditions"
@@ -965,11 +994,13 @@
             <textarea class="form-control" [(ngModel)]="diseaseForm.symptomsText" name="editSymptomsText"
               rows="4"></textarea>
           </div>
+
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary">الوقاية (كل سطر = خطوة وقاية)</label>
             <textarea class="form-control" [(ngModel)]="diseaseForm.preventionText" name="editPreventionText"
               rows="3"></textarea>
           </div>
+
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary">طرق العلاج (كل سطر = خطوة علاج)</label>
             <textarea class="form-control" [(ngModel)]="diseaseForm.treatmentText" name="editTreatmentText"
@@ -980,10 +1011,13 @@
             <label class="form-label fw-bold text-secondary">تحديث الصورة</label>
             <input type="file" (change)="onFileChange($event, 'disease')" class="form-control">
           </div>
-          <button type="submit" class="btn btn-primary w-100 fw-bold">تحديث بيانات المرض</button>
+
+          <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">تحديث بيانات المرض</button>
         </form>
+        }
       </div>
     </div>
+    }
 
     <!-- مسح مرض -->
     <div *ngIf="activeView === 'delete-disease'" class="card shadow-sm border-0">
@@ -1203,7 +1237,7 @@
               <tr *ngFor="let admin of adminUsers" class="bg-primary-subtle">
                 <td class="fw-bold">{{ admin.firstName }} {{ admin.lastName }}</td>
                 <td>{{ admin.email }}</td>
-                <td>@{{ admin.username }}</td>
+                <td>&#64;{{ admin.username }}</td>
                 <td><span class="badge bg-primary">مدير (Admin)</span></td>
                 <td>{{ admin.createdAt | date:'shortDate' }}</td>
               </tr>
@@ -1270,12 +1304,15 @@
               <tr *ngFor="let post of pendingPosts">
                 <td style="font-weight:700">{{ getAuthorName(post.author) }}</td>
                 <td>{{ post.title }}</td>
-                <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ post.content }}</td>
+                <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{
+                  post.content }}</td>
                 <td>{{ post.createdAt | date:'medium':'':'ar-EG' }}</td>
                 <td>
                   <div style="display:flex;gap:.4rem">
-                    <button class="btn btn-primary btn-sm" style="background:var(--green-500)" (click)="approveForumPost(post._id || post.id)">قبول</button>
-                    <button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5" (click)="rejectForumPost(post._id || post.id)">رفض</button>
+                    <button class="btn btn-primary btn-sm" style="background:var(--green-500)"
+                      (click)="approveForumPost(post._id || post.id)">قبول</button>
+                    <button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5"
+                      (click)="rejectForumPost(post._id || post.id)">رفض</button>
                   </div>
                 </td>
               </tr>
@@ -1295,13 +1332,17 @@
 
 <!-- Custom Confirmation Modal -->
 <div class="modal-backdrop" *ngIf="showConfirmModal" (click)="closeConfirmDialog()">
-  <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 400px; text-align: center; padding: 2rem 1.5rem;">
+  <div class="modal-box" (click)="$event.stopPropagation()"
+    style="max-width: 400px; text-align: center; padding: 2rem 1.5rem;">
     <div style="font-size: 3rem; margin-bottom: 1rem; color: var(--amber-500);">⚠️</div>
-    <h3 style="font-weight: 700; color: var(--green-900); margin-bottom: 0.5rem; font-family: var(--font-display);">{{ confirmTitle }}</h3>
-    <p style="color: var(--neutral-500); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">{{ confirmMessage }}</p>
+    <h3 style="font-weight: 700; color: var(--green-900); margin-bottom: 0.5rem; font-family: var(--font-display);">{{
+      confirmTitle }}</h3>
+    <p style="color: var(--neutral-500); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">{{ confirmMessage
+      }}</p>
     <div style="display: flex; gap: 1rem; justify-content: center;">
       <button class="btn btn-ghost" (click)="closeConfirmDialog()" style="flex: 1;">إلغاء</button>
-      <button class="btn" [ngClass]="confirmButtonClass" (click)="executeConfirmDialog()" style="flex: 1; padding: 0.5rem;">{{ confirmButtonText }}</button>
+      <button class="btn" [ngClass]="confirmButtonClass" (click)="executeConfirmDialog()"
+        style="flex: 1; padding: 0.5rem;">{{ confirmButtonText }}</button>
     </div>
   </div>
 </div>

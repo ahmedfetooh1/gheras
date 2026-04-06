@@ -51,6 +51,7 @@ export class AdminDashboard implements OnInit {
   allFertilizers: any[] = [];
   allCategories: any[] = [];
   selectedDiseaseIds: string[] = [];
+  selectedAffectedPlantIds: string[] = [];
   selectedFertilizerIds: string[] = [];
 
   // ==================== EDIT/DELETE PLANT ====================
@@ -280,8 +281,7 @@ export class AdminDashboard implements OnInit {
   loadAllData() {
     this.dashboardService.getAdminStats().subscribe({
       next: (res: any) => {
-        console.log('Admin Stats Response:', res); // لتشوف الشكل الحقيقي
-        this.adminStats = res?.stats || res?.data || res || null;
+        this.adminStats = res?.data?.stats || res?.stats || res?.data || res || null;
         this.cdr.detectChanges();
       },
       error: (err) => { console.error('Error fetching admin stats:', err); }
@@ -291,32 +291,44 @@ export class AdminDashboard implements OnInit {
 
     this.wikiService.getPlants(1, 200).subscribe({
       next: (res: any) => {
-        this.allPlants = res?.data?.plants || res?.data || res || [];
+        const data = res?.data?.plants || res?.data || res;
+        this.allPlants = Array.isArray(data) ? data : [];
       },
       error: (err) => { console.error('Error fetching plants:', err); }
     });
     this.wikiService.getDiseases(1, 100).subscribe({
       next: (res: any) => {
-        this.allDiseases = res?.data?.diseases || res?.data || res || [];
+        const data = res?.data?.diseases || res?.data || res;
+        this.allDiseases = Array.isArray(data) ? data : [];
       },
       error: (err) => { console.error('Error fetching diseases:', err); }
     });
     this.wikiService.getFertilizers(1, 100).subscribe({
       next: (res: any) => {
-        this.allFertilizers = res?.data?.fertilizers || res?.data || res || [];
+        const data = res?.data?.fertilizers || res?.data || res;
+        this.allFertilizers = Array.isArray(data) ? data : [];
       },
       error: (err) => { console.error('Error fetching fertilizers:', err); }
     });
     this.http.get<any>(`${this.base}/category`).subscribe({
-      next: (res: any) => { this.allCategories = res?.data || res || []; },
+      next: (res: any) => {
+        const data = res?.data || res;
+        this.allCategories = Array.isArray(data) ? data : [];
+      },
       error: () => { }
     });
     this.http.get<any>(`${this.base}/product`).subscribe({
-      next: (res: any) => { this.allProducts = res?.data || res || []; },
+      next: (res: any) => {
+        const data = res?.data || res;
+        this.allProducts = Array.isArray(data) ? data : [];
+      },
       error: () => { }
     });
     this.dashboardService.getUsersAdmin().subscribe({
-      next: (res: any) => { this.allUsers = res?.data || res || []; },
+      next: (res: any) => {
+        const data = res?.data || res;
+        this.allUsers = Array.isArray(data) ? data : [];
+      },
       error: (err) => { console.error('Error fetching users:', err); }
     });
   }
@@ -347,6 +359,14 @@ export class AdminDashboard implements OnInit {
   toggleDisease(id: string) {
     const idx = this.selectedDiseaseIds.indexOf(id);
     idx === -1 ? this.selectedDiseaseIds.push(id) : this.selectedDiseaseIds.splice(idx, 1);
+  }
+  toggleAffectedPlant(id: string) {
+    const idx = this.selectedAffectedPlantIds.indexOf(id);
+    idx === -1 ? this.selectedAffectedPlantIds.push(id) : this.selectedAffectedPlantIds.splice(idx, 1);
+  }
+
+  isSelectedAffectedPlant(id: string) {
+    return this.selectedAffectedPlantIds.includes(id);
   }
   toggleFertilizer(id: string) {
     const idx = this.selectedFertilizerIds.indexOf(id);
@@ -533,41 +553,51 @@ export class AdminDashboard implements OnInit {
 
   // ==================== SUBMIT DISEASE ====================
   submitDisease(isUpdate: boolean = false) {
+    // 1. التأكد من الحقول الأساسية
     if (!this.diseaseForm.name?.trim() || !this.diseaseForm.pathogenType?.trim()) {
       this.alertService.warning('الرجاء ملء الحقول الأساسية: اسم المرض ونوع الممرض');
       return;
     }
 
+    // 2. تجهيز كائن البيانات (Body)
     const body: any = {
       name: this.diseaseForm.name,
+      scientificName: this.diseaseForm.scientificName || '',
+      pathogenType: this.diseaseForm.pathogenType || '',
+      favorableConditions: this.diseaseForm.favorableConditions || '',
+      symptoms: this.lines(this.diseaseForm.symptomsText),
+      prevention: this.lines(this.diseaseForm.preventionText),
+      treatment: this.lines(this.diseaseForm.treatmentText),
+      // إضافة مصفوفة النباتات المختارة هنا
+      affectedPlants: this.selectedAffectedPlantIds
     };
-    if (this.diseaseForm.scientificName) body.scientificName = this.diseaseForm.scientificName;
-    if (this.diseaseForm.pathogenType) body.pathogenType = this.diseaseForm.pathogenType;
-    if (this.diseaseForm.favorableConditions) body.favorableConditions = this.diseaseForm.favorableConditions;
 
-    const symptoms = this.lines(this.diseaseForm.symptomsText);
-    if (symptoms.length > 0) body.symptoms = symptoms;
-
-    const prevention = this.lines(this.diseaseForm.preventionText);
-    if (prevention.length > 0) body.prevention = prevention;
-
-    const treatment = this.lines(this.diseaseForm.treatmentText);
-    if (treatment.length > 0) body.treatment = treatment;
-
-    // DETERMINING DATA TO SEND
-    let dataToSend: any = body;
+    // 3. تحديد طريقة الإرسال (لو فيه صورة هنستخدم FormData)
+    let dataToSend: any;
     const hasImage = !!this.diseaseImage;
 
     if (hasImage) {
       const formData = new FormData();
+
+      // إضافة الحقول العادية للـ FormData
       Object.entries(body).forEach(([k, v]) => {
-        if (Array.isArray(v)) (v as string[]).forEach(item => formData.append(k, item));
-        else formData.append(k, v as any);
+        if (Array.isArray(v)) {
+          // لو مصفوفة (زي الأعراض أو النباتات المتأثرة) بنضيف كل عنصر لوحده بنفس المفتاح
+          v.forEach(item => formData.append(k, item));
+        } else {
+          formData.append(k, v as any);
+        }
       });
+
+      // إضافة الصورة
       formData.append('image', this.diseaseImage!);
       dataToSend = formData;
+    } else {
+      // لو مفيش صورة نبعت JSON عادي
+      dataToSend = body;
     }
 
+    // 4. تنفيذ الطلب (تحديث أو إضافة)
     if (isUpdate && this.selectedDiseaseId) {
       this.dashboardService.updateDiseaseAdmin(this.selectedDiseaseId, dataToSend).subscribe({
         next: () => {
@@ -609,6 +639,7 @@ export class AdminDashboard implements OnInit {
         if (!d) return;
 
         this.selectedDiseaseId = d._id || d.id;
+
         this.diseaseForm = {
           name: d.name || '',
           scientificName: d.scientificName || '',
@@ -618,6 +649,11 @@ export class AdminDashboard implements OnInit {
           preventionText: (d.prevention || []).join('\n'),
           treatmentText: (d.treatment || []).join('\n')
         };
+
+        this.selectedAffectedPlantIds = (d.affectedPlants || []).map((p: any) =>
+          typeof p === 'string' ? p : (p._id || p.id)
+        );
+
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -836,12 +872,14 @@ export class AdminDashboard implements OnInit {
     this.loadingPending = true;
     this.communityService.getPendingPosts().subscribe({
       next: (res: any) => {
-        this.pendingPosts = res?.data?.posts || res || [];
+        const data = res?.data?.posts || res?.posts || res?.data || res;
+        this.pendingPosts = Array.isArray(data) ? data : [];
         this.loadingPending = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading pending posts:', err);
+        this.pendingPosts = [];
         this.loadingPending = false;
       }
     });

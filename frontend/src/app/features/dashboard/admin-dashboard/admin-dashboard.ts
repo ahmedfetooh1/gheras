@@ -65,6 +65,7 @@ export class AdminDashboard implements OnInit {
   // ==================== EDIT/DELETE FERTILIZER ====================
   selectedFertilizerId: string = '';
   fertilizerToDeleteId: string = '';
+  selectedFertilizerPlantIds: string[] = [];
 
   // ==================== EDIT/DELETE PRODUCT ====================
   allProducts: any[] = [];
@@ -372,12 +373,24 @@ export class AdminDashboard implements OnInit {
     const idx = this.selectedFertilizerIds.indexOf(id);
     idx === -1 ? this.selectedFertilizerIds.push(id) : this.selectedFertilizerIds.splice(idx, 1);
   }
+
+  toggleSelectedFertilizerPlant(id: string) {
+    const index = this.selectedFertilizerPlantIds.indexOf(id);
+    if (index === -1) {
+      this.selectedFertilizerPlantIds.push(id);
+    } else {
+      this.selectedFertilizerPlantIds.splice(index, 1);
+    }
+  }
   isSelectedDisease(id: string) { return this.selectedDiseaseIds.includes(id); }
   isSelectedFertilizer(id: string) { return this.selectedFertilizerIds.includes(id); }
-
+  isPlantSelectedForFertilizer(id: string) {
+    return this.selectedFertilizerPlantIds.includes(id);
+  }
   // helper: split textarea lines to array
-  private lines(text: string): string[] {
-    return text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  private lines(text: string | null | undefined): string[] {
+    if (!text) return [];
+    return text.toString().split('\n').map(l => l.trim()).filter(l => l.length > 0);
   }
 
   // ==================== SUBMIT PLANT ====================
@@ -603,7 +616,7 @@ export class AdminDashboard implements OnInit {
         next: () => {
           this.alertService.success('تم تحديث المرض بنجاح ✅');
           this.resetDiseaseForm();
-          this.setView('stats');
+          // this.setView('stats');
           this.loadAllData();
         },
         error: (err) => {
@@ -616,7 +629,7 @@ export class AdminDashboard implements OnInit {
         next: () => {
           this.alertService.success('تم إضافة المرض بنجاح ✅');
           this.resetDiseaseForm();
-          this.setView('stats');
+          // this.setView('stats');
           this.loadAllData();
         },
         error: (err) => {
@@ -671,19 +684,26 @@ export class AdminDashboard implements OnInit {
 
   // ==================== SUBMIT FERTILIZER ====================
   submitFertilizer(isUpdate: boolean = false) {
+    // 1. التأكد من الحقول الأساسية
     if (!this.fertilizerForm.name?.trim() || !this.fertilizerForm.type?.trim()) {
       this.alertService.warning('الرجاء ملء الحقول الأساسية: اسم السماد ونوعه');
       return;
     }
-    const body: any = { name: this.fertilizerForm.name };
-    if (this.fertilizerForm.type) body.type = this.fertilizerForm.type;
-    if (this.fertilizerForm.applicationMethod) body.applicationMethod = this.fertilizerForm.applicationMethod;
-    if (this.fertilizerForm.applicationRate) body.applicationRate = this.fertilizerForm.applicationRate;
+
+    // 2. بناء الـ Body الأساسي مع الحفاظ على كل بياناتك
+    const body: any = {
+      name: this.fertilizerForm.name,
+      type: this.fertilizerForm.type,
+      applicationMethod: this.fertilizerForm.applicationMethod || '',
+      applicationRate: this.fertilizerForm.applicationRate || '',
+      // السطر الجديد اللي ضفناه عشان النباتات المناسبة:
+      suitablePlants: this.selectedFertilizerPlantIds
+    };
 
     const benefits = this.lines(this.fertilizerForm.benefitsText);
     if (benefits.length > 0) body.benefits = benefits;
 
-    // parse composition: "عنصر:نسبة" per line
+    // منطق الـ Composition بتاعك (مهم جداً وملمستوش)
     const composition = this.lines(this.fertilizerForm.compositionText)
       .map(line => {
         const parts = line.split(':');
@@ -691,7 +711,7 @@ export class AdminDashboard implements OnInit {
       }).filter(c => c.element);
     if (composition.length > 0) body.composition = composition;
 
-    // DETERMINING DATA TO SEND
+    // 3. تحديد طريقة الإرسال (JSON أو FormData)
     let dataToSend: any = body;
     const hasImage = !!this.fertilizerImage;
 
@@ -700,9 +720,11 @@ export class AdminDashboard implements OnInit {
       Object.entries(body).forEach(([k, v]) => {
         if (Array.isArray(v)) {
           (v as any[]).forEach((item, i) => {
-            if (typeof item === 'object') {
+            if (typeof item === 'object' && item !== null) {
+              // التعامل مع الـ Composition Object
               Object.entries(item).forEach(([sk, sv]) => formData.append(`${k}[${i}][${sk}]`, sv as any));
             } else {
+              // التعامل مع مصفوفة الـ IDs (النباتات)
               formData.append(k, item);
             }
           });
@@ -714,13 +736,13 @@ export class AdminDashboard implements OnInit {
       dataToSend = formData;
     }
 
+    // 4. التنفيذ (إضافة أو تحديث)
     if (isUpdate && this.selectedFertilizerId) {
       this.dashboardService.updateFertilizerAdmin(this.selectedFertilizerId, dataToSend).subscribe({
         next: () => {
           this.alertService.success('تم تحديث السماد بنجاح ✅');
-          this.resetFertilizerForm();
-          this.setView('stats');
           this.loadAllData();
+          // لاحظ: شلنا setView و reset عشان تفضل في مكانك والـ Notification يظهر صح
         },
         error: (err) => {
           console.error('Update error:', err);
@@ -732,7 +754,8 @@ export class AdminDashboard implements OnInit {
         next: () => {
           this.alertService.success('تم إضافة السماد بنجاح ✅');
           this.resetFertilizerForm();
-          this.setView('stats');
+          this.selectedFertilizerPlantIds = []; // تصفير النباتات المختارة
+          this.setView('stats'); // في الإضافة بنرجع للرئيسية عادي
           this.loadAllData();
         },
         error: (err) => {
@@ -746,23 +769,33 @@ export class AdminDashboard implements OnInit {
   onFertilizerSelect(id: string) {
     if (!id || id === 'undefined') {
       this.resetFertilizerForm();
+      this.selectedFertilizerPlantIds = [];
       return;
     }
 
     this.wikiService.getFertilizerById(id).subscribe({
       next: (res: any) => {
-        const f = res;
-        if (!f) return;
+        if (!res) return;
 
-        this.selectedFertilizerId = f._id || f.id;
+        this.selectedFertilizerId = res._id || res.id;
+
+        // Map backend data to fertilizerForm structure (including string conversion for textareas)
         this.fertilizerForm = {
-          name: f.name || '',
-          type: f.type || '',
-          applicationMethod: f.applicationMethod || '',
-          applicationRate: f.applicationRate || '',
-          benefitsText: (f.benefits || []).join('\n'),
-          compositionText: (f.composition || []).map((c: any) => `${c.element}:${c.percentage}`).join('\n')
+          name: res.name || '',
+          type: res.type || '',
+          applicationMethod: res.applicationMethod || '',
+          applicationRate: res.applicationRate || '',
+          benefitsText: Array.isArray(res.benefits) ? res.benefits.join('\n') : '',
+          compositionText: Array.isArray(res.composition)
+            ? res.composition.map((c: any) => `${c.element}:${c.percentage}`).join('\n')
+            : ''
         };
+
+        // Convert suitablePlants Objects into IDs for the selector cards UI
+        this.selectedFertilizerPlantIds = (res.suitablePlants || []).map((p: any) =>
+          typeof p === 'string' ? p : (p._id || p.id)
+        );
+
         this.cdr.detectChanges();
       },
       error: (err) => {

@@ -51,7 +51,7 @@ const orderSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
+    enum: ["pending", "paid", "confirmed", "processing", "shipped", "delivered", "cancelled"],
     default: "pending"
   },
 
@@ -66,28 +66,26 @@ const orderSchema = new mongoose.Schema({
     ref: "Payment"
   },
 
-  phone:{
+  phone: {
     type: String,
-    required:true
+    required: true
   },
-  
+
   address: {
-  city: { type: String, required: true },
-  street: { type: String, required: true }
-}
+    city: { type: String, required: true },
+    street: { type: String, required: true }
+  }
 
 }, { timestamps: true })
 
-orderSchema.pre('save', async function(next) {
+orderSchema.pre('save', async function (next) {
   if (this.isModified('status') && this.status === 'delivered') {
     try {
-      // Require the model dynamically to avoid circular dependencies
       const SucceededOrder = require('./succeededOrder');
-      // Use updateOne with upsert to avoid duplicate errors if the hook runs multiple times
       await SucceededOrder.updateOne(
         { orderId: this._id },
-        { 
-          $set: { 
+        {
+          $set: {
             orderId: this._id,
             total: this.total,
             user: this.user,
@@ -100,8 +98,21 @@ orderSchema.pre('save', async function(next) {
       console.error('Error in order presave hook:', err);
     }
   }
-  // Some Mongoose versions may not provide `next` for async hooks.
   if (typeof next === 'function') next();
+});
+
+// Sync deletion: Remove from SucceededOrder when an order is deleted
+orderSchema.pre('findOneAndDelete', async function (next) {
+  const docToDel = await this.model.findOne(this.getQuery());
+  if (docToDel) {
+    try {
+      const SucceededOrder = require('./succeededOrder');
+      await SucceededOrder.deleteOne({ orderId: docToDel._id });
+    } catch (err) {
+      console.error('Error in order pre-delete hook:', err);
+    }
+  }
+  next();
 });
 
 module.exports = mongoose.model("Order", orderSchema)

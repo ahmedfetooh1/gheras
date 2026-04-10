@@ -31,6 +31,19 @@ export class AdminDashboard implements OnInit {
   pendingPosts: any[] = [];
   loadingPending = false;
 
+  // Orders Management
+  allOrders: any[] = [];
+  loadingOrders = false;
+  statusMap: any = {
+    'pending': { label: 'معلق', class: 'badge-amber' },
+    'paid': { label: 'تم الدفع', class: 'badge-green' },
+    'confirmed': { label: 'تم الدفع', class: 'badge-green' },
+    'processing': { label: 'تم الدفع', class: 'badge-green' },
+    'shipped': { label: 'تم الدفع', class: 'badge-green' },
+    'delivered': { label: 'مكتمل', class: 'badge-green' },
+    'cancelled': { label: 'ملغي', class: 'badge-red' }
+  };
+
   // Collapse states
   expandedSections: { [key: string]: boolean } = {
     plantManagement: true,
@@ -319,6 +332,57 @@ export class AdminDashboard implements OnInit {
       next: (res: any) => { this.allUsers = res?.data || res || []; },
       error: (err) => { console.error('Error fetching users:', err); }
     });
+
+    this.loadOrders();
+  }
+
+  loadOrders() {
+    this.loadingOrders = true;
+    this.dashboardService.getAllOrders().subscribe({
+      next: (res: any) => {
+        const data = res?.data || res;
+        this.allOrders = Array.isArray(data) ? data : [];
+        this.loadingOrders = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching orders:', err);
+        this.loadingOrders = false;
+      }
+    });
+  }
+
+  updateOrderStatus(orderId: string, event: any) {
+    const newStatus = event.target.value;
+    if (!newStatus) return;
+    this.changeStatus(orderId, newStatus);
+  }
+
+  changeStatus(orderId: string, newStatus: string) {
+    this.dashboardService.updateOrderStatus(orderId, newStatus).subscribe({
+      next: () => {
+        this.alertService.success('تم تحديث حالة الطلب بنجاح ✅');
+        this.loadOrders();
+        this.loadAllData();
+      },
+      error: (err) => {
+        console.error('Update status error:', err);
+        this.alertService.error('حدث خطأ أثناء تحديث حالة الطلب: ' + (err.error?.message || 'تأكد من صلاحياتك'));
+      }
+    });
+  }
+
+  getOrderItemsSummary(items: any[]): string {
+    if (!items || items.length === 0) return 'لا يوجد منتجات';
+    return items.map(item => `${item.name} × ${item.quantity}`).join(' ، ');
+  }
+
+  getStatusClass(status: string): string {
+    return this.statusMap[status]?.class || 'badge-amber';
+  }
+
+  getStatusLabel(status: string): string {
+    return this.statusMap[status]?.label || status;
   }
 
   setView(view: string) {

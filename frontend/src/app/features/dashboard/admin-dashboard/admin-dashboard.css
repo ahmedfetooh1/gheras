@@ -99,3 +99,156 @@
 .data-table tbody tr:hover {
   background: var(--green-50) !important;
 }
+
+/* Premium Dashboard Styling */
+.premium-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1.25rem !important;
+  padding: 1.5rem !important;
+  background: white !important;
+  border-radius: 1.25rem !important;
+  border: 1px solid rgba(0,0,0,0.05) !important;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+}
+
+.premium-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1) !important;
+  border-color: var(--green-200) !important;
+}
+
+.stat-icon-wrapper {
+  width: 3.5rem !important;
+  height: 3.5rem !important;
+  border-radius: 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.5rem !important;
+  flex-shrink: 0 !important;
+}
+
+.blue-gradient { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important; color: #2563eb !important; }
+.amber-gradient { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important; color: #d97706 !important; }
+.green-gradient { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important; color: #16a34a !important; }
+.purple-gradient { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important; color: #7c3aed !important; }
+.emerald-gradient { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important; color: #059669 !important; }
+
+.stat-info {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.stat-value {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: var(--neutral-900) !important;
+  line-height: 1.2 !important;
+}
+
+.stat-label {
+  font-size: 0.85rem !important;
+  color: var(--neutral-500) !important;
+  font-weight: 500 !important;
+}
+
+.user-avatar-sm {
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: 50% !important;
+  background: var(--green-100) !important;
+  color: var(--green-700) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700 !important;
+  font-size: 0.8rem !important;
+  border: 1px solid var(--green-200) !important;
+}
+
+.badge {
+  padding: 0.4rem 0.8rem !important;
+  border-radius: 999px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+}
+
+.badge-amber {
+  background: #fffbeb !important;
+  color: #d97706 !important;
+  border: 1px solid #fef3c7 !important;
+}
+
+.badge-green {
+  background: #f0fdf4 !important;
+  color: #16a34a !important;
+  border: 1px solid #dcfce7 !important;
+}
+
+.badge-red {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fee2e2 !important;
+}
+
+/* Order Action Buttons */
+.action-btn {
+  padding: 0.35rem 0.75rem !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.3rem !important;
+  white-space: nowrap !important;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn-process {
+  background: #fef9c3 !important;
+  color: #a16207 !important;
+  border-color: #fef08a !important;
+}
+
+.btn-ship {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border-color: #dbeafe !important;
+}
+
+.btn-deliver {
+  background: #f0fdf4 !important;
+  color: #15803d !important;
+  border-color: #dcfce7 !important;
+}
+
+.btn-cancel {
+  background: #fff1f2 !important;
+  color: #be123c !important;
+  border-color: #ffe4e6 !important;
+}
+
+.btn-icon {
+  font-size: 0.85rem !important;
+}
+
+.text-emerald {
+  color: #059669 !important;
+}
+
+.featured-stat {
+  border-bottom: 3px solid #10b981 !important;
+}

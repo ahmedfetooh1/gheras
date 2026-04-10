@@ -10,6 +10,7 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const Order = require('../models/order');
 const SucceededOrder = require('../models/succeededOrder');
+const Cart = require('../models/cart');
 const catchAsync = require('../utils/catchAsync'); 
 
 exports.getAdminDashboard = catchAsync(async (req, res, next) => {
@@ -55,8 +56,11 @@ exports.getAdminDashboard = catchAsync(async (req, res, next) => {
     const totalComments = await Comment.countDocuments();
     
     // 4. Order Stats
-    const totalPendingOrders = await Order.countDocuments({ status: 'pending' });
-    const totalDeliveredOrders = await SucceededOrder.countDocuments();
+    const realPendingOrders = await Order.countDocuments({ status: 'pending' });
+    const activeCartsCount = await Cart.countDocuments({ "items.0": { $exists: true } });
+    const totalPendingOrders = realPendingOrders + activeCartsCount;
+    
+    const totalDeliveredOrders = await Order.countDocuments({ status: 'delivered' });
 
     // 5. Total Sold Products
     const soldProductsAggregation = await Order.aggregate([

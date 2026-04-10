@@ -26,6 +26,10 @@ export class DashboardService {
     return this.http.get(`${this.baseUrl}/orders/admin/all`);
   }
 
+  updateOrderStatus(id: string, status: string): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/orders/admin/${id}/status`, { status });
+  }
+
   // Admin Add Methods
   addPlantAdmin(data: FormData): Observable<any> {
     return this.http.post(`${this.baseUrl}/plants`, data);

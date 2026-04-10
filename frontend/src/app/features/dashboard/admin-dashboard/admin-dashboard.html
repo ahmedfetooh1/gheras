@@ -91,36 +91,84 @@
       </div>
 
       <!-- Stats -->
-      <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:2rem">
-        <div class="stat-card" (click)="setView('users')" style="cursor: pointer; transition: transform 0.2s;">
-          <div class="stat-icon" style="background:#f0fdf4">👥</div>
-          <div class="stat-value">{{ allUsers.length || 0 }}</div>
-          <div class="stat-label">إجمالي المستخدمين</div>
+      <div class="stats-grid"
+        style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <div class="stat-card premium-card" (click)="setView('users')">
+          <div class="stat-icon-wrapper blue-gradient">
+            <span class="icon">👥</span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value">{{ allUsers.length || 0 }}</div>
+            <div class="stat-label">إجمالي المستخدمين</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background:#fffbeb">⭐</div>
-          <div class="stat-value">{{ premiumCount }}</div>
-          <div class="stat-label">مشتركو البريميوم</div>
+
+        <div class="stat-card premium-card">
+          <div class="stat-icon-wrapper amber-gradient">
+            <span class="icon">⭐</span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value">{{ adminStats?.users?.premium || 0 }}</div>
+            <div class="stat-label">مشتركو البريميوم</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background:#f0fdf4">🌱</div>
-          <div class="stat-value">{{ adminStats?.catalog?.plants || 0 }}</div>
-          <div class="stat-label">نباتات مضافة</div>
+
+        <div class="stat-card premium-card">
+          <div class="stat-icon-wrapper green-gradient">
+            <span class="icon">🌱</span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value">{{ adminStats?.catalog?.plants || 0 }}</div>
+            <div class="stat-label">نباتات مضافة</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background:#fef9c3">✅</div>
-          <div class="stat-value">{{ adminStats?.sales?.deliveredOrders || 0 }}</div>
-          <div class="stat-label">طلبات مكتملة</div>
+
+        <div class="stat-card premium-card" (click)="setView('forum-moderation')">
+          <div class="stat-icon-wrapper purple-gradient">
+            <span class="icon">💬</span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value">{{ pendingPosts.length || 0 }}</div>
+            <div class="stat-label">بوستات للنشر</div>
+          </div>
         </div>
+<<<<<<< Updated upstream
         <div class="stat-card" (click)="setView('forum-moderation')" style="cursor: pointer; transition: transform 0.2s; border: 2px solid var(--amber-200);">
           <div class="stat-icon" style="background:#fff7ed">💬</div>
           <div class="stat-value" style="color:var(--amber-600)">{{ pendingPosts.length || 0 }}</div>
           <div class="stat-label">بوستات للنشر</div>
+=======
+
+        <div class="stat-card premium-card" (click)="setView('stats')">
+          <div class="stat-icon-wrapper amber-gradient">
+            <span class="icon">⏳</span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value">{{ adminStats?.sales?.pendingOrders || 0 }}</div>
+            <div class="stat-label">طلبات معلقة</div>
+          </div>
+>>>>>>> Stashed changes
         </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background:#eff6ff">💰</div>
-          <div class="stat-value">{{ adminStats?.financials?.totalRevenueEGP || 0 }}</div>
-          <div class="stat-label">إجمالي المبيعات (ج.م)</div>
+
+        <div class="stat-card premium-card">
+          <div class="stat-icon-wrapper green-gradient">
+            <span class="icon">✅</span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value">{{ adminStats?.sales?.deliveredOrders || 0 }}</div>
+            <div class="stat-label">طلبات مكتملة</div>
+          </div>
+        </div>
+
+        <div class="stat-card premium-card featured-stat">
+          <div class="stat-icon-wrapper emerald-gradient">
+            <span class="icon">💰</span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value text-emerald">{{ adminStats?.financials?.totalRevenueEGP || 0 }} <span
+                style="font-size: 1rem;">ج.م</span></div>
+            <div class="stat-label">إجمالي المبيعات المحققة</div>
+          </div>
         </div>
       </div>
 
@@ -217,13 +265,28 @@
           </thead>
           <tbody>
             <tr *ngFor="let post of pendingPosts | slice:0:5">
-              <td>{{ getAuthorName(post.author) }}</td>
-              <td>{{ post.title }}</td>
-              <td>{{ post.createdAt | date:'short':'':'ar-EG' }}</td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div class="user-avatar-sm" style="background: var(--amber-100); color: var(--amber-700);">{{
+                    (getAuthorName(post.author) || 'U')[0].toUpperCase() }}</div>
+                  <span style="font-weight: 600;">{{ getAuthorName(post.author) }}</span>
+                </div>
+              </td>
+              <td style="font-weight: 500;">{{ post.title }}</td>
+              <td style="color: var(--neutral-500); font-size: 0.85rem;">{{ post.createdAt | date:'short':'':'ar-EG' }}
+              </td>
               <td>
                 <div style="display:flex;gap:.4rem">
+<<<<<<< Updated upstream
                   <button class="btn btn-primary btn-sm" style="background:var(--green-500)" (click)="approveForumPost(post._id || post.id)">قبول</button>
                   <button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5" (click)="rejectForumPost(post._id || post.id)">رفض</button>
+=======
+                  <button class="btn btn-primary btn-sm"
+                    style="background:var(--green-500); border:none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                    (click)="approveForumPost(post._id || post.id)">قبول</button>
+                  <button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5"
+                    (click)="rejectForumPost(post._id || post.id)">رفض</button>
+>>>>>>> Stashed changes
                 </div>
               </td>
             </tr>
@@ -238,61 +301,78 @@
       </div>
 
       <!-- Orders -->
-      <div class="page-title" style="font-size:1.05rem;margin-bottom:1rem">الطلبات الجديدة (4)</div>
+      <div class="page-title" style="font-size:1.05rem;margin-bottom:1rem">الطلبات الجديدة ({{ allOrders.length }})
+      </div>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
             <tr>
-              <th>#</th>
+              <th>رقم الطلب</th>
               <th>العميل</th>
               <th>المنتجات</th>
               <th>الإجمالي</th>
               <th>طريقة الدفع</th>
               <th>الحالة</th>
-              <th>تعديل</th>
+              <th>الإجراء</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td style="font-weight:700;color:var(--green-700)">#1042</td>
-              <td>منى عبد الله</td>
-              <td>سماد NPK × 2 ، تربة × 1</td>
-              <td style="font-weight:700">170 ج.م</td>
-              <td><span class="badge badge-green">Paymob</span></td>
-              <td><span class="badge badge-amber">معلق</span></td>
-              <td><select class="input-field" style="padding:.3rem .5rem;width:120px;font-size:.8rem">
-                  <option>معلق</option>
-                  <option>مؤكد</option>
-                  <option>تم الشحن</option>
-                  <option>مُستلم</option>
-                </select></td>
+            <tr *ngFor="let order of allOrders">
+              <td style="font-weight:700;color:var(--green-700)">#{{ order._id.slice(-4) }}</td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div class="user-avatar-sm">{{ (order.user?.username || 'U')[0].toUpperCase() }}</div>
+                  <span style="font-weight: 600;">{{ order.user?.username || 'مستخدم مجهول' }}</span>
+                </div>
+              </td>
+              <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                [title]="getOrderItemsSummary(order.items)">
+                {{ getOrderItemsSummary(order.items) }}
+              </td>
+              <td style="font-weight:700">{{ order.total }} ج.م</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'badge-earth': order.paymentMethod === 'cash',
+                  'badge-green': order.paymentMethod === 'card' || order.paymentMethod === 'wallet' || order.paymentMethod === 'Paymob',
+                  'badge-blue': order.paymentMethod === 'In Cart'
+                }">
+                  {{ order.paymentMethod === 'cash' ? 'كاش' : (order.paymentMethod === 'In Cart' ? 'في السلة' :
+                  'Paymob') }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="getStatusClass(order.status)">
+                  {{ getStatusLabel(order.status) }}
+                </span>
+              </td>
+              <td>
+                <div style="display:flex; gap: 0.4rem; flex-wrap: wrap;">
+                  <!-- Quick Actions -->
+                  <button *ngIf="order.status === 'paid' || order.status === 'confirmed'" class="action-btn btn-process"
+                    (click)="changeStatus(order._id, 'processing')">
+                    ⚙️ تجهيز
+                  </button>
+
+                  <button
+                    *ngIf="order.status === 'paid' || order.status === 'confirmed' || order.status === 'processing'"
+                    class="action-btn btn-ship" (click)="changeStatus(order._id, 'shipped')">
+                    🚚 شحن
+                  </button>
+
+                  <button *ngIf="order.status === 'shipped'" class="action-btn btn-deliver"
+                    (click)="changeStatus(order._id, 'delivered')">
+                    ✅ إتمام التوصيل
+                  </button>
+
+                  <button *ngIf="order.status !== 'delivered' && order.status !== 'cancelled'"
+                    class="action-btn btn-cancel" (click)="changeStatus(order._id, 'cancelled')">
+                    ✖️ إلغاء
+                  </button>
+                </div>
+              </td>
             </tr>
-            <tr>
-              <td style="font-weight:700;color:var(--green-700)">#1043</td>
-              <td>أحمد مصطفى</td>
-              <td>بذور طماطم × 3</td>
-              <td style="font-weight:700">75 ج.م</td>
-              <td><span class="badge badge-earth">كاش</span></td>
-              <td><span class="badge badge-amber">معلق</span></td>
-              <td><select class="input-field" style="padding:.3rem .5rem;width:120px;font-size:.8rem">
-                  <option>معلق</option>
-                  <option>مؤكد</option>
-                  <option>تم الشحن</option>
-                  <option>مُستلم</option>
-                </select></td>
-            </tr>
-            <tr>
-              <td style="font-weight:700;color:var(--green-700)">#1041</td>
-              <td>رانيا حسن</td>
-              <td>بخاخ × 1 ، مبيد × 1</td>
-              <td style="font-weight:700">100 ج.م</td>
-              <td><span class="badge badge-green">Paymob</span></td>
-              <td><span class="badge badge-green">مؤكد</span></td>
-              <td><select class="input-field" style="padding:.3rem .5rem;width:120px;font-size:.8rem">
-                  <option>مؤكد</option>
-                  <option>تم الشحن</option>
-                  <option>مُستلم</option>
-                </select></td>
+            <tr *ngIf="allOrders.length === 0">
+              <td colspan="7" style="text-align:center;padding:2rem;color:var(--neutral-400)">لا توجد طلبات حالياً</td>
             </tr>
           </tbody>
         </table>

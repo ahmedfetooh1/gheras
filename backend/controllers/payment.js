@@ -209,7 +209,7 @@ async function syncOrderAfterPaymentUpdate(paymentDoc, success) {
   if (!paymentDoc) return { orderUpdated: false, orderId: null };
 
   const autoDeliverOnPayment = String(process.env.AUTO_DELIVER_ON_PAYMENT || 'true') === 'true';
-  const nextStatus = success ? (autoDeliverOnPayment ? 'delivered' : 'processing') : 'cancelled';
+  const nextStatus = success ? (autoDeliverOnPayment ? 'delivered' : 'paid') : 'cancelled';
 
   // find the order first to have access to items (for stock return)
   const order = await Order.findOne({ payment: paymentDoc._id });

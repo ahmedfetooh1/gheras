@@ -169,23 +169,39 @@ const cancelOrder = catchAsync(async (req, res, next) => {
 // Admin endpoints
 // ──────────────────────────────────────────────────────────────────
 
-//GET /api/orders/admin/all
-// جيب كل الـ orders (للـ admin)
 const getAllOrders = catchAsync(async (req, res, next) => {
   const filter = {};
-
-  // فلترة اختيارية بالـ status
   if (req.query.status) {
     filter.status = req.query.status;
   }
 
-  const orders = await Order.find(filter)
+  const realOrders = await Order.find(filter)
     .sort({ createdAt: -1 })
-    .populate("user", "name email")
+    .populate("user", "username email avatar")
     .populate("items.product", "name images")
     .populate("payment", "status method");
 
-  res.status(200).json({ status: "success", results: orders.length, data: orders });
+  // Fetch active carts and transform them into "Pending" orders for admin visibility
+  let cartOrders = [];
+  if (!req.query.status || req.query.status === 'pending') {
+    const activeCarts = await Cart.find({ "items.0": { $exists: true } })
+      .populate("user", "username email avatar");
+    
+    cartOrders = activeCarts.map(cart => ({
+      _id: `CART_${cart._id?.toString().slice(-4)}`,
+      user: cart.user,
+      items: cart.items,
+      total: cart.items.reduce((acc, item) => acc + (item.finalPrice * item.quantity), 0),
+      status: 'pending',
+      paymentMethod: 'In Cart',
+      createdAt: cart.updatedAt,
+      isVirtual: true
+    }));
+  }
+
+  const allOrders = [...realOrders, ...cartOrders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  res.status(200).json({ status: "success", results: allOrders.length, data: allOrders });
 });
 
 //PATCH /api/orders/admin/:id/status
@@ -194,7 +210,7 @@ const getAllOrders = catchAsync(async (req, res, next) => {
 const updateOrderStatus = catchAsync(async (req, res, next) => {
   const { status } = req.body;
 
-  const allowedStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
+  const allowedStatuses = ["pending", "paid", "confirmed", "processing", "shipped", "delivered", "cancelled"];
   if (!status || !allowedStatuses.includes(status)) {
     return next(
       new AppError(`Invalid status. Allowed: ${allowedStatuses.join(", ")}`, 400)

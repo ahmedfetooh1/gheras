@@ -159,7 +159,8 @@
             <span class="icon">💰</span>
           </div>
           <div class="stat-info">
-            <div class="stat-value text-emerald">{{ adminStats?.financials?.totalRevenueEGP || 0 }} <span style="font-size: 1rem;">ج.م</span></div>
+            <div class="stat-value text-emerald">{{ adminStats?.financials?.totalRevenueEGP || 0 }} <span
+                style="font-size: 1rem;">ج.م</span></div>
             <div class="stat-label">إجمالي المبيعات المحققة</div>
           </div>
         </div>
@@ -261,15 +262,18 @@
             <tr *ngFor="let post of pendingPosts | slice:0:5">
               <td>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <div class="user-avatar-sm" style="background: var(--amber-100); color: var(--amber-700);">{{ (getAuthorName(post.author) || 'U')[0].toUpperCase() }}</div>
+                  <div class="user-avatar-sm" style="background: var(--amber-100); color: var(--amber-700);">{{
+                    (getAuthorName(post.author) || 'U')[0].toUpperCase() }}</div>
                   <span style="font-weight: 600;">{{ getAuthorName(post.author) }}</span>
                 </div>
               </td>
               <td style="font-weight: 500;">{{ post.title }}</td>
-              <td style="color: var(--neutral-500); font-size: 0.85rem;">{{ post.createdAt | date:'short':'':'ar-EG' }}</td>
+              <td style="color: var(--neutral-500); font-size: 0.85rem;">{{ post.createdAt | date:'short':'':'ar-EG' }}
+              </td>
               <td>
                 <div style="display:flex;gap:.4rem">
-                  <button class="btn btn-primary btn-sm" style="background:var(--green-500); border:none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                  <button class="btn btn-primary btn-sm"
+                    style="background:var(--green-500); border:none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
                     (click)="approveForumPost(post._id || post.id)">قبول</button>
                   <button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5"
                     (click)="rejectForumPost(post._id || post.id)">رفض</button>
@@ -289,12 +293,13 @@
 
       <!-- Orders -->
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
-        <div class="page-title" style="font-size: 1.5rem; margin-bottom: 0;">الطلبات الجديدة ({{ allOrders.length }})</div>
+        <div class="page-title" style="font-size: 1.5rem; margin-bottom: 0;">الطلبات الجديدة ({{ allOrders.length }})
+        </div>
         <div style="display: flex; gap: 0.5rem;">
           <button class="btn btn-ghost btn-sm" (click)="loadOrders()">🔄 تحديث</button>
         </div>
       </div>
-      
+
       <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -328,7 +333,8 @@
                   'badge-green': order.paymentMethod === 'card' || order.paymentMethod === 'wallet' || order.paymentMethod === 'Paymob',
                   'badge-blue': order.paymentMethod === 'In Cart'
                 }">
-                  {{ order.paymentMethod === 'cash' ? 'كاش' : (order.paymentMethod === 'In Cart' ? 'في السلة' : 'Paymob') }}
+                  {{ order.paymentMethod === 'cash' ? 'كاش' : (order.paymentMethod === 'In Cart' ? 'في السلة' :
+                  'Paymob') }}
                 </span>
               </td>
               <td>
@@ -339,28 +345,24 @@
               <td>
                 <div style="display:flex; gap: 0.4rem; flex-wrap: wrap;">
                   <!-- Quick Actions -->
-                  <button *ngIf="order.status === 'paid' || order.status === 'confirmed'"
-                    class="action-btn btn-process"
+                  <button *ngIf="order.status === 'paid' || order.status === 'confirmed'" class="action-btn btn-process"
                     (click)="changeStatus(order._id, 'processing')">
                     ⚙️ تجهيز
                   </button>
 
                   <button
                     *ngIf="order.status === 'paid' || order.status === 'confirmed' || order.status === 'processing'"
-                    class="action-btn btn-ship"
-                    (click)="changeStatus(order._id, 'shipped')">
+                    class="action-btn btn-ship" (click)="changeStatus(order._id, 'shipped')">
                     🚚 شحن
                   </button>
 
-                  <button *ngIf="order.status === 'shipped'" 
-                    class="action-btn btn-deliver"
+                  <button *ngIf="order.status === 'shipped'" class="action-btn btn-deliver"
                     (click)="changeStatus(order._id, 'delivered')">
                     ✅ إتمام التوصيل
                   </button>
 
-                  <button *ngIf="order.status !== 'delivered' && order.status !== 'cancelled'" 
-                    class="action-btn btn-cancel"
-                    (click)="changeStatus(order._id, 'cancelled')">
+                  <button *ngIf="order.status !== 'delivered' && order.status !== 'cancelled'"
+                    class="action-btn btn-cancel" (click)="changeStatus(order._id, 'cancelled')">
                     ✖️ إلغاء
                   </button>
                 </div>

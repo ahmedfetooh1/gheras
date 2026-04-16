@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const dotenv = require('dotenv'); 
+const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 
@@ -37,7 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
-app.use(passport.initialize()); 
+app.use(passport.initialize());
 
 
 // main route or project 

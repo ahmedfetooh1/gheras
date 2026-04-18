@@ -1,0 +1,9 @@
+<div class="alert-container">
+  @for (alert of activeAlerts; track alert.id) {
+    <div class="alert-toast" [class]="alert.type" (click)="removeAlert(alert.id)">
+      <div class="alert-icon">{{ getIcon(alert.type) }}</div>
+      <div class="alert-message">{{ alert.message }}</div>
+      <button class="alert-close">×</button>
+    </div>
+  }
+</div>

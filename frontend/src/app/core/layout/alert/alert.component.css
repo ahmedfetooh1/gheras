@@ -1,0 +1,103 @@
+.alert-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 90%;
+  max-width: 420px;
+  pointer-events: none;
+}
+
+.alert-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  animation: slideInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.alert-toast:hover {
+  transform: scale(1.02);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.alert-toast::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+}
+
+.alert-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.alert-message {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--neutral-800);
+  line-height: 1.4;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--neutral-400);
+  padding: 4px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Types */
+.alert-toast.success { border-right: 2px solid #22c55e; }
+.alert-toast.success::before { background: #22c55e; }
+
+.alert-toast.error { border-right: 2px solid #ef4444; }
+.alert-toast.error::before { background: #ef4444; }
+
+.alert-toast.warning { border-right: 2px solid #f59e0b; }
+.alert-toast.warning::before { background: #f59e0b; }
+
+.alert-toast.info { border-right: 2px solid #3b82f6; }
+.alert-toast.info::before { background: #3b82f6; }
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 576px) {
+  .alert-container {
+    top: 16px;
+    padding: 0 16px;
+  }
+  .alert-toast {
+    padding: 10px 14px;
+  }
+}

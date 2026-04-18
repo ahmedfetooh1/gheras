@@ -1,0 +1,228 @@
+<div class="page-wrapper">
+  <!-- Hero Header -->
+  <div style="background:linear-gradient(135deg,var(--green-800),var(--green-600));padding:2.5rem 2rem;color:white;text-align:center">
+    <h1 style="font-family:var(--font-display);font-size:2rem;margin-bottom:.4rem">مجتمع غِراس</h1>
+    <p style="opacity:.8;margin-bottom:1.5rem">اسأل وجاوب وتعلم من مجتمع المزارعين</p>
+    <button (click)="openNewPost()" class="btn btn-primary">اكتب بوست جديد</button>
+  </div>
+
+  <div class="container section-sm">
+    <div class="forum-layout">
+      <!-- Posts Column -->
+      <div class="posts-column">
+
+        <!-- Loading Skeleton -->
+        @if (loading()) {
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            @for (i of [1,2,3]; track i) {
+              <div class="card">
+                <div class="card-body">
+                  <div style="display:flex;gap:1rem;align-items:flex-start">
+                    <div class="skeleton-avatar"></div>
+                    <div style="flex:1">
+                      <div class="skeleton-line" style="width:40%;height:14px;margin-bottom:.5rem"></div>
+                      <div class="skeleton-line" style="width:80%;height:18px;margin-bottom:.5rem"></div>
+                      <div class="skeleton-line" style="width:100%;height:12px;margin-bottom:.25rem"></div>
+                      <div class="skeleton-line" style="width:70%;height:12px"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Error -->
+        @if (error() && !loading()) {
+          <div class="card" style="text-align:center;padding:2rem">
+            <div style="font-size:2rem;margin-bottom:.5rem">⚠️</div>
+            <p style="color:var(--neutral-500)">{{ error() }}</p>
+            <button class="btn btn-primary" style="margin-top:1rem" (click)="loadPosts()">إعادة المحاولة</button>
+          </div>
+        }
+
+        <!-- Empty -->
+        @if (!loading() && !error() && posts().length === 0) {
+          <div class="card" style="text-align:center;padding:3rem">
+            <div style="font-size:2.5rem;margin-bottom:.75rem">🌿</div>
+            <p style="color:var(--neutral-500);margin-bottom:1rem">لا توجد بوستات حتى الآن</p>
+            <button class="btn btn-primary" (click)="openNewPost()">كن أول من يكتب!</button>
+          </div>
+        }
+
+        <!-- Posts List -->
+        @for (post of posts(); track post._id) {
+          <div class="card forum-post-card">
+            <div class="card-body">
+              <div style="display:flex;gap:1rem">
+
+                <!-- Avatar -->
+                <div class="post-avatar">{{ getAuthorInitial(post.author) }}</div>
+
+                <div style="flex:1;min-width:0">
+                  <!-- Meta -->
+                  <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;flex-wrap:wrap">
+                    <strong style="font-size:.9rem">{{ getAuthorName(post.author) }}</strong>
+                    <span style="font-size:.75rem;color:var(--neutral-400);margin-right:auto">
+                      {{ post.createdAt | date:'d MMM y' }}
+                    </span>
+                  </div>
+
+                  <!-- Title -->
+                  <div style="font-weight:700;color:var(--green-900);margin-bottom:.5rem;font-size:1rem;font-family:var(--font-display)">
+                    {{ post.title }}
+                  </div>
+
+                  <!-- Content -->
+                  <div style="color:var(--neutral-600);font-size:.9rem;margin-bottom:.875rem;line-height:1.65; white-space: pre-wrap;">
+                    @if (!expandedPosts[post._id!]) {
+                      {{ post.content.length > 250 ? (post.content.slice(0, 250) + '...') : post.content }}
+                      @if (post.content.length > 250) {
+                        <button (click)="expandedPosts[post._id!] = true" class="btn-link" style="color:var(--green-600); border:none; background:none; padding:0; font-weight:600; cursor:pointer; margin-right:5px;">قراءة المزيد</button>
+                      }
+                    } @else {
+                      {{ post.content }}
+                      <button (click)="expandedPosts[post._id!] = false" class="btn-link" style="color:var(--green-600); border:none; background:none; padding:0; font-weight:600; cursor:pointer; margin-right:5px;">عرض أقل</button>
+                    }
+                  </div>
+
+                  <!-- Actions -->
+                  <div style="display:flex;gap:1rem;font-size:.85rem">
+                    <button
+                      class="forum-action-btn"
+                      [class.active]="isCommentsOpen(post._id!)"
+                      (click)="toggleComments(post._id!)">
+                      <span class="comment-icon">💬</span>
+                      <span>{{ getCommentCount(post) }} تعليق</span>
+                      <span class="toggle-arrow" [class.rotated]="isCommentsOpen(post._id!)">▾</span>
+                    </button>
+                  </div>
+
+                  <!-- Comments Section -->
+                  @if (isCommentsOpen(post._id!)) {
+                    <div class="comments-section">
+
+                      @if (isCommentsLoading(post._id!)) {
+                        <div style="display:flex;align-items:center;gap:.5rem;padding:.75rem 0;color:var(--neutral-400);font-size:.85rem">
+                          <div class="comments-loader"><span></span><span></span><span></span></div>
+                          جاري التحميل...
+                        </div>
+                      }
+
+                      @if (!isCommentsLoading(post._id!) && getComments(post._id!).length === 0) {
+                        <div style="padding:.75rem 0;color:var(--neutral-400);font-size:.85rem;text-align:center">
+                          لا توجد تعليقات بعد
+                        </div>
+                      }
+
+                      @for (comment of getComments(post._id!); track comment._id) {
+                        <div class="comment-item">
+                          <div class="comment-avatar">{{ getAuthorInitial(comment.author) }}</div>
+                          <div class="comment-bubble">
+                            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem">
+                              <strong style="font-size:.82rem;color:var(--green-900)">{{ getAuthorName(comment.author) }}</strong>
+                              @if (comment.createdAt) {
+                                <span style="font-size:.72rem;color:var(--neutral-400);margin-right:auto">
+                                  {{ comment.createdAt | date:'d MMM' }}
+                                </span>
+                              }
+                            </div>
+                            <p style="margin:0;font-size:.85rem;color:var(--neutral-700);line-height:1.55">{{ comment.text }}</p>
+                          </div>
+                        </div>
+                      }
+
+                      <!-- ✅ Add Comment Box -->
+                      @if (!isCommentsLoading(post._id!)) {
+                        <div style="display:flex;gap:.6rem;margin-top:.75rem;align-items:flex-end;border-top:1px solid var(--neutral-100);padding-top:.75rem">
+                          <textarea
+                            class="input-field"
+                            rows="2"
+                            placeholder="اكتب تعليقك..."
+                            [(ngModel)]="newCommentText[post._id!]"
+                            style="flex:1;resize:none;font-size:.85rem;padding:.5rem .75rem;border-radius:10px">
+                          </textarea>
+                          <button
+                            class="btn btn-primary"
+                            style="padding:.5rem 1rem;font-size:.85rem;border-radius:10px;white-space:nowrap"
+                            [disabled]="!newCommentText[post._id!]?.trim() || isSubmittingComment(post._id!)"
+                            (click)="submitComment(post._id!)">
+                            {{ isSubmittingComment(post._id!) ? '...' : 'إرسال' }}
+                          </button>
+                        </div>
+                      }
+
+                    </div>
+                  }
+
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <!-- Sidebar -->
+      <div class="forum-sidebar">
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-body">
+            <div style="font-weight:700;margin-bottom:.75rem;color:var(--green-900)">إحصائيات المنتدى</div>
+            <div style="font-size:.88rem;display:flex;flex-direction:column;gap:.4rem">
+              <div style="display:flex;justify-content:space-between">
+                <span style="color:var(--neutral-500)">إجمالي البوستات</span>
+                <strong>{{ posts().length }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div style="font-weight:700;margin-bottom:.75rem;color:var(--green-900)">شارك معنا</div>
+            <p style="font-size:.85rem;color:var(--neutral-500);margin-bottom:1rem">لديك سؤال أو تجربة؟ شاركها مع المجتمع!</p>
+            <button class="btn btn-primary btn-block" (click)="openNewPost()">اكتب بوست →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Post Modal -->
+@if (showNewPostModal()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div style="padding:1.5rem;border-bottom:1px solid var(--neutral-100);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700;font-size:1.1rem">بوست جديد</div>
+        <button (click)="closeModal()" style="background:none;border:none;font-size:1.3rem;color:var(--neutral-400);cursor:pointer">✕</button>
+      </div>
+      <div style="padding:1.5rem">
+
+        @if (submitSuccess()) {
+          <div class="alert alert-success" style="text-align:center;padding:2rem">
+            <div style="font-size:2rem;margin-bottom:.5rem">✅</div>
+            <strong>تم إرسال بوستك!</strong>
+            <p style="margin:.4rem 0 0;font-size:.85rem;color:var(--neutral-500)">سيظهر بعد مراجعة الإدارة</p>
+          </div>
+        } @else {
+          <div class="input-group">
+            <label>عنوان البوست</label>
+            <input type="text" class="input-field" placeholder="اكتب عنوان واضح..." [(ngModel)]="newPostTitle">
+          </div>
+          <div class="input-group">
+            <label>المحتوى</label>
+            <textarea class="input-field" rows="5" placeholder="شارك تجربتك أو سؤالك..." [(ngModel)]="newPostContent"></textarea>
+          </div>
+          <div class="alert alert-info" style="margin-bottom:1rem;font-size:.82rem">البوست هيتراجع من فريقنا قبل النشر</div>
+          <button
+            class="btn btn-primary btn-block"
+            [disabled]="submitting() || !newPostTitle.trim() || !newPostContent.trim()"
+            (click)="submitPost()">
+            {{ submitting() ? 'جاري الإرسال...' : '✨ انشر البوست الآن →' }}
+          </button>
+        }
+
+      </div>
+    </div>
+  </div>
+}

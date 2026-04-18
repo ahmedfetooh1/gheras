@@ -3,12 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Post, Comment, Blog } from '../models/interfaces';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class CommunityService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:3000/api';
+  private baseUrl = environment.apiUrl;
 
   private getAuthHeaders() {
     const token = localStorage.getItem('token');

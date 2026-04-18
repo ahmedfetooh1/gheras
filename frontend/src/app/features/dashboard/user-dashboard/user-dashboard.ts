@@ -6,6 +6,8 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 import { AlertService } from '../../../core/services/alert.service';
 
+import { environment } from '../../../environments/environment';
+
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
@@ -69,7 +71,7 @@ export class UserDashboard implements OnInit {
   loadDashboardData() {
     this.dashboardLoading.set(true);
     // GET /api/dashboard returns { data: { myGarden, notifications, profile }, totalPlants, ... }
-    this.http.get<any>('http://localhost:3000/api/dashboard').subscribe({
+    this.http.get<any>(`${environment.apiUrl}/dashboard`).subscribe({
       next: (res) => {
         if (res.status === 'success') {
           this.myGarden.set(res.dashboardData?.myGarden || []);
@@ -90,7 +92,7 @@ export class UserDashboard implements OnInit {
 
   loadPlants() {
     this.plantsLoading = true;
-    this.http.get<any>('http://localhost:3000/api/plants?limit=100').subscribe({
+    this.http.get<any>(`${environment.apiUrl}/plants?limit=100`).subscribe({
       next: (res) => {
         // GET /api/plants returns list or { data: { plants: [...] } }
         const plantsArray = res.data?.plants || res;
@@ -129,7 +131,7 @@ export class UserDashboard implements OnInit {
   addPlant() {
     if (!this.selectedPlantId()) return;
 
-    this.http.post<any>('http://localhost:3000/api/dashboard/add-plant', {
+    this.http.post<any>(`${environment.apiUrl}/dashboard/add-plant`, {
       plantId: this.selectedPlantId(),
       nickname: this.plantNickname() // Pass nickname if backend supports it eventually
     }).subscribe({
@@ -157,7 +159,7 @@ export class UserDashboard implements OnInit {
   }
 
   waterPlant(id: string) {
-    this.http.put<any>(`http://localhost:3000/api/dashboard/water-plant/${id}`, {}).subscribe({
+    this.http.put<any>(`${environment.apiUrl}/dashboard/water-plant/${id}`, {}).subscribe({
       next: (res) => {
         if (res.status === 'success') {
           // تحديث بيانات اللوحة بعد السقاية للحصول على التواريخ الجديدة
@@ -182,7 +184,7 @@ export class UserDashboard implements OnInit {
     this.detailsLoading.set(true);
     this.activeTab.set('plan');
 
-    this.http.get<any>(`http://localhost:3000/api/dashboard/my-plant/${id}`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/dashboard/my-plant/${id}`).subscribe({
       next: (res) => {
         if (res.status === 'success') {
           this.selectedPlantDetails.set(res.data.userPlant);
@@ -222,7 +224,8 @@ export class UserDashboard implements OnInit {
   getImageUrl(imagePath: string): string {
     if (!imagePath) return '';
     if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:3000/${imagePath}`;
+    const baseRoot = environment.apiUrl.replace('/api', '');
+    return `${baseRoot}/${imagePath}`;
   }
 
   // Calculate generic next watering date fallback

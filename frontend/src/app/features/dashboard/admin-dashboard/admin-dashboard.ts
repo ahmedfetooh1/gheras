@@ -8,6 +8,8 @@ import { CommunityService } from '../../../core/services/community.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { ChangeDetectorRef } from '@angular/core';
 
+import { environment } from '../../../environments/environment';
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -22,7 +24,7 @@ export class AdminDashboard implements OnInit {
   private communityService = inject(CommunityService);
   private alertService = inject(AlertService);
   private http = inject(HttpClient);
-  private base = 'http://localhost:3000/api';
+  private base = environment.apiUrl;
   private cdr = inject(ChangeDetectorRef);
 
   activeView: string = 'stats';

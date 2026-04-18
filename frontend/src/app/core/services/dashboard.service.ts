@@ -3,12 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { DashboardStats, Plant } from '../models/interfaces';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class DashboardService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:3000/api';
+  private baseUrl = environment.apiUrl;
 
   getUserDashboard(): Observable<any> {
     return this.http.get(`${this.baseUrl}/dashboard`);

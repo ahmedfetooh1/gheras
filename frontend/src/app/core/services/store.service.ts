@@ -4,13 +4,15 @@ import { Observable, tap } from 'rxjs';
 import { Product, Category, Cart, Order } from '../models/interfaces';
 import { AuthService } from './auth.service';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class StoreService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private baseUrl = 'http://localhost:3000/api';
+  private baseUrl = environment.apiUrl;
 
   // Global Cart State
   isCartOpen = signal(false);

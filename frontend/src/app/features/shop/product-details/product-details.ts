@@ -6,6 +6,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { AlertService } from '../../../core/services/alert.service';
 
+import { environment } from '../../../environments/environment';
+
 @Component({
   selector: 'app-product-details',
   standalone: true,
@@ -139,6 +141,7 @@ export class ProductDetails implements OnInit {
   getImageUrl(path: string) {
     if (!path) return '';
     if (path.startsWith('http')) return path;
-    return `http://localhost:3000/${path}`;
+    const baseRoot = environment.apiUrl.replace('/api', '');
+    return `${baseRoot}/${path}`;
   }
 }

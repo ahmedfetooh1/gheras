@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { StoreService } from '../../services/store.service';
 import { RouterModule, Router } from '@angular/router';
 
+import { environment } from '../../../../environments/environment';
+
 @Component({
     selector: 'app-cart',
     standalone: true,
@@ -48,6 +50,7 @@ export class CartComponent {
     getImageUrl(path: string) {
         if (!path) return '';
         if (path.startsWith('http')) return path;
-        return `http://localhost:3000/${path}`;
+        const baseRoot = environment.apiUrl.replace('/api', '');
+        return `${baseRoot}/${path}`;
     }
 }

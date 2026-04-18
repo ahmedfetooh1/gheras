@@ -22,6 +22,8 @@ interface LocalProduct {
   isBestSeller?: boolean;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Component({
   selector: 'app-shop',
   standalone: true,
@@ -124,6 +126,7 @@ export class Shop implements OnInit {
   getImageUrl(path: string) {
     if (!path) return '';
     if (path.startsWith('http')) return path;
-    return `http://localhost:3000/${path}`;
+    const baseRoot = environment.apiUrl.replace('/api', '');
+    return `${baseRoot}/${path}`;
   }
 }

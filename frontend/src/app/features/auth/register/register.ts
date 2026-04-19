@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';  
 import { AuthService } from '../../../core/services/auth.service'; 
+import { environment } from '../../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -19,6 +20,7 @@ export class RegisterComponent {
     email: '',
     password: ''
   };
+  protected environment = environment;
 
   status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
   errorMessage: string = '';

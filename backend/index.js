@@ -36,8 +36,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(bodyParser.json());
+const path = require('path');
 app.use(express.static('public'));
-app.use(passport.initialize());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(passport.initialize()); 
 
 
 // main route or project 

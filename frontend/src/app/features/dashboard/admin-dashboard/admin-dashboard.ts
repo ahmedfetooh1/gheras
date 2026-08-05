@@ -497,14 +497,13 @@ export class AdminDashboard implements OnInit {
       const formData = new FormData();
       Object.entries(body).forEach(([k, v]) => {
         if (Array.isArray(v)) {
-          v.forEach((item, index) => {
-            if (typeof item === 'object') {
-              // Convert nested objects to string in FormData if needed, but best is JSON.stringify for complex
-              formData.append(`${k}[${index}]`, JSON.stringify(item));
-            } else {
+          if (v.length > 0 && typeof v[0] === 'object' && v[0] !== null) {
+            formData.append(k, JSON.stringify(v));
+          } else {
+            v.forEach(item => {
               formData.append(k, item as any);
-            }
-          });
+            });
+          }
         } else if (typeof v === 'object' && v !== null) {
           formData.append(k, JSON.stringify(v));
         } else {
@@ -784,15 +783,15 @@ export class AdminDashboard implements OnInit {
       const formData = new FormData();
       Object.entries(body).forEach(([k, v]) => {
         if (Array.isArray(v)) {
-          (v as any[]).forEach((item, i) => {
-            if (typeof item === 'object' && item !== null) {
-              // التعامل مع الـ Composition Object
-              Object.entries(item).forEach(([sk, sv]) => formData.append(`${k}[${i}][${sk}]`, sv as any));
-            } else {
-              // التعامل مع مصفوفة الـ IDs (النباتات)
-              formData.append(k, item);
-            }
-          });
+          if (v.length > 0 && typeof v[0] === 'object' && v[0] !== null) {
+            formData.append(k, JSON.stringify(v));
+          } else {
+            v.forEach(item => {
+              formData.append(k, item as any);
+            });
+          }
+        } else if (typeof v === 'object' && v !== null) {
+          formData.append(k, JSON.stringify(v));
         } else {
           formData.append(k, v as any);
         }
